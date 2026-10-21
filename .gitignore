@@ -1,0 +1,21 @@
+# private, never in git
+CLAUDE*.md
+.env
+.env.*
+config/qr/
+master-cv/
+profile/
+
+# runtime
+data/
+pdfs/
+*.log
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# prompt text, deployed to the server, never in git
+prompts/
