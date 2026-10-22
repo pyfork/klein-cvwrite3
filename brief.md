@@ -317,4 +317,86 @@ A breach writes a `degraded_events` row: start, end, the step to blame, and the 
 - None of the owner's own CV, contact details, standing edits or QR image goes into the repo, a seed, a fixture or a prompt file. Tests use a made-up master CV and a placeholder QR.
 - Secrets are typed into hidden prompts, never in chat, on a command line, or in a file in git.
 
+## Addendum 1 (2026-10-22): owner decisions from the chunk 1 session
+Where this addendum and the sections above disagree, the addendum wins.
+
+### Rendering (chunks 1, 3, 7)
+- **Chrome:** sk24's existing Chrome is reused through `CVWRITE_CHROME`. Lean flags come from `CVWRITE_CHROME_FLAGS`, plus network-blocking flags (`--proxy-server=127.0.0.1:9 --host-resolver-rules="MAP * ~NOTFOUND"`), so a render can't fetch or leak anything. Never `--single-process` (it gives no PDF).
+- **Fonts:** static TrueType cuts only. The render check fails on any Type 3, fallback or unembedded font.
+- **Limits:** a 30 s Chrome timeout, Chrome in its own process group (the whole group is killed), one render retry, one Chrome at a time, and `oom_score_adj=1000` on Chrome.
+- **Admission:** before each render the worker reads `MemAvailable`; under 500 MB it waits, and the wait counts as queue wait.
+- **`run_steps`** also records each render's `memory.peak` and CPU time.
+
+### Jobs and the worker (chunk 3)
+- Jobs are Postgres rows, claimed with `FOR UPDATE SKIP LOCKED` by one worker unit. The app only enqueues and shows status.
+- **Checkpoints:** call A and call B outputs are saved on the run, so a crash never pays Claude twice.
+- **The −1 ledger row** is written in the same transaction that marks the run `passed`, with a unique `run_id`. Downloads are served only for `passed` runs.
+- **Worker restart:** on startup, every `running` job goes back to `queued` and resumes from its checkpoint. A deploy's `SIGTERM` lets the current job finish (up to 90 s).
+- **Poison jobs:** at most 3 starts per job, within 10 min of the click while not paused; then `failed`, no credit used.
+- A delete stops any running job for that user first, so no −1 row can land afterwards.
+
+### Pause (chunks 3 and 6)
+- **One `system_pause` row** (`paused_at`, `reason`, `source` auto/owner, `resumed_at`). An open row means paused.
+- **Auto-pause:**
+  - render: 3 runs fail both render attempts, from at least 2 different users, within 30 min;
+  - Claude: 5 calls in a row fail after the SDK's retries, across at least 2 users;
+  - test render: fails twice in a row;
+  - owner: a "Pause generating" button.
+- **Test render:** a made-up fixture is rendered once after every worker start, then hourly, **skipped if a real CV rendered in the last 2 h**, and skipped while `MemAvailable` is under 500 MB.
+- **While paused:** Generate is refused before call A (no Claude spend, no credit used); jobs past call B are held; the degraded banner shows; re-render reads "Re-rendering is paused" and doesn't use one of the 3.
+- **Resume is manual:** the owner presses "Test render" (PASS/FAIL with the fingerprint), then "Resume". Held jobs finish in arrival order.
+- **Ladder, timed from `paused_at`:**
+  - 0–4 h: banner, buying open;
+  - 4–24 h: "taking longer than usual", **buying closed** (credits already held are safe);
+  - 24 h: held jobs expire with "No credit used";
+  - over 72 h: the owner may extend credit expiry by the length of the pause (owner's button, never agents).
+- **Copy rules:** no ETA; every failure message says the money part; a content failure offers "try again" at most 2 times per ad, then "Report this problem"; during a pause, "something broke" reports show "We already know about this problem".
+- The 20-a-day cap counts only runs that reached call A.
+- **Deferred, with triggers:** canary and auto-resume (over 2 auto-pauses a month, or a median "paused → owner looked" over 4 h); self-heal steps; split render/Claude breakers; push alerts.
+
+### Process layout on sk24 (chunk 7, each unit needs the owner's OK)
+- `cvwrite3.slice`: `MemoryHigh=600M`, `MemoryMax=750M`, `CPUWeight=50`, `CPUQuota=150%`.
+- `cvwrite3-app.service`: uvicorn, 1 worker, `MemoryMax=250M`.
+- `cvwrite3-worker.service`: `MemoryMax=550M`, `OOMPolicy=continue`, `Restart=always`, `PrivateTmp=yes`, `TimeoutStopSec=90`. Up to 3 jobs at once, one Chrome at a time.
+- **Gold standard, before wave 2:** a separate render unit with `IPAddressDeny=any`, its own user and `ProtectSystem=strict`.
+
+### Profile upload (chunk 3)
+- **`.docx` is accepted** as well as `.md`, `.txt` and `.pdf` (python-docx, imported only on upload). Not the old `.doc`.
+- The upload size and the unzipped size are both capped.
+- The user sees a **text preview** of what was read before saving, so content the parser missed (text boxes, tables) is caught.
+
+### Backups (chunk 7)
+- The `cvwrite3` database only (`pg_dump`); PDFs are never backed up.
+- **Every 2 days at 2:30 AM** (box time). The timer runs nightly but only backs up when the last good copy is over 44 h old, so a failure retries the next night. `Persistent=true`.
+- Encrypted on the server before upload (`age`; the private key stays offline with the owner), to cvwrite3's own DO Spaces bucket (Singapore) with its own key.
+- **4 good copies kept.** Old copies are deleted only after a newer one has uploaded and been verified (size and checksum).
+- In-run retries: upload 3 times (1, 5, 15 min), dump once. A failed dump stays on the server (0600) for the next run. Each run writes a `backup_runs` row.
+- The health panel shows "Last good backup: N days ago", amber past 2.5 days, red past 4.
+- **Tombstones:** each account deletion writes a hash of the user id and the date (no personal data), in the database and next to the backups. Every restore replays them before the app starts. A test covers backup → delete → restore → user gone.
+- Monthly restore test into a scratch database.
+
+### Deletion and retention (chunks 2, 4, 7)
+- **Deleted at once:** profile, master CV, runs, PDFs, edit history, problem reports, `allowed_users` and `access_requests` rows.
+- **Ledger and orders are kept** with no CV content; the link to the person is replaced by **one random tag per deleted user** (e.g. `deleted-8F3K`).
+- **Consent records are kept 12 months after deletion** (email, notice version, text hash, language, sensitive-data line, date), for two stated purposes: proof of consent, and blocking repeat free credits. Then the retention job deletes them.
+- Request logs and `run_steps`: 90 days.
+- **Backups:** gone within about 8 days; the notice says **within 14 days**.
+- **The v1.0 notice** also names DigitalOcean (Spaces, Singapore) as a recipient, and the 12-month consent-record rule.
+
+### Refunds (chunks 4 and 7, and the terms page)
+1. Free credits are never refundable.
+2. Unused, unexpired paid credits are refundable at their pack's price: RM2 per credit (RM10 pack) or RM1.50 (RM30 pack). Spending is oldest first, so the unused credits are always from the newest pack(s).
+3. Expired credits aren't refundable.
+4. Refunds go only back to the bank account that paid, found by the order reference.
+5. Deleting an account is never blocked. A pending order is kept under the deleted-user tag and flagged "account deleted: refund if received".
+6. If the service closes, everyone with unused paid credits is refunded without being asked.
+
+- An email that deleted its account in the last 12 months gets **no new free credits** on signing up again (checked against the kept consent record). Paid credits work as normal.
+- **The build:** an admin view of the refundable amount per user or tag (chunk 4); an owner-only "refund" ledger row type (chunk 4); "Request refund before deleting" on the delete screen (chunk 7).
+
+### Before go-live (senior review)
+- A CI check on every PR that runs the pre-push guard, plus GitHub secret scanning and push protection.
+- Python 3.10 parity with sk24 (CI on 3.10, or a pinned local 3.10).
+- A pinned `chrome-headless-shell` under the app's directory, so another tenant's `apt upgrade` can't change the layout.
+
 senior-lead-Opus5.5-agent
