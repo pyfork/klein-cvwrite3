@@ -1,21 +1,95 @@
-# private, never in git
-CLAUDE*.md
+# build-engineer-Opus5.5-agent, 2026-10-22
+# Follows klein-stapje's kit template; the stack section is Python, plus cvwrite3's private data.
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Secrets / local env — never commit
 .env
+*.env
 .env.*
+secrets/
+**/secrets/
+secrets.*
+credentials.*
+*_credentials*
+*.credentials.json
+config.secret.*
+.netrc
+
+# Keys & certificates (the Cloudflare origin cert and key included)
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+.ssh/
+
+# Cloud logins
+# Cloudflare Wrangler: local secrets + local state
+.dev.vars
+.dev.vars.*
+.wrangler/
+
+# Templates are safe to commit — must stay after the rules above
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+coverage/
+.coverage
+*.log
+dist/
+build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Folders & files
+.claude/
+CLAUDE*.md
+uploads/
+# Private docs (deps table, notes) stay on this Mac only.
+docs/
+# Session handoff notes are private
+README-HANDOFF-*
+
+# cvwrite3 private data — never in git
+# Prompt text: deployed to the server at 0640, never in git
+prompts/
 config/qr/
 master-cv/
 profile/
 
-# runtime
+# cvwrite3 runtime
 data/
 pdfs/
-*.log
-
-# python
-__pycache__/
-*.pyc
-.venv/
-.pytest_cache/
-
-# prompt text, deployed to the server, never in git
-prompts/
