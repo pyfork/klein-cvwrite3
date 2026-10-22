@@ -75,16 +75,28 @@ body.airy { font-size: 9.6pt; line-height: 1.44; }
 """
 
 # cvwrite styles. Style 2 is the base CSS above (Manrope). Style 1 swaps the fonts and spacing.
-# (family, file in FONTS, descriptors): the same ranges the Google Fonts links asked for.
+# (family, file in FONTS, descriptors). Static cuts from fonts/build_static.py, one per weight and
+# width the CSS asks for: variable fonts would be stored in the PDF as Type 3, which ATS read badly.
 FONT_FACES = {
     1: [
-        ("Archivo", "Archivo.ttf", "font-weight: 400 800; font-stretch: 62% 125%;"),
-        ("Source Serif 4", "SourceSerif4.ttf", "font-weight: 400 650;"),
-        ("Source Serif 4", "SourceSerif4-Italic.ttf", "font-weight: 400; font-style: italic;"),
+        ("Archivo", "Archivo-600-78.ttf", "font-weight: 600; font-stretch: 78%;"),
+        ("Archivo", "Archivo-700-78.ttf", "font-weight: 700; font-stretch: 78%;"),
+        ("Archivo", "Archivo-720-78.ttf", "font-weight: 720; font-stretch: 78%;"),
+        ("Archivo", "Archivo-760-78.ttf", "font-weight: 760; font-stretch: 78%;"),
+        ("Archivo", "Archivo-800-70.ttf", "font-weight: 800; font-stretch: 70%;"),
+        ("Source Serif 4", "SourceSerif4-400.ttf", "font-weight: 400;"),
+        ("Source Serif 4", "SourceSerif4-650.ttf", "font-weight: 700;"),  # the Google link capped bold at 650
+        ("Source Serif 4", "SourceSerif4-400-Italic.ttf", "font-weight: 400; font-style: italic;"),
         ("IBM Plex Mono", "IBMPlexMono-Regular.ttf", "font-weight: 400;"),
         ("IBM Plex Mono", "IBMPlexMono-Medium.ttf", "font-weight: 500;"),
+        ("IBM Plex Mono", "IBMPlexMono-SemiBold.ttf", "font-weight: 600;"),  # .dates; else a faked bold
     ],
-    2: [("Manrope", "Manrope.ttf", "font-weight: 400 800;")],
+    2: [
+        ("Manrope", "Manrope-400.ttf", "font-weight: 400;"),
+        ("Manrope", "Manrope-600.ttf", "font-weight: 600;"),
+        ("Manrope", "Manrope-700.ttf", "font-weight: 700;"),
+        ("Manrope", "Manrope-800.ttf", "font-weight: 800;"),
+    ],
 }
 
 
