@@ -22,6 +22,7 @@ import time
 from pathlib import Path
 
 CHROME = os.environ.get("CVWRITE_CHROME", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
+CHROME_FLAGS = os.environ.get("CVWRITE_CHROME_FLAGS", "").split()  # extra flags, e.g. to cut memory on a small box
 FONTS = Path(os.environ.get("CVWRITE_FONTS", Path(__file__).resolve().parent.parent / "fonts"))
 
 CSS = """
@@ -322,6 +323,7 @@ def main():
                 f"--user-data-dir={tmp}/profile",
                 "--no-pdf-header-footer",
                 "--virtual-time-budget=8000",
+                *CHROME_FLAGS,
                 f"--print-to-pdf={dst}",
                 html_file.as_uri(),
             ],

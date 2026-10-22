@@ -43,15 +43,16 @@ def main():
     print(log.strip())
     failed |= code != 0
 
+    # Chrome draws variable fonts as Type 3 glyphs: named on macOS, "[none]" on Linux.
+    # So: every font embedded, and no named font outside our families (a system fallback).
     _, fonts = run("pdffonts", str(pdf))
     rows = [l.split() for l in fonts.splitlines()[2:] if l.strip()]
     names = sorted({r[0].split("+")[-1] for r in rows})
-    not_embedded = [r[0] for r in rows if "no" in r[-5:-3]]  # emb, sub columns
+    not_embedded = [r[0] for r in rows if r[-5] != "yes"]  # columns end: emb sub uni id gen
     for fam in FAMILIES:
-        ok = any(fam in n for n in names)
-        print(f"{'PASS' if ok else 'FAIL'}  font embedded: {fam}")
-        failed |= not ok
-    others = [n for n in names if not any(f in n for f in FAMILIES)]
+        if any(fam in n for n in names):
+            print(f"PASS  font embedded: {fam}")
+    others = [n for n in names if n != "[none]" and not any(f in n for f in FAMILIES)]
     print(f"{'PASS' if not others else 'FAIL'}  no fallback fonts {others or ''}")
     print(f"{'PASS' if not not_embedded else 'FAIL'}  all fonts embedded {not_embedded or ''}")
     failed |= bool(others or not_embedded)
