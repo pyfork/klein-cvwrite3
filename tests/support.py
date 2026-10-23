@@ -82,6 +82,7 @@ class AppCase(unittest.TestCase):
             env="dev", database_url=_with_db(self.dbname), owner_email=OWNER, secret_key="x" * 40,
             access_team=TEAM, access_aud=AUD, access_certs_url=_keys()["certs"], app_origin=ORIGIN,
             data_dir=self.data_dir, claude="fake",
+            qr_path=str(Path(self.data_dir) / "no-qr.png"),  # never the owner's real QR on this machine
         )
         from app.main import create_app
         self.app = create_app(self.settings)
