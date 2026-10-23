@@ -21,6 +21,7 @@ class Settings:
     wave2_cap: int = 50
     data_dir: str = str(Path(__file__).resolve().parent.parent / "data")  # PDFs live under data/pdfs/
     claude: str = "real"    # "fake" (dev and tests only) answers without calling Claude
+    qr_path: str = str(Path(__file__).resolve().parent.parent / "config" / "qr" / "duitnow.png")  # outside git
 
     @property
     def access_issuer(self):
@@ -58,4 +59,5 @@ def load(environ=os.environ):
         app_origin=need("CVWRITE_APP_ORIGIN").rstrip("/"),
         data_dir=environ.get("CVWRITE_DATA_DIR", "").strip() or Settings.data_dir,
         claude=claude,
+        qr_path=environ.get("CVWRITE_QR_PATH", "").strip() or Settings.qr_path,
     )

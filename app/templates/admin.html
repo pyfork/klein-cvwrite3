@@ -24,6 +24,28 @@
     {% endif %}
   </div>
 </div>
+<div class="card stack" id="orders">
+  <h2>Orders</h2>
+  <p class="hint">Find the reference and the exact amount in the bank app first. Approve only when the money is there. “I've paid” is never proof.</p>
+  {% if orders %}
+  <table class="tbl">
+    <thead><tr><th scope="col">Reference</th><th scope="col">Who</th><th scope="col">Amount</th><th scope="col">Status</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+    <tbody>
+    {% for x in orders %}
+      <tr><td><code>{{ x.ref }}</code></td><td>{{ x.who }}</td><td>RM{{ '%.2f'|format(x.amount_rm) }} ({{ x.credits }})</td>
+        <td>{% if x.status == 'pending' %}<span class="badge badge-wait">{{ 'Says paid' if x.paid_at else 'Not paid yet' }}</span>{% if x.paid_at %}<span class="why muted">“I've paid” {{ x.paid_at.strftime('%d %b, %H:%M') }}</span>{% endif %}
+          {% elif x.status == 'approved' %}<span class="badge badge-ok">Approved</span>{% if x.paid_at %}<span class="why muted">{{ ((x.decided_at - x.paid_at).total_seconds() / 3600)|round(1) }} h after “I've paid”</span>{% endif %}
+          {% else %}<span class="badge badge-bad">Rejected</span><span class="why">{{ x.reason }}</span>{% endif %}</td>
+        <td class="acts">{% if x.status == 'pending' %}
+          <form method="post" action="/admin/orders/{{ x.id }}/approve" style="display:inline"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-primary btn-sm">Approve</button></form>
+          <form method="post" action="/admin/orders/{{ x.id }}/reject"><input type="hidden" name="csrf" value="{{ o.csrf }}">
+            <input type="text" name="reason" maxlength="300" placeholder="Reason the user sees" aria-label="Reason the user sees" required>
+            <button class="btn btn-ghost btn-sm">Reject</button></form>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="meta">No orders yet.</p>{% endif %}
+</div>
 <div class="card stack" id="credits">
   <h2>Credits and refunds</h2>
   <p class="hint">Refund only after you've paid it back from the bank, to the account that paid. Unused paid credits are refunded at their pack's price, newest pack first.</p>

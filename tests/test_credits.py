@@ -75,9 +75,9 @@ class Pages(AppCase):
             self.acct = c.execute("select account_id from allowed_users where email = %s", (self.EMAIL,)).fetchone()["account_id"]
 
     def add_pack(self, n):
-        # Tests only: in the app, a pack is added when the owner approves an order (chunk 5).
+        from app import orders
         with self.conn() as c:
-            c.execute("insert into credit_ledger (account_id, delta, kind, expires_at) values (%s, %s, 'pack', now() + interval '12 months')", (self.acct, n))
+            orders.approve(c, orders.create(c, self.acct, n)["id"])
 
     def test_balance_and_expiry_on_every_page(self):
         expiry = (datetime.now(timezone.utc) + timedelta(days=365)).strftime("%-d %b %Y")

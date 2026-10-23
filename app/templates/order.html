@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% set nav = 'credits' %}
+{% block title %}Order {{ order.ref }}{% endblock %}
+{% block content %}
+<p class="eyebrow">Credits</p>
+{% if order.status == 'pending' and not order.paid_at %}
+<h1 class="title">Pay RM{{ '%.2f'|format(order.amount_rm) }} by DuitNow QR</h1>
+{% if already_open %}<div class="alert alert-info" role="status">You already have this order waiting for payment. Pay it or cancel it before starting another.</div>{% endif %}
+<div class="card stack pay">
+  <div class="pay-grid">
+    <div class="qr"><img src="/orders/qr" alt="DuitNow QR code to pay cvwrite3" width="168" height="168"></div>
+    <ol class="pay-steps">
+      <li>Scan the code with your bank or e-wallet app.</li>
+      <li>Pay exactly <b>RM{{ '%.2f'|format(order.amount_rm) }}</b> for {{ order.credits }} credits.</li>
+      <li>Put this reference in the transfer note:
+        <span class="ref"><code>{{ order.ref }}</code></span></li>
+    </ol>
+  </div>
+  <div class="row">
+    <form method="post" action="/orders/{{ order.ref }}/paid"><input type="hidden" name="csrf" value="{{ u.csrf }}"><button class="btn btn-primary">I've paid</button></form>
+    <form method="post" action="/orders/{{ order.ref }}/cancel"><input type="hidden" name="csrf" value="{{ u.csrf }}"><button class="btn btn-ghost">Cancel order</button></form>
+  </div>
+  {% if placeholder %}<p class="note">Placeholder QR: the real payment code isn't set up yet. Don't pay this one.</p>{% endif %}
+  <p class="hint">We add credits only after we see the payment in the bank. Credits last 12 months from the day we add them.</p>
+</div>
+{% elif order.status == 'pending' %}
+<h1 class="title">Payment pending</h1>
+<div class="card stack">
+  <p><span class="badge badge-wait">Pending</span> <b>{{ order.ref }}</b> · {{ order.credits }} credits · RM{{ '%.2f'|format(order.amount_rm) }}</p>
+  <p>We check each payment in the bank by hand. Your credits will show here once we've seen it. You don't need to do anything else.</p>
+  <p class="meta">Paid, but still no credits after a day? Email [request email] with your reference.</p>
+</div>
+{% elif order.status == 'approved' %}
+<h1 class="title">Credits added</h1>
+<div class="card stack">
+  <p><span class="badge badge-ok">Approved</span> <b>{{ order.ref }}</b>: {{ order.credits }} credits added on {{ order.decided_at.strftime('%-d %b %Y') }}. They expire 12 months after that.</p>
+  <a class="btn btn-primary" href="/generate">Write a CV</a>
+</div>
+{% elif order.status == 'rejected' %}
+<h1 class="title">Order not approved</h1>
+<div class="card stack">
+  <p><span class="badge badge-bad">Rejected</span> <b>{{ order.ref }}</b></p>
+  <p>{{ order.reason }}</p>
+  <p class="meta">If money left your account for this order, we'll refund it to the account that paid. Email [request email] with your reference.</p>
+</div>
+{% else %}
+<h1 class="title">Order cancelled</h1>
+<div class="card stack"><p>{{ order.ref }} was cancelled. No money is owed.</p><a class="btn btn-ghost" href="/credits">Back to credits</a></div>
+{% endif %}
+{% endblock %}
