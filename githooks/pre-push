@@ -23,6 +23,13 @@ BLOCKED_PATHS = [
 
 # YYMMDD, then a 2-digit place code, then 4 digits. Month and day must be valid.
 IC = re.compile(r"(?<![\d-])\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])(-?)\d{2}\1\d{4}(?![\d-])")
+# A sha256 or git hash (32+ hex characters) can hold 12 digits in a row; that's not an IC number.
+HEX_RUN = re.compile(r"[0-9a-fA-F]{32,}")
+
+
+def has_ic(text):
+    hex_spans = [m.span() for m in HEX_RUN.finditer(text)]
+    return any(not any(a <= m.start() and m.end() <= b for a, b in hex_spans) for m in IC.finditer(text))
 
 
 def git(*args):
@@ -50,7 +57,7 @@ def problems(rev_args):
             m = re.search(r"\+(\d+)", line)
             line_no = int(m.group(1)) if m else 0
         elif line.startswith("+") and path:
-            if IC.search(line[1:]):
+            if has_ic(line[1:]):
                 found.append(f"{path}:{line_no}: looks like an IC number")
             line_no += 1
     return sorted(set(found))
