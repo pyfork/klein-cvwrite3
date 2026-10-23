@@ -399,4 +399,30 @@ Where this addendum and the sections above disagree, the addendum wins.
 - Python 3.10 parity with sk24 (CI on 3.10, or a pinned local 3.10).
 - A pinned `chrome-headless-shell` under the app's directory, so another tenant's `apt upgrade` can't change the layout.
 
+## Addendum 2 (2026-10-22): the design pass and the summary length
+Where this addendum and the sections above disagree, this addendum wins.
+
+### Design (chunks 2 to 7)
+- **The design is "Calm":** white rounded cards on a pale ground, Manrope, one teal accent, and a numbered page stepper. The admin page uses the same tokens in a plainer, denser layout.
+- **One small stylesheet** (`calm.css`, about 20 KB, no framework) and the repo's self-hosted fonts. Chunk 2 copies it into the app as its only stylesheet.
+- The clickable prototype and its sources stay private (git-ignored `docs/design/`). Every screen is built from it, with its wording.
+- **English first.** Every screen is built and finished in English. Malay comes after, and the BM/EN notice is still needed before go-live.
+- **Screens covered:**
+  - request access, the privacy notice and consent, profile, generate (progress and result), edit and re-render, credits and pay;
+  - the account page, the "account deleted" page, the full notice and its changelog, the terms;
+  - the admin page: access, orders, reports, health and the funnel.
+
+### Behaviour the prototype settled
+- **A failed re-format** (Haiku's output fails the word check) **doesn't use one of the 3 free re-renders.** A 3-page or 1-page result does.
+- **While a CV is generating,** the user can leave the page. The run carries on, and the result is there when they come back.
+- **Rejecting an order** needs a reason the user will see; the Reject button does nothing without one.
+- **A major notice version** (e.g. v2.0) sends every page except the notice, its changelog and the terms to the consent screen, which says what changed, until the user agrees. A minor version shows a banner and an account-page note, and asks nothing.
+
+### Professional summary: 2 to 3 lines (chunk 3)
+The skill's `references/cv-format.md` says 3 to 4 lines. The app uses **2 to 3**. The top 3 keywords still go in the first two lines, and problem #1 still comes first.
+- **Prompt:** call B asks for "2 to 3 lines, at most 50 words, 2 sentences".
+- **Pre-render check:** the words in the paragraph under `## PROFESSIONAL SUMMARY` are counted in the Markdown. Over 50 fails before Chrome starts. That failure uses the same single internal retry as the page and keyword checks, and the retry is told the exact problem ("summary is 62 words, cut to 50, change nothing else").
+- **On a user's re-render,** a summary over 50 words only warns ("summary is N words, aim for 50 or fewer"). It never blocks, because it's the user's text.
+- **Not built:** measuring the summary's lines in the PDF. Revisit if 50-word summaries still wrap to 4 lines. Never clamp or cut the summary in CSS or code.
+
 senior-lead-Opus5.5-agent
