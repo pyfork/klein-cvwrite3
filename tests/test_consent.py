@@ -40,9 +40,9 @@ class Consent(AppCase):
         v = notices.latest().version
         self.assertEqual((row["notice_version"], row["lang"], row["sensitive"]), (v, "en", True))
         self.assertEqual(row["text_hash"], notices.text_hash(v, "en"))
-        r = self.get("/", ALICE)
+        r = self.get("/generate", ALICE)
         self.assertEqual(r.status_code, 200)
-        self.assertIn("Welcome to cvwrite3", r.text)
+        self.assertIn("New CV for a job ad", r.text)
         self.assertEqual(self.get("/consent", ALICE).headers["location"], "/")
 
     def test_stale_version_is_refused(self):
@@ -61,14 +61,14 @@ class Consent(AppCase):
             self.assertIn("What changed in v2.0:", page)
             self.assertIn("What changed in v1.1:", page)
             self.agree(ALICE)
-            self.assertEqual(self.get("/", ALICE).status_code, 200)
+            self.assertEqual(self.get("/generate", ALICE).status_code, 200)
         with self.conn() as c:
             self.assertEqual([r["notice_version"] for r in c.execute("select notice_version from consents order by id")], ["1.0", "2.0"])
 
     def test_minor_version_doesnt_ask(self):
         self.agree(ALICE)
         with mock.patch.object(notices, "versions", lambda: fake_versions("1.0", "1.1")):
-            self.assertEqual(self.get("/", ALICE).status_code, 200)
+            self.assertEqual(self.get("/generate", ALICE).status_code, 200)
 
     def test_deleted_accounts_consent_doesnt_count(self):
         self.agree(ALICE)

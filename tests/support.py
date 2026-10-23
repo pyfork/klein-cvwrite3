@@ -77,9 +77,11 @@ class AppCase(unittest.TestCase):
         self.dbname = "t_" + uuid.uuid4().hex[:10]
         with psycopg.connect(_server_uri(), autocommit=True) as c:
             c.execute(f"create database {self.dbname} template cvw3_template")
+        self.data_dir = tempfile.mkdtemp(prefix="cvw3-data-")
         self.settings = config.Settings(
             env="dev", database_url=_with_db(self.dbname), owner_email=OWNER, secret_key="x" * 40,
             access_team=TEAM, access_aud=AUD, access_certs_url=_keys()["certs"], app_origin=ORIGIN,
+            data_dir=self.data_dir, claude="fake",
         )
         from app.main import create_app
         self.app = create_app(self.settings)
@@ -87,6 +89,7 @@ class AppCase(unittest.TestCase):
 
     def tearDown(self):
         self.client.close()
+        shutil.rmtree(self.data_dir, ignore_errors=True)
         with psycopg.connect(_server_uri(), autocommit=True) as c:
             c.execute(f"drop database {self.dbname} with (force)")
 
@@ -122,3 +125,61 @@ class AppCase(unittest.TestCase):
         if sensitive:
             data["sensitive"] = "yes"
         return self.post("/consent", email, data)
+
+
+MASTER = (Path(__file__).resolve().parent / "fixtures" / "master_cv.md")
+
+
+class CVCase(AppCase):
+    """An approved, consented user with a saved profile, and a fake Claude."""
+    EMAIL = "nadia@example.com"
+
+    def setUp(self):
+        super().setUp()
+        from app.fakeclaude import FakeClaude
+        self.claude = FakeClaude()
+        self.approve(self.EMAIL)
+        self.agree(self.EMAIL)
+        self.post("/profile", self.EMAIL, {"master_text": MASTER.read_text(), "master_name": "master.md",
+                                          "name": "Nadia Hamzah", "email": "nadia@example.com", "phone": "+60 12-345 6789",
+                                          "location": "Shah Alam", "links": "", "standing_edits": ""})
+
+    def start(self, ad=None, email=None):
+        r = self.post("/generate", email or self.EMAIL, {"ad": ad or AD})
+        self.assertEqual(r.status_code, 303, r.text[:300])
+        return int(r.headers["location"].rsplit("/", 1)[1])
+
+    def drain(self):
+        """Run every queued job now, in this thread."""
+        from app import worker
+        while True:
+            with self.conn() as c:
+                job = worker.claim(c)
+            if not job:
+                return
+            worker.run_job(self.settings, self.claude, job)
+
+    def run_row(self, run_id):
+        with self.conn() as c:
+            return c.execute("select * from runs where id = %s", (run_id,)).fetchone()
+
+    def credits(self):
+        with self.conn() as c:
+            return c.execute("select coalesce(sum(delta), 0) n from credit_ledger").fetchone()["n"]
+
+
+AD = """Operations Analyst (Last-Mile Delivery)
+FreshRoute Sdn Bhd, Shah Alam, Selangor. Full time.
+
+About us
+FreshRoute delivers groceries to 40,000 homes across the Klang Valley every week. We're growing fast, and our on-time rate isn't keeping up.
+
+The role
+Right now we need someone who can find out why 1 in 5 deliveries miss their slot, and fix it.
+
+What we're looking for
+- Route optimisation for three hubs
+- Strong SQL
+- Stakeholder reporting for operations and finance
+- Power BI or a similar tool
+"""

@@ -22,6 +22,25 @@ def squash(s):
     return re.sub(r"\s+", " ", s).strip().lower()
 
 
+class CannotCheck(RuntimeError):
+    pass
+
+
+def check(pdf, keywords):
+    """The same checks as the CLI, as data: {"pages", "a4", "text_ok", "keywords": {kw: bool}, "passed"}."""
+    try:
+        info = subprocess.run(["pdfinfo", str(pdf)], capture_output=True, text=True, check=True, timeout=30).stdout
+        text = squash(subprocess.run(["pdftotext", str(pdf), "-"], capture_output=True, text=True, check=True, timeout=30).stdout)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise CannotCheck(type(e).__name__) from None
+    pages = int(re.search(r"^Pages:\s+(\d+)", info, re.M).group(1))
+    a4 = "A4" in re.search(r"^Page size:\s+(.*)$", info, re.M).group(1)
+    found = {kw: squash(kw) in text for kw in keywords}
+    out = {"pages": pages, "a4": a4, "text_ok": len(text) >= 200, "keywords": found}
+    out["passed"] = pages == 2 and a4 and out["text_ok"] and all(found.values())
+    return out
+
+
 def main():
     if len(sys.argv) < 3:
         print(__doc__)
@@ -50,4 +69,5 @@ def main():
     sys.exit(1 if failed else 0)
 
 
-main()
+if __name__ == "__main__":
+    main()

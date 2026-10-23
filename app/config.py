@@ -1,5 +1,6 @@
 """Settings from the environment. Secrets come from .env (0600) on sk24, never from git."""
 import os
+from pathlib import Path
 from dataclasses import dataclass
 
 
@@ -18,6 +19,8 @@ class Settings:
     access_certs_url: str   # the team's signing keys; a file:// URL is allowed in dev only
     app_origin: str         # e.g. "https://cvwrite3.puascari.com"; POSTs must come from here
     wave2_cap: int = 50
+    data_dir: str = str(Path(__file__).resolve().parent.parent / "data")  # PDFs live under data/pdfs/
+    claude: str = "real"    # "fake" (dev and tests only) answers without calling Claude
 
     @property
     def access_issuer(self):
@@ -41,6 +44,9 @@ def load(environ=os.environ):
     secret = need("CVWRITE_SECRET_KEY")
     if len(secret) < 32:
         raise ConfigError("CVWRITE_SECRET_KEY must be at least 32 characters")
+    claude = environ.get("CVWRITE_CLAUDE", "real").strip()
+    if claude not in ("real", "fake") or (claude == "fake" and env == "prod"):
+        raise ConfigError("CVWRITE_CLAUDE must be real in prod (fake is for dev only)")
     return Settings(
         env=env,
         database_url=need("CVWRITE_DATABASE_URL"),
@@ -50,4 +56,6 @@ def load(environ=os.environ):
         access_aud=need("CVWRITE_ACCESS_AUD"),
         access_certs_url=certs,
         app_origin=need("CVWRITE_APP_ORIGIN").rstrip("/"),
+        data_dir=environ.get("CVWRITE_DATA_DIR", "").strip() or Settings.data_dir,
+        claude=claude,
     )

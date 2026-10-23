@@ -1,0 +1,54 @@
+{% extends "base.html" %}{% set nav = 'profile' %}
+{% block title %}Your master CV{% endblock %}
+{% block content %}
+<p class="eyebrow">Profile</p>
+<h1 class="title">Your master CV</h1>
+<p class="lede">One file with everything you've done. We write each new CV from it.</p>
+{% if saved %}<div class="alert alert-ok" role="status">Saved. Changes take effect at once.</div>{% endif %}
+{% if error %}<div class="alert alert-bad" role="alert">{{ error }}</div>{% endif %}
+<div class="alert alert-warn">Don't include your IC number, religion or health details. A CV doesn't need them.</div>
+
+<form class="card stack" method="post" action="/profile/upload" enctype="multipart/form-data">
+  <input type="hidden" name="csrf" value="{{ u.csrf }}">
+  <h2>1. Upload</h2>
+  <label class="drop">
+    <input type="file" name="file" accept=".docx,.pdf,.md,.txt" required>
+    <span class="drop-t">Choose a file</span>
+    <span class="drop-s">.docx, .pdf, .md or .txt, up to 2 MB</span>
+  </label>
+  <button type="submit" class="btn btn-ghost">Read this file</button>
+</form>
+
+<form class="stack" method="post" action="/profile">
+  <input type="hidden" name="csrf" value="{{ u.csrf }}">
+  <input type="hidden" name="master_name" value="{{ filename }}">
+  <div class="card stack">
+    <h2>2. Check what we read</h2>
+    {% if unsaved %}<div class="alert alert-info">We read <b>{{ filename }}</b>. Check the text below, then save. Nothing is saved yet.</div>{% endif %}
+    <p class="hint">We'll work from this text. Fix anything that's missing or garbled. Text in tables and text boxes is the usual problem.</p>
+    <textarea name="master_text" rows="14" spellcheck="false" placeholder="Your CV text appears here after you upload it.">{{ text }}</textarea>
+    {% if ic_hits %}
+    <div class="alert alert-bad" role="alert"><b>This looks like an IC number.</b> Please remove it before saving. Nothing has been sent to the AI.
+      <ul>{% for line, masked in ic_hits %}<li>Line {{ line }}: {{ masked }}</li>{% endfor %}</ul></div>
+    {% endif %}
+    {% if text %}<p class="meta">{{ words }} words read.</p>{% endif %}
+  </div>
+  <div class="card stack">
+    <h2>3. Contact details</h2>
+    <p class="hint">We add these to each CV after it's written. They're never sent to the AI.</p>
+    <div class="contact-grid">
+      <label class="field"><span>Full name</span><input type="text" name="name" value="{{ fields.name }}" maxlength="120" autocomplete="name"></label>
+      <label class="field"><span>Email</span><input type="email" name="email" value="{{ fields.email }}" maxlength="200" autocomplete="email"></label>
+      <label class="field"><span>Phone</span><input type="tel" name="phone" value="{{ fields.phone }}" maxlength="60" autocomplete="tel"></label>
+      <label class="field"><span>City</span><input type="text" name="location" value="{{ fields.location }}" maxlength="120"></label>
+      <label class="field"><span>Links <span class="opt">optional</span></span><input type="text" name="links" value="{{ fields.links }}" maxlength="300" placeholder="linkedin.com/in/…"></label>
+    </div>
+  </div>
+  <div class="card stack">
+    <h2>4. Standing edits <span class="opt">optional</span></h2>
+    <p class="hint">Rules for every CV we write for you.</p>
+    <textarea name="standing_edits" rows="3" maxlength="2000" placeholder="For example: call me a supply chain analyst, never a logistics officer.">{{ fields.standing_edits }}</textarea>
+  </div>
+  <div class="row act"><button type="submit" class="btn btn-primary"{% if ic_hits %} disabled{% endif %}>Save profile</button></div>
+</form>
+{% endblock %}

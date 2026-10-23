@@ -13,12 +13,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, db, notices
+from . import access, auth, config, db, notices, pause, routes_cv
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.3.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -73,6 +73,9 @@ def create_app(settings=None, verifier=None):
         return db.connect(settings.database_url)
 
     def render(request, name, status=200, **ctx):
+        if ctx.get("u") and "banner" not in ctx:
+            with conn() as c:
+                ctx["banner"] = pause.banner(pause.current_with_age(c))
         return templates.TemplateResponse(request, name, {"app_version": APP_VERSION, **ctx}, status_code=status)
 
     def error(request, status, title, message):
@@ -108,12 +111,6 @@ def create_app(settings=None, verifier=None):
             raise error(request, 403, "That didn't work", "The form expired or came from somewhere else. Go back, reload the page and try again.")
 
     # ---- user pages ------------------------------------------------------------
-    @app.get("/", response_class=HTMLResponse)
-    def home(request: Request):
-        with conn() as c:
-            u = user(request, c)
-        return render(request, "home.html", u=u)
-
     @app.get("/request", response_class=HTMLResponse)
     def request_page(request: Request):
         email = who(request)
@@ -191,7 +188,7 @@ def create_app(settings=None, verifier=None):
         o = owner(request)
         with conn() as c:
             ctx = {"requests": access.pending_requests(c), "wave2": access.wave2_on(c),
-                   "users": access.user_count(c), "cap": settings.wave2_cap}
+                   "users": access.user_count(c), "cap": settings.wave2_cap, **admin_health(c)}
         return render(request, "admin.html", o=o, **ctx)
 
     @app.post("/admin/requests/{request_id}/{decision}")
@@ -211,6 +208,10 @@ def create_app(settings=None, verifier=None):
         with conn() as c:
             access.set_wave2(c, on == "yes")
         return RedirectResponse("/admin", 303)
+
+    from types import SimpleNamespace
+    admin_health = routes_cv.register(app, SimpleNamespace(
+        conn=conn, render=render, user=user, owner=owner, check_post=check_post, error=error, settings=settings))
 
     if settings.env == "dev":
         from . import devlogin
