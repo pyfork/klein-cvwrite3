@@ -78,8 +78,24 @@ def _render_and_check(conn, settings, run, job, md, keywords):
     except rendering.RenderFailed as e:
         _step(conn, run["id"], job["id"], "check", t0, "error", error_class=e.kind)
         return None, None
-    _step(conn, run["id"], job["id"], "check", t0, "ok" if result["passed"] else "fail")
+    why = None if result["passed"] else ",".join(
+        [f"pages_{result['pages']}"] * (result["pages"] != 2) + ["not_a4"] * (not result["a4"])
+        + [f"keywords_missing_{sum(not v for v in result['keywords'].values())}"] * (not all(result["keywords"].values())))
+    _step(conn, run["id"], job["id"], "check", t0, "ok" if result["passed"] else "fail", error_class=why)
     return tmp, result
+
+
+def keyword_status(top, reported):
+    """{keyword: backed|bridged|missing} for each top-3 keyword. Anything not reported counts as backed,
+    so a keyword is only ever let off the check when call B says it's missing."""
+    said = {str(k.get("keyword", "")).strip().lower(): k.get("status") for k in reported if isinstance(k, dict)}
+    return {kw: said.get(kw.lower()) if said.get(kw.lower()) in ("backed", "bridged", "missing") else "backed" for kw in top}
+
+
+def required(run):
+    """The keywords the check requires: backed and bridged. Missing ones only warn."""
+    status = run.get("keyword_status") or {}
+    return [kw for kw in run["ad_read"]["keywords_top"] if status.get(kw, "backed") != "missing"]
 
 
 def _pre_render(draft):
@@ -133,8 +149,10 @@ def generate(conn, settings, claude, job):
         r = _call(conn, step, lambda: claude.write_cv(claude_mod.write_message(masked, prof["standing_edits"], run["ad_text"], read, feedback)), run, job)
         draft = str(r.data.get("cv_markdown", ""))
         gaps = [str(g)[:200] for g in r.data.get("gaps", [])][:8]
-        conn.execute("update runs set draft_md = %s, gaps = %s, drafts = drafts + 1 where id = %s", (draft, json.dumps(gaps), run["id"]))
-        run["draft_md"], run["drafts"] = draft, run["drafts"] + 1
+        status = keyword_status(read["keywords_top"], r.data.get("keyword_status", []))
+        conn.execute("update runs set draft_md = %s, gaps = %s, keyword_status = %s, drafts = drafts + 1 where id = %s",
+                     (draft, json.dumps(gaps), json.dumps(status), run["id"]))
+        run["draft_md"], run["drafts"], run["keyword_status"] = draft, run["drafts"] + 1, status
 
     if run["draft_md"] is None:
         if paused:
@@ -152,7 +170,7 @@ def generate(conn, settings, claude, job):
             except contact_mod.MergeError as e:
                 problem = str(e)
             else:
-                pdf, check = _render_and_check(conn, settings, run, job, md, read["keywords_top"])
+                pdf, check = _render_and_check(conn, settings, run, job, md, required(run))
                 if check is None:
                     conn.execute("update runs set failure = 'render_failed' where id = %s", (run["id"],))
                     pause.after_render_failure(conn)
@@ -201,8 +219,7 @@ def rerender(conn, settings, claude, job):
     if not ok:
         raise Stop("format_failed", "We couldn't format this. Please check your headings. Your text is kept as you wrote it, and this didn't use a re-render.")
     md = contact_mod.merge(new_md, profile.contact(prof))
-    keywords = run["ad_read"]["keywords_top"]
-    pdf, check = _render_and_check(conn, settings, run, job, md, keywords)
+    pdf, check = _render_and_check(conn, settings, run, job, md, required(run))
     if check is None:
         raise Stop("render_failed", "We couldn't turn this into a PDF. Your text is kept, and this didn't use a re-render.")
     if check["pages"] != 2 or not check["a4"]:

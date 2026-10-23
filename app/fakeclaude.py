@@ -63,7 +63,13 @@ class FakeClaude:
                 f"- **Extra {i}:** a long line that pushes the CV onto a third page, repeated to fill the space." for i in range(60)), 1)
         if mode == "longsummary":
             md = md.replace(summary, summary + " " + "More words to run the summary well past its limit." * 3)
-        return Result({"cv_markdown": md, "gaps": ["The ad asks for Power BI; the master CV shows another tool."]},
+        status = [{"keyword": k, "status": "backed"} for k in keywords[:3]]
+        if mode == "missingkw" and keywords:
+            # The last top keyword isn't in the master CV: leave it out and say so.
+            md = md.replace(", " + keywords[2], "").replace(keywords[2], "") if len(keywords) > 2 else md
+            status[-1]["status"] = "missing"
+        return Result({"cv_markdown": md, "keyword_status": status,
+                       "gaps": ["The ad asks for Power BI; the master CV shows another tool."]},
                       OPUS, 6200, 3100, "req_fake_b")
 
     def reformat(self, user_message):

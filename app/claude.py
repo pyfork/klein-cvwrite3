@@ -41,9 +41,17 @@ def cost(model, input_tokens, output_tokens):
 
 
 WRITE_SCHEMA = {
-    "type": "object", "additionalProperties": False, "required": ["cv_markdown", "gaps"],
+    "type": "object", "additionalProperties": False, "required": ["cv_markdown", "keyword_status", "gaps"],
     "properties": {
         "cv_markdown": {"type": "string"},
+        "keyword_status": {
+            "type": "array",
+            "description": "one entry per top-3 keyword: backed (the master CV shows it), bridged (an adjacent skill of the same kind, named honestly) or missing (nothing related; left out)",
+            "items": {
+                "type": "object", "additionalProperties": False, "required": ["keyword", "status"],
+                "properties": {"keyword": {"type": "string"}, "status": {"type": "string", "enum": ["backed", "bridged", "missing"]}},
+            },
+        },
         "gaps": {"type": "array", "items": {"type": "string"},
                  "description": "what the ad asks for that the master CV can't show, one line each"},
     },
@@ -68,11 +76,8 @@ class Claude:
                       messages=[{"role": "user", "content": user}],
                       output_config={"effort": EFFORT[step], "format": {"type": "json_schema", "schema": schema}})
         try:
-            if model == OPUS:
-                # Refusal fallbacks: a declined request is re-run on another model inside the same call.
-                r = self.client.beta.messages.create(betas=["server-side-fallback-2026-07-01"], fallbacks="default", **kwargs)
-            else:
-                r = self.client.messages.create(**kwargs)
+            # No refusal fallback (owner, 2026-10-23): only Opus and Haiku ever run. A refusal fails the run, no credit used.
+            r = self.client.messages.create(**kwargs)
         except a.RateLimitError:
             raise ClaudeError("rate_limited") from None
         except a.APITimeoutError:
