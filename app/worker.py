@@ -121,7 +121,7 @@ def serve(settings, claude=None, stop=None, poll_s=1.0):
                     health.evaluate_degraded(conn)
                 if time.monotonic() - last_daily > 86400:
                     last_daily = time.monotonic()
-                    health.retention(conn)
+                    health.retention(conn, settings.data_dir)
                 if time.monotonic() - last_hourly > 3600:
                     last_hourly = time.monotonic()
                     if due_test_render(conn):

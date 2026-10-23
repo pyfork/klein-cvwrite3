@@ -99,7 +99,7 @@
       <tr><td><code>{{ x.ref }}</code></td><td>{{ x.who }}</td><td>RM{{ '%.2f'|format(x.amount_rm) }} ({{ x.credits }})</td>
         <td>{% if x.status == 'pending' %}<span class="badge badge-wait">{{ 'Says paid' if x.paid_at else 'Not paid yet' }}</span>{% if x.paid_at %}<span class="why muted">“I've paid” {{ x.paid_at.strftime('%d %b, %H:%M') }}</span>{% endif %}
           {% elif x.status == 'approved' %}<span class="badge badge-ok">Approved</span>{% if x.paid_at %}<span class="why muted">{{ ((x.decided_at - x.paid_at).total_seconds() / 3600)|round(1) }} h after “I've paid”</span>{% endif %}
-          {% else %}<span class="badge badge-bad">Rejected</span><span class="why">{{ x.reason }}</span>{% endif %}</td>
+          {% else %}<span class="badge badge-bad">Rejected</span><span class="why">{{ x.reason }}</span>{% endif %}{% if x.flag %}<span class="why">{{ x.flag }}</span>{% endif %}</td>
         <td class="acts">{% if x.status == 'pending' %}
           <form method="post" action="/admin/orders/{{ x.id }}/approve" style="display:inline"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-primary btn-sm">Approve</button></form>
           <form method="post" action="/admin/orders/{{ x.id }}/reject"><input type="hidden" name="csrf" value="{{ o.csrf }}">
@@ -118,7 +118,7 @@
     <thead><tr><th scope="col">Who</th><th scope="col">Balance</th><th scope="col">Refundable</th><th scope="col"><span class="sr">Record a refund</span></th></tr></thead>
     <tbody>
     {% for a in accounts %}
-      <tr><td>{{ a.who }}</td><td>{{ a.balance }}</td><td>{% if a.refundable_n %}{{ a.refundable_n }} = RM{{ '%.2f'|format(a.refundable_rm) }}{% else %}–{% endif %}</td>
+      <tr><td>{{ a.who }}{% if a.refund_requested_rm %}<span class="why">Asked for a refund of RM{{ '%.2f'|format(a.refund_requested_rm) }} before deleting</span>{% endif %}</td><td>{{ a.balance }}</td><td>{% if a.refundable_n %}{{ a.refundable_n }} = RM{{ '%.2f'|format(a.refundable_rm) }}{% else %}–{% endif %}</td>
         <td class="acts">{% if a.refundable_n %}<form method="post" action="/admin/accounts/{{ a.id }}/refund">
           <input type="hidden" name="csrf" value="{{ o.csrf }}"><input type="number" name="n" min="1" max="{{ a.refundable_n }}" value="{{ a.refundable_n }}" aria-label="Credits refunded">
           <button class="btn btn-ghost btn-sm">Record refund</button></form>{% endif %}</td></tr>

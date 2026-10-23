@@ -25,6 +25,7 @@
     <a href="/profile"{% if nav == 'profile' %} aria-current="page"{% endif %}><i>1</i><span>Profile</span></a>
     <a href="/generate"{% if nav == 'generate' %} aria-current="page"{% endif %}><i>2</i><span>Generate</span></a>
     <a href="/credits"{% if nav == 'credits' %} aria-current="page"{% endif %}><i>3</i><span>Credits</span></a>
+    <a href="/account"{% if nav == 'account' %} aria-current="page"{% endif %}><i>4</i><span>Account</span></a>
     {% endif %}
     {% if (u and u.is_owner) or o %}<a href="/admin" class="nav-admin"{% if nav == 'admin' %} aria-current="page"{% endif %}><i>A</i><span>Admin</span></a>{% endif %}
   </nav>
@@ -39,6 +40,7 @@
 <footer class="foot">
   {% if u %}<a href="/report?page={{ request.url.path|urlencode }}">Report a problem</a><a href="/reports">Your reports</a>{% endif %}
   <a href="/privacy">Privacy notice</a>
+  <a href="/terms">Terms</a>
   <span>v{{ app_version }}</span>
 </footer>
 </div>

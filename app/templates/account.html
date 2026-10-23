@@ -1,0 +1,52 @@
+{% extends "base.html" %}{% set nav = 'account' %}
+{% block title %}Your account{% endblock %}
+{% block content %}
+<p class="eyebrow">Account</p>
+<h1 class="title">Your account</h1>
+<p class="lede">Signed in as <b>{{ u.email }}</b>.</p>
+
+<div class="card stack">
+  <h2>Privacy consent</h2>
+  {% if current %}
+  <p>You agreed to <b>Privacy notice v{{ current.notice_version }}</b> on <b>{{ current.created_at.strftime('%-d %b %Y') }}</b> ({{ 'English' if current.lang == 'en' else 'Bahasa Melayu' }}). <a href="/privacy/v{{ current.notice_version }}">View v{{ current.notice_version }}</a></p>
+  <p class="meta">{{ 'You also agreed to the sensitive-data line.' if current.sensitive else "You didn't tick the sensitive-data line." }}</p>
+  {% if newer_minor %}<div class="alert alert-info">The current notice is v{{ latest.version }}. Only the wording changed. <a href="/privacy/changes">What changed</a></div>{% endif %}
+  {% if consents|length > 1 %}<details class="older"><summary>Earlier consents</summary><ul>{% for c in consents[1:] %}<li>v{{ c.notice_version }} on {{ c.created_at.strftime('%-d %b %Y') }}</li>{% endfor %}</ul></details>{% endif %}
+  {% endif %}
+</div>
+
+<div class="card stack">
+  <h2>Your data</h2>
+  <div class="action-row">
+    <div><b>Download my data</b><p class="hint">A zip of your profile, master CV, CVs (MD, TXT and PDF), credits and orders, consent records and problem reports.</p></div>
+    <a class="btn btn-ghost" href="/account/download">Download</a>
+  </div>
+  <div class="action-row">
+    <div><b>Correct my data</b><p class="hint">Change your master CV, contact details or standing edits. Changes take effect at once.</p></div>
+    <a class="btn btn-ghost" href="/profile">Go to Profile</a>
+  </div>
+  <div class="action-row">
+    <div><b>Your problem reports</b><p class="hint">{{ reports.n }} sent{% if reports.answered %}, {{ reports.answered }} answered{% endif %}. For any other request, email [request email]. We reply within 21 days.</p></div>
+    <a class="btn btn-ghost" href="/reports">See reports</a>
+  </div>
+</div>
+
+<div class="card stack danger-zone" id="delete">
+  <h2>Delete my account</h2>
+  <p>This also withdraws your consent. It can't be undone.</p>
+  <div class="two">
+    <div class="stack"><h3 class="kicker">Deleted now</h3>
+      <ul><li>Your profile, master CV and contact details</li><li>Every CV, ad and edit, and the PDFs</li><li>Your problem reports</li></ul></div>
+    <div class="stack"><h3 class="kicker">Kept, with no CV content</h3>
+      <ul><li>Orders and credit records, for accounting, under a random tag instead of your name</li><li>Your consent record (email, version, date) for 12 months. It's proof you agreed, and it stops repeat free credits.</li><li>Backups clear within 14 days</li></ul></div>
+  </div>
+  <form class="stack" method="post" action="/account/delete">
+    <input type="hidden" name="csrf" value="{{ u.csrf }}">
+    {% if refundable_n %}
+    <label class="check"><input type="checkbox" name="refund" value="yes" checked><span>Refund my {{ refundable_n }} unused paid {{ 'credit' if refundable_n == 1 else 'credits' }} (RM{{ '%.2f'|format(refundable_rm) }}) to the bank account that paid.</span></label>
+    {% endif %}
+    <label class="field"><span>Type DELETE to confirm</span><input type="text" name="confirm" autocomplete="off" spellcheck="false" required pattern="DELETE"></label>
+    <button type="submit" class="btn btn-danger">Delete my account</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Account deleted{% endblock %}
+{% block content %}
+<p class="eyebrow">Account deleted</p>
+<h1 class="title">Your account is deleted</h1>
+<p class="lede">We've deleted your profile, CVs, ads, PDFs and problem reports.</p>
+<div class="card stack">
+  <p>We keep your orders and credit records for accounting, under a random tag and with no CV content. Your consent record is deleted after 12 months. Backups clear within 14 days.</p>
+  {% if refund %}<p><span class="badge badge-wait">Refund requested</span> RM{{ refund }} goes back to the bank account that paid. Keep your order references in case you need to ask about it.</p>{% endif %}
+  <p class="meta">Questions? Email [request email].</p>
+</div>
+{% endblock %}
