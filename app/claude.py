@@ -68,11 +68,8 @@ class Claude:
                       messages=[{"role": "user", "content": user}],
                       output_config={"effort": EFFORT[step], "format": {"type": "json_schema", "schema": schema}})
         try:
-            if model == OPUS:
-                # Refusal fallbacks: a declined request is re-run on another model inside the same call.
-                r = self.client.beta.messages.create(betas=["server-side-fallback-2026-07-01"], fallbacks="default", **kwargs)
-            else:
-                r = self.client.messages.create(**kwargs)
+            # No refusal fallback (owner, 2026-10-23): only Opus and Haiku ever run. A refusal fails the run, no credit used.
+            r = self.client.messages.create(**kwargs)
         except a.RateLimitError:
             raise ClaudeError("rate_limited") from None
         except a.APITimeoutError:
