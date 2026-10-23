@@ -7,6 +7,23 @@
 <p class="balance-big"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span>
   {% if u.expires %}<span class="meta">The earliest expire on {{ u.expires.strftime('%-d %b %Y') }}.</span>{% endif %}</p>
 {% include "_packs.html" %}
+{% if orders %}
+<div class="card stack">
+  <h2>Your orders</h2>
+  <table class="tbl">
+    <thead><tr><th scope="col">Reference</th><th scope="col">Pack</th><th scope="col">Status</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr><td><a href="/orders/{{ o.ref }}"><code>{{ o.ref }}</code></a></td><td>{{ o.credits }} for RM{{ '%.0f'|format(o.amount_rm) }}</td>
+        <td>{% if o.status == 'approved' %}<span class="badge badge-ok">Approved, +{{ o.credits }} credits</span>
+          {% elif o.status == 'rejected' %}<span class="badge badge-bad">Rejected</span><span class="why">{{ o.reason }}</span>
+          {% elif o.paid_at %}<span class="badge badge-wait">Pending check</span>
+          {% else %}<span class="badge badge-wait">Waiting for payment</span>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
 {% if grants %}
 <div class="card stack">
   <h2>Where your credits came from</h2>

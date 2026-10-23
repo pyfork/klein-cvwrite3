@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Red
 
 from render import contact as contact_mod
 
-from . import credits, cvtext, ic, pause, pipeline, profile, rendering, upload
+from . import credits, cvtext, ic, orders, pause, pipeline, profile, rendering, upload
 
 STEP_NAMES = {"call_a": "Reading the ad", "call_b": "Writing your CV", "retry": "Fixing the draft",
               "render": "Making the PDF", "check": "Checking: 2 pages, A4, keywords",
@@ -84,7 +84,8 @@ def register(app, h):
             blocked = "out_of_credits"
         elif profile.ready(p):
             blocked = profile.ready(p)
-        return h.render(request, "generate.html", status=status, u=u, ad=ad, error=error, blocked=blocked, runs=runs)
+        return h.render(request, "generate.html", status=status, u=u, ad=ad, error=error, blocked=blocked, runs=runs,
+                        buying_closed=orders.buying_closed(pause.current_with_age(c)))
 
     @app.get("/")
     def home(request: Request):
@@ -225,8 +226,10 @@ def register(app, h):
             spends = c.execute(
                 "select l.run_id, l.created_at, r.ad_read->>'job_title' as title from credit_ledger l join runs r on r.id = l.run_id "
                 "where l.account_id = %s and l.kind = 'spend' order by l.created_at desc limit 50", (u["account_id"],)).fetchall()
+            my_orders = orders.for_account(c, u["account_id"])
+            closed = orders.buying_closed(pause.current_with_age(c))
         return h.render(request, "credits.html", u=u, grants=s.grants, refundable_n=s.refundable_n, refundable_rm=s.refundable_rm,
-                        spends=spends, now=datetime.now(timezone.utc))
+                        spends=spends, now=datetime.now(timezone.utc), orders=my_orders, buying_closed=closed)
 
     # ---- admin: the pause ------------------------------------------------------------------
     @app.post("/admin/pause")

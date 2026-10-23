@@ -1,11 +1,16 @@
-{# The two packs. Paying for one (DuitNow QR, the order reference) comes in chunk 5. #}
+{# The two packs. Choosing one creates an order and opens its pay screen. #}
+{% if buying_closed %}
+<div class="alert alert-warn" role="status">Buying is paused until generating is back. Credits you already have are safe.</div>
+{% endif %}
 <div class="packs">
-  <div class="pack">
-    <span class="pack-n">5 CVs</span><span class="pack-p">RM10</span><span class="pack-u">RM2.00 each</span>
-  </div>
-  <div class="pack pack-best">
-    <span class="pack-tag">Best value</span>
-    <span class="pack-n">20 CVs</span><span class="pack-p">RM30</span><span class="pack-u">RM1.50 each</span>
-  </div>
+  <form method="post" action="/credits/buy"><input type="hidden" name="csrf" value="{{ u.csrf }}"><input type="hidden" name="pack" value="5">
+    <button type="submit" class="pack"{% if buying_closed %} disabled{% endif %}>
+      <span class="pack-n">5 CVs</span><span class="pack-p">RM10</span><span class="pack-u">RM2.00 each</span>
+    </button></form>
+  <form method="post" action="/credits/buy"><input type="hidden" name="csrf" value="{{ u.csrf }}"><input type="hidden" name="pack" value="20">
+    <button type="submit" class="pack pack-best"{% if buying_closed %} disabled{% endif %}>
+      <span class="pack-tag">Best value</span>
+      <span class="pack-n">20 CVs</span><span class="pack-p">RM30</span><span class="pack-u">RM1.50 each</span>
+    </button></form>
 </div>
-<p class="hint">Buying opens soon. Credits last 12 months from the day we add them, and unused paid credits can be refunded.</p>
+<p class="hint">You pay by DuitNow QR. Credits last 12 months from the day we add them, and unused paid credits can be refunded.</p>

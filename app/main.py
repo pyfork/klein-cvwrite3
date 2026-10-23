@@ -13,12 +13,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, credits, db, notices, pause, routes_cv
+from . import access, auth, config, credits, db, notices, orders, pause, routes_cv, routes_pay
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.4.0"
+APP_VERSION = "0.5.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -189,7 +189,7 @@ def create_app(settings=None, verifier=None):
         o = owner(request)
         with conn() as c:
             ctx = {"requests": access.pending_requests(c), "wave2": access.wave2_on(c),
-                   "users": access.user_count(c), "cap": settings.wave2_cap, **admin_health(c)}
+                   "users": access.user_count(c), "cap": settings.wave2_cap, "orders": orders.for_admin(c), **admin_health(c)}
         return render(request, "admin.html", o=o, **ctx)
 
     @app.post("/admin/requests/{request_id}/{decision}")
@@ -211,8 +211,9 @@ def create_app(settings=None, verifier=None):
         return RedirectResponse("/admin", 303)
 
     from types import SimpleNamespace
-    admin_health = routes_cv.register(app, SimpleNamespace(
-        conn=conn, render=render, user=user, owner=owner, check_post=check_post, error=error, settings=settings))
+    helpers = SimpleNamespace(conn=conn, render=render, user=user, owner=owner, check_post=check_post, error=error, settings=settings)
+    admin_health = routes_cv.register(app, helpers)
+    routes_pay.register(app, helpers)
 
     if settings.env == "dev":
         from . import devlogin
