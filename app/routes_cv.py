@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Red
 
 from render import contact as contact_mod
 
-from . import credits, cvtext, ic, orders, pause, pipeline, profile, rendering, upload
+from . import caps, credits, cvtext, ic, orders, pause, pipeline, profile, rendering, upload
 
 STEP_NAMES = {"call_a": "Reading the ad", "call_b": "Writing your CV", "retry": "Fixing the draft",
               "render": "Making the PDF", "check": "Checking: 2 pages, A4, keywords",
@@ -22,6 +22,12 @@ def register(app, h):
         if not run:
             raise h.error(request, 404, "Not found", "There's no CV with that number in your account.")
         return run
+
+    def generating(c, u):
+        return c.execute("select count(*) n from runs where account_id = %s and status = 'generating'", (u["account_id"],)).fetchone()["n"]
+
+    def capped(c, u):
+        return caps.generation_blocked(c, u["account_id"], reserved=generating(c, u))
 
     def available(c, u):
         """Credits not already promised to a CV that's still generating, read fresh from the ledger."""
@@ -84,6 +90,8 @@ def register(app, h):
             blocked = "out_of_credits"
         elif profile.ready(p):
             blocked = profile.ready(p)
+        elif capped(c, u):
+            blocked = capped(c, u)
         return h.render(request, "generate.html", status=status, u=u, ad=ad, error=error, blocked=blocked, runs=runs,
                         buying_closed=orders.buying_closed(pause.current_with_age(c)))
 
@@ -111,7 +119,7 @@ def register(app, h):
                 return generate_page(request, c, u, 400, ad, "That's longer than any job ad we've seen. Paste just the ad.")
             with c.transaction():
                 c.execute("select pg_advisory_xact_lock(%s)", (u["account_id"],))  # one balance check at a time per user
-                if pause.current(c) or available(c, u) < 1 or profile.ready(profile.get(c, u["account_id"])):
+                if pause.current(c) or available(c, u) < 1 or profile.ready(profile.get(c, u["account_id"])) or capped(c, u):
                     return generate_page(request, c, u, 409, ad)
                 run_id = c.execute("insert into runs (account_id, ad_text) values (%s, %s) returning id", (u["account_id"], ad)).fetchone()["id"]
                 c.execute("insert into jobs (run_id, kind) values (%s, 'generate')", (run_id,))
@@ -119,7 +127,7 @@ def register(app, h):
 
     # ---- the run: progress, then the result ------------------------------------------
     @app.get("/runs/{run_id}", response_class=HTMLResponse)
-    def run_page(request: Request, run_id: int):
+    def run_page(request: Request, run_id: int, feedback: int = 0):
         with h.conn() as c:
             u = h.user(request, c)
             run = own_run(request, c, u, run_id)
@@ -129,7 +137,10 @@ def register(app, h):
             read = run["ad_read"] or {}
             places = cvtext.keyword_places(run["draft_md"] or "", read.get("keywords_top", []) + read.get("keywords_secondary", [])[:5]) if run["status"] == "passed" else {}
             kw_status = run["keyword_status"] or {}
+            gave = feedback or c.execute("select 1 from feedback where run_id = %s", (run_id,)).fetchone() is not None
+            from .routes_ops import REASONS
             return h.render(request, "run.html", u=u, run=run, job=job, read=read, places=places, kw_status=kw_status,
+                            feedback=gave, reasons=REASONS,
                             lacking=[kw for kw in read.get("keywords_top", []) if kw_status.get(kw) in ("bridged", "missing")],
                             steps=[{"name": STEP_NAMES[s["step"]], **s} for s in steps], gaps=run["gaps"] or [],
                             refresh=run["status"] == "generating" and job and job["status"] in ("queued", "running"))
@@ -210,6 +221,8 @@ def register(app, h):
                 return edit_page(request, c, u, run, 409, text, "Re-rendering is paused. Your text is kept, and this didn't use a re-render.")
             if run["rerenders_used"] >= pipeline.MAX_RERENDERS:
                 return edit_page(request, c, u, run, 409, text, "You've used the 3 free re-renders for this CV. Start a new CV for 1 credit.")
+            if caps.rerender_blocked(c, u["account_id"]):
+                return edit_page(request, c, u, run, 429, text, caps.rerender_blocked(c, u["account_id"]))
             with c.transaction():
                 if c.execute("select 1 from jobs where run_id = %s and kind = 'rerender' and status in ('queued', 'running') for update", (run_id,)).fetchone():
                     return edit_page(request, c, u, run, 409, text, "A re-render is already running for this CV. Wait for it to finish.")

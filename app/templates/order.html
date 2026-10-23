@@ -20,14 +20,14 @@
     <form method="post" action="/orders/{{ order.ref }}/cancel"><input type="hidden" name="csrf" value="{{ u.csrf }}"><button class="btn btn-ghost">Cancel order</button></form>
   </div>
   {% if placeholder %}<p class="note">Placeholder QR: the real payment code isn't set up yet. Don't pay this one.</p>{% endif %}
-  <p class="hint">We add credits only after we see the payment in the bank. Credits last 12 months from the day we add them.</p>
+  <p class="hint">We add credits only after we see the payment in the bank. Credits last 12 months from the day we add them. <a href="/report?category=paid&order={{ order.ref }}&page=/orders/{{ order.ref }}">Report a problem</a></p>
 </div>
 {% elif order.status == 'pending' %}
 <h1 class="title">Payment pending</h1>
 <div class="card stack">
   <p><span class="badge badge-wait">Pending</span> <b>{{ order.ref }}</b> · {{ order.credits }} credits · RM{{ '%.2f'|format(order.amount_rm) }}</p>
   <p>We check each payment in the bank by hand. Your credits will show here once we've seen it. You don't need to do anything else.</p>
-  <p class="meta">Paid, but still no credits after a day? Email [request email] with your reference.</p>
+  <p class="meta">Paid, but still no credits after a day? <a href="/report?category=paid&order={{ order.ref }}&page=/orders/{{ order.ref }}">Report a problem</a>.</p>
 </div>
 {% elif order.status == 'approved' %}
 <h1 class="title">Credits added</h1>

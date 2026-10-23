@@ -24,6 +24,70 @@
     {% endif %}
   </div>
 </div>
+{% set pn = panel %}
+<div class="card stack" id="health">
+  <div class="row between"><h2>Health</h2><span class="badge {{ 'badge-ok' if pn.up else 'badge-bad' }}">{{ 'Up' if pn.up else ('Down' if pn.last_check else 'No checks yet') }}</span></div>
+  {% if pn.spend >= pn.spend_warn %}<div class="alert {{ 'alert-bad' if pn.spend >= pn.spend_stop else 'alert-warn' }}">Claude spend this month: ${{ '%.2f'|format(pn.spend) }}{{ ' — free CVs are stopped' if pn.spend >= pn.spend_stop else ' — over the $' ~ pn.spend_warn ~ ' warning' }}.</div>{% endif %}
+  {% if pn.orders_waiting %}<div class="alert alert-warn">{{ pn.orders_waiting }} {{ 'order says' if pn.orders_waiting == 1 else 'orders say' }} “I've paid” more than 2 hours ago. <a href="#orders">Check the bank</a>.</div>{% endif %}
+  {% if pn.privacy_due %}<div class="alert alert-bad">{{ pn.privacy_due }} privacy {{ 'request is' if pn.privacy_due == 1 else 'requests are' }} 14+ days old (21-day promise). <a href="#reports">Reply</a>.</div>{% endif %}
+  {% for d in pn.degraded %}<div class="alert alert-warn">Degraded since {{ d.started_at.strftime('%H:%M') }}: {{ d.kind|replace('_', ' ') }} is {{ '%.2f'|format(d.value) }} against a ceiling of {{ d.ceiling }}.</div>{% endfor %}
+  <dl class="facts">
+    <div><dt>Last check</dt><dd>{% if pn.last_check %}{{ pn.last_check.checked_at.strftime('%d %b, %H:%M') }} · {{ pn.last_check.ms }} ms{% if pn.last_check.detail %} · <code>{{ pn.last_check.detail }}</code>{% endif %}{% else %}none yet (the timer comes with the deploy){% endif %}</dd></div>
+    <div><dt>Uptime</dt><dd>{% for k, v in pn.uptime.items() %}{{ k }}: {{ '%.1f'|format(v) }}%{{ ' · ' if not loop.last }}{% endfor %}</dd></div>
+    <div><dt>Claude spend this month</dt><dd>${{ '%.2f'|format(pn.spend) }} of the ${{ pn.spend_stop }} stop (warning at ${{ pn.spend_warn }})</dd></div>
+    <div><dt>Queue</dt><dd>{{ pn.queue }}</dd></div>
+    <div><dt>Errors, 24 h</dt><dd>{{ pn.errors_24h }}</dd></div>
+    <div><dt>Claude API errors, 24 h</dt><dd>{% for e in pn.claude_errors %}<code>{{ e.model }} {{ e.error_class }}</code> × {{ e.n }}{{ ' · ' if not loop.last }}{% else %}none{% endfor %}</dd></div>
+    <div><dt>Failed CVs, 24 h</dt><dd>{{ '%.0f%%'|format(pn.fail_rate_24h * 100) if pn.fail_rate_24h is not none else '–' }}</dd></div>
+    <div><dt>Incidents, 7 days</dt><dd>{% for i in pn.incidents %}{{ i.started.strftime('%d %b %H:%M') }} ({{ i.n }} min){{ ' · ' if not loop.last }}{% else %}none{% endfor %}</dd></div>
+  </dl>
+  {% if pn.steps %}
+  <table class="tbl"><thead><tr><th scope="col">Step, 7 days</th><th scope="col">p50</th><th scope="col">p95</th><th scope="col">n</th></tr></thead><tbody>
+    {% for k, v in pn.steps.items() %}<tr><td>{{ k }}</td><td>{{ '%.1f'|format(v[0]) }} s</td><td>{{ '%.1f'|format(v[1]) }} s</td><td>{{ v[2] }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% endif %}
+</div>
+<div class="card stack" id="reports">
+  <h2>Problem reports</h2>
+  {% if reports %}
+  <ul class="reports admin-reports">
+    {% for r in reports %}
+    <li class="{{ r.status }}">
+      <div class="row between"><b>{{ categories[r.category] }}</b>
+        <span>{% if r.category == 'privacy' and r.status == 'open' %}<span class="badge {{ 'badge-bad' if r.days_left <= 7 else 'badge-wait' }}">{{ r.days_left }} days left to reply</span> {% endif %}<span class="badge {{ 'badge-wait' if r.status == 'open' else 'badge-ok' }}">{{ r.status|capitalize }}</span></span></div>
+      <p class="meta">{{ r.email }} · {{ r.created_at.strftime('%d %b, %H:%M') }} · p_{{ r.id }}{% if r.run_id %} · r_{{ r.run_id }}{% endif %}{% if r.order_ref %} · order <a href="#orders">{{ r.order_ref }}</a>{% endif %}{% if r.page %} · {{ r.page }}{% endif %} · v{{ r.app_version }} · req {{ r.request_id }}</p>
+      {% if r.body %}<p>{{ r.body }}</p>{% endif %}
+      {% if r.reply %}<p class="reply"><b>Reply:</b> {{ r.reply }}</p>{% endif %}
+      <div class="row">
+        <form class="row" method="post" action="/admin/reports/{{ r.id }}/reply"><input type="hidden" name="csrf" value="{{ o.csrf }}">
+          <input type="text" name="reply" maxlength="2000" placeholder="Reply the user will see" aria-label="Reply" required><button class="btn btn-primary btn-sm">Send reply</button></form>
+        <form method="post" action="/admin/reports/{{ r.id }}/close"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-ghost btn-sm">Close</button></form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="meta">No open reports.</p>{% endif %}
+</div>
+{% set f = funnel %}
+<div class="card stack" id="funnel">
+  <h2>Funnel</h2>
+  <table class="tbl funnel"><thead><tr><th scope="col">Measure</th><th scope="col">Now</th><th scope="col">Target</th></tr></thead><tbody>
+    <tr><td>Access requests</td><td>{{ f.requests }}</td><td></td></tr>
+    <tr><td>Approved users</td><td>{{ f.approved }}</td><td></td></tr>
+    <tr><td>Used both free CVs</td><td>{{ f.both_free }}{% if f.both_free_share is not none %} ({{ '%.0f%%'|format(f.both_free_share * 100) }}){% endif %}</td><td><span class="badge {{ 'badge-ok' if f.both_free_share is not none and f.both_free_share >= f.thresholds.both_free else 'badge-off' }}">{{ '%.0f%%'|format(f.thresholds.both_free * 100) }}</span></td></tr>
+    <tr><td>Bought, of those</td><td>{{ f.buyers }}{% if f.bought_share is not none %} ({{ '%.0f%%'|format(f.bought_share * 100) }}){% endif %}</td><td><span class="badge {{ 'badge-ok' if f.bought_share is not none and f.bought_share >= f.thresholds.bought else 'badge-off' }}">{{ '%.0f%%'|format(f.thresholds.bought * 100) }}</span></td></tr>
+    <tr><td>Bought again, of buyers</td><td>{{ f.repeat }}{% if f.repeat_share is not none %} ({{ '%.0f%%'|format(f.repeat_share * 100) }}){% endif %}</td><td><span class="badge {{ 'badge-ok' if f.repeat_share is not none and f.repeat_share >= f.thresholds.repeat else 'badge-off' }}">{{ '%.0f%%'|format(f.thresholds.repeat * 100) }}</span></td></tr>
+    <tr><td>“I've paid” to approved, median</td><td>{{ '%.1f h'|format(f.median_wait_h) if f.median_wait_h is not none else '–' }}</td><td><span class="badge badge-off">under 12 h</span></td></tr>
+    <tr><td>Claude cost per CV</td><td>${{ '%.3f'|format(f.cost_per_generation_usd) }}</td><td><span class="badge badge-off">under RM1.20</span></td></tr>
+    <tr><td>Revenue against Claude spend</td><td>RM{{ '%.2f'|format(f.revenue_rm) }} / ${{ '%.2f'|format(f.spend_usd) }}</td><td></td></tr>
+    <tr><td>Packs bought</td><td>{% for p in f.packs %}{{ p.credits }}-credit: {{ p.n }}{{ ' · ' if not loop.last }}{% else %}none yet{% endfor %}</td><td></td></tr>
+    <tr><td>Re-renders per CV</td><td>{{ '%.1f'|format(f.rerenders_per_cv) }}</td><td></td></tr>
+    <tr><td>CVs edited</td><td>{{ '%.0f%%'|format(f.edited_share * 100) if f.edited_share is not none else '–' }}</td><td></td></tr>
+  </tbody></table>
+  <h3 class="kicker">“Not good” reasons ({{ f.feedback_n }})</h3>
+  {% if f.reasons %}<table class="tbl"><tbody>{% for r in f.reasons %}<tr><td>{{ reasons[r.reason] }}</td><td>{{ r.n }}{% if r.reason == 'problem' and f.passed %} ({{ '%.0f%%'|format(100 * r.n / f.passed) }} of CVs; revisit the pause over 20%){% endif %}</td></tr>{% endfor %}</tbody></table>
+  {% else %}<p class="meta">None yet.</p>{% endif %}
+</div>
 <div class="card stack" id="orders">
   <h2>Orders</h2>
   <p class="hint">Find the reference and the exact amount in the bank app first. Approve only when the money is there. “I've paid” is never proof.</p>

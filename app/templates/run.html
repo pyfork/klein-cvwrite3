@@ -22,7 +22,8 @@
   <div class="card stack">
     <h2>{{ 'We couldn\'t make a CV that passes for this ad' if run.failure == 'check_failed' else 'This CV didn\'t finish' }}</h2>
     <p>{{ job.message if job and job.message else 'No credit used.' }}</p>
-    <div class="row"><a class="btn btn-primary" href="/generate">Try again</a></div>
+    <div class="row"><a class="btn btn-primary" href="/generate">Try again</a>
+      <a class="btn btn-ghost" href="/report?category=output&run={{ run.id }}&page=/runs/{{ run.id }}">Report this problem</a></div>
     <p class="meta">Run id: r_{{ run.id }}</p>
   </div>
 
@@ -61,6 +62,18 @@
     <div class="stack"><h3 class="kicker">Gaps</h3>{% if gaps %}<ul>{% for g in gaps %}<li>{{ g }}</li>{% endfor %}</ul>{% else %}<p class="meta">None found.</p>{% endif %}</div>
     <div class="stack"><h3 class="kicker">Red flags</h3>{% if read.red_flags %}<ul>{% for f in read.red_flags %}<li>{{ f.flag }} (“{{ f.quote }}”)</li>{% endfor %}</ul>{% else %}<p class="meta">None found.</p>{% endif %}</div>
   </div>
-  <a class="btn btn-ghost" href="/generate">Write another CV</a>
+  <div class="card stack" id="feedback">
+    {% if feedback %}<p class="meta" role="status">Thanks. This helps us improve. Your CV stays as it is.</p>
+    {% else %}
+    <form class="stack" method="post" action="/runs/{{ run.id }}/feedback">
+      <input type="hidden" name="csrf" value="{{ u.csrf }}">
+      <fieldset class="reasons"><legend>Something off with this CV? What's wrong with it?</legend>
+        {% for k, label in reasons.items() %}<label class="check"><input type="radio" name="reason" value="{{ k }}" required><span>{{ label }}</span></label>{% endfor %}
+      </fieldset>
+      <button type="submit" class="btn btn-ghost btn-sm">Send</button>
+    </form>{% endif %}
+  </div>
+  <div class="row"><a class="btn btn-ghost" href="/generate">Write another CV</a>
+    <a class="meta" href="/report?category=output&run={{ run.id }}&page=/runs/{{ run.id }}">Report a problem</a></div>
 {% endif %}
 {% endblock %}
