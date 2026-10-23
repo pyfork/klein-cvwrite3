@@ -75,7 +75,7 @@ def run_job(settings, claude, job):
                 conn.execute("update runs set status = 'failed', failure = coalesce(failure, %s) where id = %s and status = 'generating'",
                              (s.outcome, job["run_id"]))
         except Exception as e:  # a bug: leave the job queued for another start; MAX_STARTS bounds it
-            log.exception("job %s crashed: %s", job["id"], type(e).__name__)
+            log.error("job %s crashed: %s\n%s", job["id"], type(e).__name__, health.frames(e))  # never log.exception: the message can hold CV text
             health.record_error(conn, e, route=f"worker:{job['kind']}", run_id=job["run_id"])
             conn.execute("update jobs set status = 'queued' where id = %s and status = 'running'", (job["id"],))
             time.sleep(2)

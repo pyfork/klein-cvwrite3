@@ -18,10 +18,14 @@ CEILINGS = {
 MIN_SAMPLES = 5   # don't call a ceiling breached on one or two runs
 
 
+def frames(exc):
+    """The last 12 frames as file:line in function. Never the message or the source line: either can hold CV text."""
+    return "\n".join(f"{Path(f.filename).name}:{f.lineno} in {f.name}" for f in traceback.extract_tb(exc.__traceback__)[-12:])
+
+
 def record_error(conn, exc, route="", run_id=None, request_id=""):
     """Error class and a traceback of file:line in function only: no messages, no locals, no content."""
-    frames = traceback.extract_tb(exc.__traceback__)
-    tb = "\n".join(f"{Path(f.filename).name}:{f.lineno} in {f.name}" for f in frames[-12:])
+    tb = frames(exc)
     try:
         conn.execute("insert into errors (error_class, route, run_id, request_id, traceback) values (%s, %s, %s, %s, %s)",
                      (type(exc).__name__, route[:200], run_id, request_id, tb))
