@@ -80,7 +80,10 @@ class Pages(AppCase):
             orders.approve(c, orders.create(c, self.acct, n)["id"])
 
     def test_balance_and_expiry_on_every_page(self):
-        expiry = (datetime.now(timezone.utc) + timedelta(days=365)).strftime("%-d %b %Y")
+        from zoneinfo import ZoneInfo
+        from app import caps
+        # the user's date, as the app shows it (Malaysia), not UTC: they differ from midnight to 08:00 MYT
+        expiry = (datetime.now(ZoneInfo(caps.TZ)) + timedelta(days=365)).strftime("%-d %b %Y")
         for path in ("/generate", "/profile", "/credits"):
             page = self.get(path, self.EMAIL).text
             self.assertIn('<span class="bal-n">2</span>', page, path)
