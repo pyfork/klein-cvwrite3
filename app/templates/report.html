@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Report a problem{% endblock %}
+{% block content %}
+<p class="eyebrow">Help</p>
+<h1 class="title">Report a problem</h1>
+<p class="lede">We read every report and reply here. We don't send emails.</p>
+<form class="card stack" method="post" action="/report">
+  <input type="hidden" name="csrf" value="{{ u.csrf }}">
+  <input type="hidden" name="run" value="{{ run }}"><input type="hidden" name="order" value="{{ order }}"><input type="hidden" name="page" value="{{ page }}">
+  <label class="field"><span>What happened?</span>
+    <select name="category" required>
+      <option value="">Choose one</option>
+      {% for k, label in categories.items() %}<option value="{{ k }}"{% if k == category %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select></label>
+  {% if paused %}<div class="alert alert-info">Generating is paused and we already know about it. You don't need to report that.</div>{% endif %}
+  <label class="field"><span>Tell us more</span>
+    <textarea name="body" rows="5" maxlength="2000" placeholder="Please don't paste your CV or IC number here."></textarea></label>
+  <p class="meta">We attach the page, the time, the CV or order reference and the app version. Never your CV, the ad or your contact details.</p>
+  <button type="submit" class="btn btn-primary">Send</button>
+</form>
+{% endblock %}

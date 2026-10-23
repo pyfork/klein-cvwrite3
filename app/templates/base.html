@@ -37,6 +37,7 @@
 </section>
 </main>
 <footer class="foot">
+  {% if u %}<a href="/report?page={{ request.url.path|urlencode }}">Report a problem</a><a href="/reports">Your reports</a>{% endif %}
   <a href="/privacy">Privacy notice</a>
   <span>v{{ app_version }}</span>
 </footer>

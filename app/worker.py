@@ -11,7 +11,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-from . import config, db, pipeline
+from . import config, db, health, pipeline
 
 log = logging.getLogger("cvwrite3.worker")
 SLOTS = 3
@@ -76,6 +76,7 @@ def run_job(settings, claude, job):
                              (s.outcome, job["run_id"]))
         except Exception as e:  # a bug: leave the job queued for another start; MAX_STARTS bounds it
             log.exception("job %s crashed: %s", job["id"], type(e).__name__)
+            health.record_error(conn, e, route=f"worker:{job['kind']}", run_id=job["run_id"])
             conn.execute("update jobs set status = 'queued' where id = %s and status = 'running'", (job["id"],))
             time.sleep(2)
 
@@ -109,11 +110,18 @@ def serve(settings, claude=None, stop=None, poll_s=1.0):
             log.info("requeued %s jobs after a restart", n)
         enqueue_test(conn)  # once right after every start
     busy = threading.Semaphore(SLOTS)
-    last_hourly = time.monotonic()
+    last_hourly = last_minute = time.monotonic()
+    last_daily = 0.0
     with ThreadPoolExecutor(SLOTS) as pool:
         while not stop.is_set():
             with db.connect(settings.database_url) as conn:
                 expire(conn)
+                if time.monotonic() - last_minute > 60:
+                    last_minute = time.monotonic()
+                    health.evaluate_degraded(conn)
+                if time.monotonic() - last_daily > 86400:
+                    last_daily = time.monotonic()
+                    health.retention(conn)
                 if time.monotonic() - last_hourly > 3600:
                     last_hourly = time.monotonic()
                     if due_test_render(conn):

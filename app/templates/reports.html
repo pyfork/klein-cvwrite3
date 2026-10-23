@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Your problem reports{% endblock %}
+{% block content %}
+<p class="eyebrow">Help</p>
+<h1 class="title">Your problem reports</h1>
+{% if sent %}<div class="alert alert-ok" role="status">Sent. We'll reply here.</div>{% endif %}
+{% if known %}<div class="alert alert-info" role="status">We already know about this problem and we're on it. You don't need to report it.</div>{% endif %}
+{% if reports %}
+<ul class="reports">
+  {% for r in reports %}
+  <li class="{{ r.status }}">
+    <div class="row between"><b>{{ categories[r.category] }}</b><span class="badge {{ 'badge-wait' if r.status == 'open' else 'badge-ok' if r.status == 'answered' else 'badge-off' }}">{{ r.status|capitalize }}</span></div>
+    <p class="meta">{{ r.created_at.strftime('%-d %b %Y, %H:%M') }} · p_{{ r.id }}</p>
+    {% if r.body %}<p>{{ r.body }}</p>{% endif %}
+    {% if r.reply %}<p class="reply"><b>Reply:</b> {{ r.reply }}</p>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}<p class="meta">No reports yet.</p>{% endif %}
+<a class="btn btn-ghost" href="/report">Report a problem</a>
+{% endblock %}

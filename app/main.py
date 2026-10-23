@@ -13,12 +13,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, credits, db, notices, orders, pause, routes_cv, routes_pay
+from . import access, auth, config, credits, db, health, notices, orders, pause, routes_cv, routes_ops, routes_pay
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.6.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -57,7 +57,16 @@ def create_app(settings=None, verifier=None):
         # One JSON line per request: never any CV, ad, contact or report text, and no email.
         request.state.id = uuid.uuid4().hex[:12]
         t0 = time.perf_counter()
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except Exception as e:  # an unexpected error: record its class and where, then show the error page
+            with conn() as c:
+                health.record_error(c, e, route=request.url.path, request_id=request.state.id)
+            log.info(json.dumps({"request_id": request.state.id, "http.route": request.url.path, "http.status_code": 500,
+                                 "error.type": type(e).__name__, "app.version": APP_VERSION}))
+            return templates.TemplateResponse(request, "error.html", {
+                "app_version": APP_VERSION, "title": "Something went wrong", "signed_out": True, "report_link": True,
+                "message": f"We've logged it (ref {request.state.id}). Please try again in a minute."}, status_code=500)
         log.info(json.dumps({
             "request_id": request.state.id, "http.route": request.url.path, "http.status_code": response.status_code,
             "duration_ms": round((time.perf_counter() - t0) * 1000, 1),
@@ -75,7 +84,8 @@ def create_app(settings=None, verifier=None):
     def render(request, name, status=200, **ctx):
         if ctx.get("u") and "banner" not in ctx:
             with conn() as c:
-                ctx["banner"] = pause.banner(pause.current_with_age(c))
+                ctx["banner"] = pause.banner(pause.current_with_age(c)) or (
+                    "Generating is slower than usual right now." if health.degraded_now(c) else None)
         return templates.TemplateResponse(request, name, {"app_version": APP_VERSION, **ctx}, status_code=status)
 
     def error(request, status, title, message):
@@ -189,7 +199,9 @@ def create_app(settings=None, verifier=None):
         o = owner(request)
         with conn() as c:
             ctx = {"requests": access.pending_requests(c), "wave2": access.wave2_on(c),
-                   "users": access.user_count(c), "cap": settings.wave2_cap, "orders": orders.for_admin(c), **admin_health(c)}
+                   "users": access.user_count(c), "cap": settings.wave2_cap, "orders": orders.for_admin(c), **admin_health(c),
+                   "reports": admin_reports(c), "panel": health.panel(c), "funnel": health.funnel(c),
+                   "categories": routes_ops.CATEGORIES, "reasons": routes_ops.REASONS}
         return render(request, "admin.html", o=o, **ctx)
 
     @app.post("/admin/requests/{request_id}/{decision}")
@@ -214,6 +226,7 @@ def create_app(settings=None, verifier=None):
     helpers = SimpleNamespace(conn=conn, render=render, user=user, owner=owner, check_post=check_post, error=error, settings=settings)
     admin_health = routes_cv.register(app, helpers)
     routes_pay.register(app, helpers)
+    admin_reports = routes_ops.register(app, helpers, APP_VERSION)
 
     if settings.env == "dev":
         from . import devlogin
