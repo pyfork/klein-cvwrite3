@@ -127,7 +127,9 @@ def register(app, h):
                               (run_id, job["id"], list(STEP_NAMES))).fetchall() if job else []
             read = run["ad_read"] or {}
             places = cvtext.keyword_places(run["draft_md"] or "", read.get("keywords_top", []) + read.get("keywords_secondary", [])[:5]) if run["status"] == "passed" else {}
-            return h.render(request, "run.html", u=u, run=run, job=job, read=read, places=places,
+            kw_status = run["keyword_status"] or {}
+            return h.render(request, "run.html", u=u, run=run, job=job, read=read, places=places, kw_status=kw_status,
+                            lacking=[kw for kw in read.get("keywords_top", []) if kw_status.get(kw) in ("bridged", "missing")],
                             steps=[{"name": STEP_NAMES[s["step"]], **s} for s in steps], gaps=run["gaps"] or [],
                             refresh=run["status"] == "generating" and job and job["status"] in ("queued", "running"))
 

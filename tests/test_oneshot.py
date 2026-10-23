@@ -224,6 +224,24 @@ class Generate(CVCase):
             with self.assertRaises(psycopg.errors.UniqueViolation):
                 c.execute("insert into credit_ledger (account_id, delta, kind, run_id) values (%s, -1, 'spend', %s)", (acct, run_id))
 
+    def test_missing_keyword_is_a_gap_not_a_failure(self):
+        self.claude.script = ["write:missingkw"]
+        run_id = self.start()
+        self.drain()
+        run = self.run_row(run_id)
+        self.assertEqual((run["status"], run["drafts"]), ("passed", 1))  # no retry spent forcing it
+        missing = [k for k, v in run["keyword_status"].items() if v == "missing"]
+        self.assertEqual(len(missing), 1)
+        self.assertNotIn(missing[0], run["checks"]["keywords"])
+        page = self.get(f"/runs/{run_id}", self.EMAIL).text
+        self.assertIn("isn&#39;t in your CV", page)
+        self.assertIn("Edit the text</a> (free, no credit)", page)
+
+    def test_unreported_keywords_stay_required(self):
+        from app import pipeline
+        self.assertEqual(pipeline.keyword_status(["SQL", "WMS"], [{"keyword": "sql", "status": "missing"}, {"keyword": "x", "status": "odd"}]),
+                         {"SQL": "missing", "WMS": "backed"})
+
     def test_claude_error_fails_with_no_credit(self):
         self.claude.script = ["read:error"]
         run_id = self.start()

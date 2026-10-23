@@ -36,6 +36,12 @@
     </div>
     <p class="meta">1 credit used. {{ u.balance }} left.</p>
   </div>
+  {% if lacking %}
+  <div class="alert alert-info" role="status">
+    {% for kw in lacking %}<p><b>{{ kw }}</b> {{ 'is in your CV only as a related skill' if kw_status[kw] == 'bridged' else 'isn\'t in your CV' }}: your master CV doesn't show it.</p>{% endfor %}
+    <p>If you do have {{ 'it' if lacking|length == 1 else 'them' }}, add {{ 'it' if lacking|length == 1 else 'them' }} with <a href="/runs/{{ run.id }}/edit">Edit the text</a> (free, no credit) and to your master CV in <a href="/profile">Profile</a>, so the next CV includes {{ 'it' if lacking|length == 1 else 'them' }}.</p>
+  </div>
+  {% endif %}
   {% if read.problems %}
   <div class="card stack">
     <h3 class="kicker">What your CV leads with</h3>
@@ -48,7 +54,7 @@
   <div class="card stack">
     <h3 class="kicker">Keywords, and where they are in your CV</h3>
     <table class="kw"><thead><tr><th scope="col">Keyword</th><th scope="col">Where</th></tr></thead><tbody>
-      {% for kw, where in places.items() %}<tr><td>{{ kw }}{% if loop.index <= 3 %} <span class="opt">top 3</span>{% endif %}</td><td>{{ where|join(' · ') if where else 'Not in your CV' }}</td></tr>{% endfor %}
+      {% for kw, where in places.items() %}<tr><td>{{ kw }}{% if loop.index <= 3 %} <span class="opt">{{ {'bridged': 'top 3 · related skill', 'missing': 'top 3 · gap'}.get(kw_status.get(kw), 'top 3') }}</span>{% endif %}</td><td>{{ where|join(' · ') if where else 'Not in your CV' }}</td></tr>{% endfor %}
     </tbody></table>
   </div>
   <div class="card two">
