@@ -136,8 +136,9 @@ FLOW_ITEM = re.compile(r"^\d+\.\s+")
 
 
 def inline(text):
-    """Escape text, then apply **bold** and [label](url) markup."""
-    text = html.escape(text, quote=False)
+    """Escape text, then apply **bold** and [label](url) markup. Quotes are escaped too, so a URL from the
+    model (which the ad can steer) can't close the href and add attributes (senior Q7)."""
+    text = html.escape(text, quote=True)
     text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
     return re.sub(r"\[([^\]]+)\]\((https?://[^)\s]+)\)", r'<a href="\2">\1</a>', text)
 
@@ -205,8 +206,8 @@ def convert(md):
                 url = url.strip()
                 link = ""
                 if url:
-                    href = url if url.startswith("http") else "https://" + url
-                    link = f'<a href="{href}">{html.escape(url)}</a>'
+                    href = url if re.match(r"https?://", url, re.I) else "https://" + url
+                    link = f'<a href="{html.escape(href, quote=True)}">{html.escape(url)}</a>'
                 out.append(f'<section class="box"><h2><span>{inline(label)}</span>{link}</h2>')
             else:
                 kind = "comp" if "COMPETENCIES" in upper else "edu" if "EDUCATION" in upper else ""
@@ -274,10 +275,14 @@ def convert(md):
 
 
 def page(title, body, airy=False, style=1):
+    # No JavaScript in the render (senior Q7): the CSP, first in <head>, before any text the model wrote.
+    # Not a Chrome flag: --blink-settings=javascriptEnabled=false doesn't stop scripts, and scriptEnabled=false
+    # stops headless Chrome printing the PDF at all (both checked 2026-10-23, tests/test_render_hostile.py).
     return f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'none'">
 <title>{html.escape(title)}</title>
 <style>{font_css(style)}
 {CSS}{STYLE1_CSS if style == 1 else ""}</style>
