@@ -379,7 +379,7 @@ class Rerender(CVCase):
 class Prompts(unittest.TestCase):
     def test_loader_reads_the_stub_folder(self):
         from app import prompts
-        d = str(Path(__file__).parent / "fixtures" / "prompts")
+        d = str(Path(__file__).parent / "fixtures" / "stub_prompts")
         for name in prompts.NAMES:
             self.assertIn("Stub", prompts.get(name, d))
         with self.assertRaises(KeyError):
