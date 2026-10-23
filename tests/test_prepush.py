@@ -74,8 +74,9 @@ class PrePush(unittest.TestCase):
                 self.assertNotIn(n, r.stderr)
 
     def test_not_ic_numbers(self):
-        # invalid month, 13 digits, mixed dashes, phone numbers
-        self.commit("data.txt", "901301-14-5678\n9001011456789\n900101-145678\n+60 12-345 6789\n")
+        # invalid month, 13 digits, mixed dashes, phone numbers, 12 digits inside a sha256
+        self.commit("data.txt", "901301-14-5678\n9001011456789\n900101-145678\n+60 12-345 6789\n"
+                    "--hash=sha256:cbd5f73073ed19c378d4c35499db1e3e703a5b1a324e521204065967bfaa7a18\n")
         self.assertEqual(self.push().returncode, 0)
 
     def test_added_then_removed_still_blocked(self):
