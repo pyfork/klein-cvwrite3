@@ -1,4 +1,5 @@
-"""Runs the app on this Mac with a throwaway Postgres and a dev signing key. Never on sk24.
+"""Runs the app and the worker on this Mac with a throwaway Postgres, a dev signing key and the fake
+Claude (set CVWRITE_CLAUDE=real to use the API). Never on sk24.
 
     .venv/bin/python scripts/dev.py          then open http://localhost:8766/dev/login
 
@@ -38,7 +39,12 @@ def main():
         CVWRITE_SECRET_KEY=secret.read_text(), CVWRITE_ACCESS_TEAM="cvw3-dev.cloudflareaccess.com",
         CVWRITE_ACCESS_AUD="dev-aud", CVWRITE_ACCESS_CERTS_URL=certs.as_uri(),
         CVWRITE_APP_ORIGIN=f"http://localhost:{PORT}", CVWRITE_DEV_KEY_FILE=str(key),
+        CVWRITE_DATA_DIR=str(DEV / "files"), CVWRITE_CLAUDE=os.environ.get("CVWRITE_CLAUDE", "fake"),
     )
+    # The worker runs in a thread here; on sk24 it's its own systemd unit.
+    import threading
+    from app import config, worker
+    threading.Thread(target=worker.serve, args=(config.load(),), daemon=True).start()
     uvicorn.run("app.main:create_app", factory=True, host="127.0.0.1", port=PORT, access_log=False)
 
 

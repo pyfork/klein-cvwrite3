@@ -306,22 +306,30 @@ def wait_for_pdf(pdf, proc, timeout=120):
     return False
 
 
-def main():
-    args, style = sys.argv[1:], 1
-    if "--style" in args:
-        i = args.index("--style")
-        try:
-            style = int(args[i + 1])
-            assert style in FONT_NAMES
-        except (IndexError, ValueError, AssertionError):
-            sys.exit("--style must be 1 (Archivo) or 2 (Manrope)")
-        del args[i : i + 2]
-    if len(args) != 2:
-        sys.exit("usage: build_cv.py <input.md> <output.pdf> [--style 1|2]")
-    src, dst = Path(args[0]).resolve(), Path(args[1]).resolve()
-    md = src.read_text(encoding="utf-8")
+# No network for the render: the page is untrusted (the ad steered the text), so Chrome may fetch nothing.
+NO_NETWORK = ["--proxy-server=127.0.0.1:9", "--host-resolver-rules=MAP * ~NOTFOUND"]
+
+
+class RenderError(RuntimeError):
+    pass
+
+
+def _chrome_child():
+    """In the child, before Chrome starts: on Linux, be the first thing the kernel kills if memory runs out."""
+    try:
+        with open("/proc/self/oom_score_adj", "w") as f:
+            f.write("1000")
+    except OSError:
+        pass
+
+
+def render_pdf(md, dst, style=1, timeout=30):
+    """Markdown text -> A4 PDF at dst. Chrome runs in its own process group, which is killed whole
+    when it finishes or after `timeout` seconds. Raises RenderError if no complete PDF appears."""
+    import signal
     name, body = convert(md)
     airy = LAYOUT_AIRY in md
+    dst = Path(dst).resolve()
     dst.unlink(missing_ok=True)  # so the wait below cannot pick up a stale PDF
     with tempfile.TemporaryDirectory() as tmp:
         html_file = Path(tmp) / "cv.html"
@@ -335,19 +343,45 @@ def main():
                 f"--user-data-dir={tmp}/profile",
                 "--no-pdf-header-footer",
                 "--virtual-time-budget=8000",
+                *NO_NETWORK,
                 *CHROME_FLAGS,
                 f"--print-to-pdf={dst}",
                 html_file.as_uri(),
             ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            preexec_fn=_chrome_child if sys.platform.startswith("linux") else None,
         )
         try:
-            done = wait_for_pdf(dst, proc)
+            done = wait_for_pdf(dst, proc, timeout)
         finally:
-            proc.kill()  # Chrome may not exit on its own after printing
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)  # Chrome may not exit on its own after printing
+            except ProcessLookupError:
+                pass
             proc.wait()
     if not done:
+        raise RenderError("timeout" if proc.returncode in (None, -9) else f"chrome_exit_{proc.returncode}")
+    return {"pages": count_pages(dst), "font_embedded": FONT_NAMES[style].encode() in dst.read_bytes()}
+
+
+def main():
+    args, style = sys.argv[1:], 1
+    if "--style" in args:
+        i = args.index("--style")
+        try:
+            style = int(args[i + 1])
+            assert style in FONT_NAMES
+        except (IndexError, ValueError, AssertionError):
+            sys.exit("--style must be 1 (Archivo) or 2 (Manrope)")
+        del args[i : i + 2]
+    if len(args) != 2:
+        sys.exit("usage: build_cv.py <input.md> <output.pdf> [--style 1|2]")
+    src, dst = Path(args[0]).resolve(), Path(args[1]).resolve()
+    try:
+        render_pdf(src.read_text(encoding="utf-8"), dst, style, timeout=120)
+    except RenderError:
         sys.exit(f"Chrome did not produce a complete PDF at {dst}")
     print(f"Wrote {dst}")
     print(f"Pages: {count_pages(dst)}")

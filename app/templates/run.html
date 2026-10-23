@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% set nav = 'generate' %}
+{% block title %}{{ read.job_title or 'Your CV' }}{% endblock %}
+{% block content %}
+<p class="eyebrow">Generate</p>
+<h1 class="title">{{ read.job_title or 'Your new CV' }}</h1>
+
+{% if run.status == 'generating' %}
+  {% if job and job.status == 'held' %}
+  <div class="card stack"><p><span class="badge badge-wait">Waiting for a fix</span></p><p>Saved, and nothing charged. It will finish on its own once generating is back.</p></div>
+  {% else %}
+  <div class="card stack">
+    <h2>Working on it</h2>
+    <ol class="steps">
+      {% for s in steps %}<li class="step {{ 'is-done' if s.outcome == 'ok' else 'is-fail' }}"><span class="dot" aria-hidden="true"></span><span class="s-name">{{ s.name }}</span><span class="s-time">{{ '%.1f'|format(s.duration_ms / 1000) }} s</span></li>{% endfor %}
+      <li class="step is-run"><span class="dot" aria-hidden="true"></span><span class="s-name">{{ 'Waiting for a free slot' if not job or job.status == 'queued' else 'Working…' }}</span><span class="s-time"></span></li>
+    </ol>
+    <p class="hint">You can leave this page. We'll keep working, and the CV will be here when you come back.</p>
+  </div>
+  {% endif %}
+
+{% elif run.status == 'failed' or run.status == 'cancelled' %}
+  <div class="card stack">
+    <h2>{{ 'We couldn\'t make a CV that passes for this ad' if run.failure == 'check_failed' else 'This CV didn\'t finish' }}</h2>
+    <p>{{ job.message if job and job.message else 'No credit used.' }}</p>
+    <div class="row"><a class="btn btn-primary" href="/generate">Try again</a></div>
+    <p class="meta">Run id: r_{{ run.id }}</p>
+  </div>
+
+{% else %}
+  <div class="card stack result-head">
+    <p class="pass"><span class="badge badge-ok">Passed</span> {{ run.checks.pages }} pages · A4 · {{ run.checks.keywords.values()|select|list|length }} of {{ run.checks.keywords|length }} keywords</p>
+    <div class="row">
+      <a class="btn btn-primary" href="/runs/{{ run.id }}/cv.pdf">Download PDF</a>
+      <a class="btn btn-ghost" href="/runs/{{ run.id }}/cv.md">Download .md</a>
+      <a class="btn btn-ghost" href="/runs/{{ run.id }}/edit">Edit the text</a>
+    </div>
+    <p class="meta">1 credit used. {{ u.balance }} left.</p>
+  </div>
+  {% if read.problems %}
+  <div class="card stack">
+    <h3 class="kicker">What your CV leads with</h3>
+    <p class="lead-problem">{{ read.problems[0].problem }}</p>
+    <blockquote>“{{ read.problems[0].quote }}”</blockquote>
+    <p class="meta">Quoted word for word from the ad.</p>
+    {% if read.problems|length > 1 %}<p class="hint">Also in the ad: {% for p in read.problems[1:] %}{{ p.problem }}{{ '; ' if not loop.last }}{% endfor %}.</p>{% endif %}
+  </div>
+  {% endif %}
+  <div class="card stack">
+    <h3 class="kicker">Keywords, and where they are in your CV</h3>
+    <table class="kw"><thead><tr><th scope="col">Keyword</th><th scope="col">Where</th></tr></thead><tbody>
+      {% for kw, where in places.items() %}<tr><td>{{ kw }}{% if loop.index <= 3 %} <span class="opt">top 3</span>{% endif %}</td><td>{{ where|join(' · ') if where else 'Not in your CV' }}</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+  <div class="card two">
+    <div class="stack"><h3 class="kicker">Gaps</h3>{% if gaps %}<ul>{% for g in gaps %}<li>{{ g }}</li>{% endfor %}</ul>{% else %}<p class="meta">None found.</p>{% endif %}</div>
+    <div class="stack"><h3 class="kicker">Red flags</h3>{% if read.red_flags %}<ul>{% for f in read.red_flags %}<li>{{ f.flag }} (“{{ f.quote }}”)</li>{% endfor %}</ul>{% else %}<p class="meta">None found.</p>{% endif %}</div>
+  </div>
+  <a class="btn btn-ghost" href="/generate">Write another CV</a>
+{% endif %}
+{% endblock %}

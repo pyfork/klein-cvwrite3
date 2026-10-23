@@ -1,10 +1,29 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% set nav = 'admin' %}
 {% block title %}Admin{% endblock %}
 {% block content %}
 <div class="admin stack">
 <p class="eyebrow">Owner only</p>
 <h1 class="title">Admin</h1>
-{# Orders, reports, health and the funnel join this page in chunks 5 and 6. #}
+{# Orders, reports, the rest of health and the funnel join this page in chunks 5 and 6. #}
+<div class="card stack">
+  <div class="row between">
+    <h2>{% if pause_row %}Generating: paused since {{ pause_row.paused_at.strftime('%d %b, %H:%M') }} ({{ pause_row.source }}: {{ pause_row.reason }}){% else %}Generating: running{% endif %}</h2>
+    <span class="badge {{ 'badge-bad' if pause_row else 'badge-ok' }}">{{ 'Paused' if pause_row else 'OK' }}</span>
+  </div>
+  <dl class="facts">
+    <div><dt>Held jobs</dt><dd>{{ held.n }}{% if held.oldest %}, oldest since {{ held.oldest.strftime('%H:%M') }}{% endif %}</dd></div>
+    <div><dt>Last test render</dt><dd>{% if test %}{{ test.outcome or test.status }}{% if test.message %} · {{ test.message }}{% endif %}{% else %}none yet{% endif %}</dd></div>
+    <div><dt>Last errors</dt><dd>{% for e in errors %}<code>{{ e.step }}:{{ e.error_class or 'fail' }}</code>{% if e.run_id %} r_{{ e.run_id }}{% endif %}{{ ' · ' if not loop.last }}{% else %}none{% endfor %}</dd></div>
+  </dl>
+  <div class="row">
+    <form method="post" action="/admin/test-render"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-ghost">Test render</button></form>
+    {% if pause_row %}
+    <form method="post" action="/admin/resume"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-primary">Resume</button></form>
+    {% else %}
+    <form method="post" action="/admin/pause"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-ghost">Pause generating</button></form>
+    {% endif %}
+  </div>
+</div>
 <div class="card stack">
   <form class="row between" method="post" action="/admin/wave2">
     <input type="hidden" name="csrf" value="{{ o.csrf }}">

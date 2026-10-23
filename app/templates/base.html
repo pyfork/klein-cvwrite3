@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}cvwrite3{% endblock %} · cvwrite3</title>
 <link rel="stylesheet" href="/static/calm.css">
+{% if refresh %}<meta http-equiv="refresh" content="2">{% endif %}
 </head>
 <body class="opt-calm{% if signed_out %} signed-out{% endif %}">
 <a class="skip" href="#main">Skip to content</a>
@@ -16,11 +17,18 @@
     <span class="bal-line"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span></span>
   </a>
   {% endif %}
-  {# The page stepper (Profile, Generate, Edit, Credits, Account) arrives with those pages in chunks 3 to 7. #}
-  {% if (u and u.is_owner) or o %}
-  <nav class="nav" aria-label="Pages"><a href="/admin" class="nav-admin"><i>A</i><span>Admin</span></a></nav>
+  {% if u or o %}
+  {# Credits and Account join the stepper in chunks 4 and 7. #}
+  <nav class="nav" aria-label="Pages">
+    {% if u %}
+    <a href="/profile"{% if nav == 'profile' %} aria-current="page"{% endif %}><i>1</i><span>Profile</span></a>
+    <a href="/generate"{% if nav == 'generate' %} aria-current="page"{% endif %}><i>2</i><span>Generate</span></a>
+    {% endif %}
+    {% if (u and u.is_owner) or o %}<a href="/admin" class="nav-admin"{% if nav == 'admin' %} aria-current="page"{% endif %}><i>A</i><span>Admin</span></a>{% endif %}
+  </nav>
   {% endif %}
 </header>
+{% if banner %}<div class="banner" role="status">{{ banner }}</div>{% endif %}
 <main id="main" tabindex="-1">
 <section class="page">
 {% block content %}{% endblock %}
