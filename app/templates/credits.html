@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% set nav = 'credits' %}
+{% block title %}Credits{% endblock %}
+{% block content %}
+<p class="eyebrow">Credits</p>
+<h1 class="title">{{ "You're out of credits" if u.balance == 0 else 'Your credits' }}</h1>
+<p class="lede">One credit is one CV that passes its check. We never use a credit for a CV that fails.</p>
+<p class="balance-big"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span>
+  {% if u.expires %}<span class="meta">The earliest expire on {{ u.expires.strftime('%-d %b %Y') }}.</span>{% endif %}</p>
+{% include "_packs.html" %}
+{% if grants %}
+<div class="card stack">
+  <h2>Where your credits came from</h2>
+  <table class="tbl">
+    <thead><tr><th scope="col">Added</th><th scope="col">What</th><th scope="col">Left</th><th scope="col">Expires</th></tr></thead>
+    <tbody>
+    {% for g in grants|reverse %}
+      <tr><td>{{ g.created_at.strftime('%-d %b %Y') }}</td><td>{{ 'Free credits' if g.kind == 'free' else g.n ~ ' credits for RM' ~ ('%.0f'|format(g.n * g.price)) }}</td>
+        <td>{{ g.left if g.expires_at > now else 0 }} of {{ g.n }}</td>
+        <td>{% if g.expires_at > now %}{{ g.expires_at.strftime('%-d %b %Y') }}{% else %}<span class="badge badge-off">Expired</span>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <p class="hint">We always use your oldest credits first.{% if refundable_n %} {{ refundable_n }} unused paid {{ 'credit' if refundable_n == 1 else 'credits' }} (RM{{ '%.2f'|format(refundable_rm) }}) can be refunded on request.{% endif %}</p>
+</div>
+{% endif %}
+{% if spends %}
+<div class="card stack">
+  <h2>CVs that used a credit</h2>
+  <ul>{% for s in spends %}<li><a href="/runs/{{ s.run_id }}">{{ s.title or 'Your CV' }}</a>, {{ s.created_at.strftime('%-d %b %Y') }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+{% endblock %}

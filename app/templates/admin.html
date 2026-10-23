@@ -24,6 +24,23 @@
     {% endif %}
   </div>
 </div>
+<div class="card stack" id="credits">
+  <h2>Credits and refunds</h2>
+  <p class="hint">Refund only after you've paid it back from the bank, to the account that paid. Unused paid credits are refunded at their pack's price, newest pack first.</p>
+  {% if accounts %}
+  <table class="tbl">
+    <thead><tr><th scope="col">Who</th><th scope="col">Balance</th><th scope="col">Refundable</th><th scope="col"><span class="sr">Record a refund</span></th></tr></thead>
+    <tbody>
+    {% for a in accounts %}
+      <tr><td>{{ a.who }}</td><td>{{ a.balance }}</td><td>{% if a.refundable_n %}{{ a.refundable_n }} = RM{{ '%.2f'|format(a.refundable_rm) }}{% else %}–{% endif %}</td>
+        <td class="acts">{% if a.refundable_n %}<form method="post" action="/admin/accounts/{{ a.id }}/refund">
+          <input type="hidden" name="csrf" value="{{ o.csrf }}"><input type="number" name="n" min="1" max="{{ a.refundable_n }}" value="{{ a.refundable_n }}" aria-label="Credits refunded">
+          <button class="btn btn-ghost btn-sm">Record refund</button></form>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="meta">No credits yet.</p>{% endif %}
+</div>
 <div class="card stack">
   <form class="row between" method="post" action="/admin/wave2">
     <input type="hidden" name="csrf" value="{{ o.csrf }}">

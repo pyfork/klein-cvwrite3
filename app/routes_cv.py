@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Red
 
 from render import contact as contact_mod
 
-from . import cvtext, ic, pause, pipeline, profile, rendering, upload
+from . import credits, cvtext, ic, pause, pipeline, profile, rendering, upload
 
 STEP_NAMES = {"call_a": "Reading the ad", "call_b": "Writing your CV", "retry": "Fixing the draft",
               "render": "Making the PDF", "check": "Checking: 2 pages, A4, keywords",
@@ -24,9 +24,9 @@ def register(app, h):
         return run
 
     def available(c, u):
-        """Credits not already promised to a CV that's still generating."""
+        """Credits not already promised to a CV that's still generating, read fresh from the ledger."""
         n = c.execute("select count(*) n from runs where account_id = %s and status = 'generating'", (u["account_id"],)).fetchone()["n"]
-        return u["balance"] - n
+        return credits.summary(c, u["account_id"]).balance - n
 
     # ---- profile ---------------------------------------------------------------
     def profile_page(request, c, u, status=200, preview=None, filename=None, error=None, saved=False, form=None):
@@ -81,7 +81,7 @@ def register(app, h):
         if pause.current(c):
             blocked = "Generating is paused, so you can't start a new CV right now. Nothing has been charged."
         elif available(c, u) < 1:
-            blocked = "You're out of credits. Buying credits comes soon. RM10 for 5, or RM30 for 20."
+            blocked = "out_of_credits"
         elif profile.ready(p):
             blocked = profile.ready(p)
         return h.render(request, "generate.html", status=status, u=u, ad=ad, error=error, blocked=blocked, runs=runs)
@@ -215,6 +215,19 @@ def register(app, h):
                 job_id = c.execute("insert into jobs (run_id, kind, input_text) values (%s, 'rerender', %s) returning id", (run_id, text)).fetchone()["id"]
         return RedirectResponse(f"/runs/{run_id}/edit?job={job_id}", 303)
 
+    # ---- credits ---------------------------------------------------------------------------
+    @app.get("/credits", response_class=HTMLResponse)
+    def credits_page(request: Request):
+        from datetime import datetime, timezone
+        with h.conn() as c:
+            u = h.user(request, c)
+            s = credits.summary(c, u["account_id"])
+            spends = c.execute(
+                "select l.run_id, l.created_at, r.ad_read->>'job_title' as title from credit_ledger l join runs r on r.id = l.run_id "
+                "where l.account_id = %s and l.kind = 'spend' order by l.created_at desc limit 50", (u["account_id"],)).fetchall()
+        return h.render(request, "credits.html", u=u, grants=s.grants, refundable_n=s.refundable_n, refundable_rm=s.refundable_rm,
+                        spends=spends, now=datetime.now(timezone.utc))
+
     # ---- admin: the pause ------------------------------------------------------------------
     @app.post("/admin/pause")
     def admin_pause(request: Request, csrf: str = Form("")):
@@ -246,6 +259,23 @@ def register(app, h):
         errors = c.execute("select s.error_class, s.run_id, s.step from run_steps s where s.outcome <> 'ok' "
                            "order by s.id desc limit 10").fetchall()
         held = c.execute("select count(*) n, min(held_at) oldest from jobs where status = 'held'").fetchone()
-        return {"pause_row": p, "test": test, "errors": errors, "held": held}
+        accounts = []
+        for a in c.execute("select a.id, a.tag, u.email from accounts a left join allowed_users u on u.account_id = a.id "
+                           "where exists (select 1 from credit_ledger l where l.account_id = a.id) order by a.id").fetchall():
+            s = credits.summary(c, a["id"])
+            accounts.append({**a, "who": a["email"] or f"deleted-{a['tag']}", "balance": s.balance,
+                             "refundable_n": s.refundable_n, "refundable_rm": s.refundable_rm})
+        return {"pause_row": p, "test": test, "errors": errors, "held": held, "accounts": accounts}
+
+    @app.post("/admin/accounts/{account_id}/refund")
+    def admin_refund(request: Request, account_id: int, csrf: str = Form(""), n: int = Form(0)):
+        o = h.owner(request)
+        h.check_post(request, o["email"], csrf)
+        with h.conn() as c:
+            try:
+                credits.record_refund(c, account_id, n)
+            except ValueError as e:
+                raise h.error(request, 400, "Refund not recorded", f"{e}. Nothing was changed.") from None
+        return RedirectResponse("/admin#credits", 303)
 
     return admin_health

@@ -13,12 +13,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, db, notices, pause, routes_cv
+from . import access, auth, config, credits, db, notices, pause, routes_cv
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.3.0"
+APP_VERSION = "0.4.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -97,7 +97,8 @@ def create_app(settings=None, verifier=None):
             raise Page(RedirectResponse("/request", 303))
         if consent and notices.needs_consent((notices.latest_consent(c, email) or {}).get("notice_version")):
             raise Page(RedirectResponse("/consent", 303))
-        return {"email": email, "account_id": row["account_id"], "balance": access.balance(c, row["account_id"]),
+        cs = credits.summary(c, row["account_id"])
+        return {"email": email, "account_id": row["account_id"], "balance": cs.balance, "expires": cs.earliest_expiry,
                 "csrf": auth.csrf_token(settings, email), "is_owner": email == settings.owner_email}
 
     def owner(request):
