@@ -41,6 +41,12 @@ def main():
         CVWRITE_APP_ORIGIN=f"http://localhost:{PORT}", CVWRITE_DEV_KEY_FILE=str(key),
         CVWRITE_DATA_DIR=str(DEV / "files"), CVWRITE_CLAUDE=os.environ.get("CVWRITE_CLAUDE", "fake"),
     )
+    # A real-API run reads the key the owner typed into data/dev/anthropic_key (0600). It's never printed.
+    key_file = DEV / "anthropic_key"
+    if os.environ["CVWRITE_CLAUDE"] == "real":
+        if not key_file.exists() or key_file.stat().st_mode & 0o077:
+            sys.exit("CVWRITE_CLAUDE=real needs data/dev/anthropic_key with mode 0600")
+        os.environ["ANTHROPIC_API_KEY"] = key_file.read_text().strip()
     # The worker runs in a thread here; on sk24 it's its own systemd unit.
     import threading
     from app import config, worker
