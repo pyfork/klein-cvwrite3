@@ -1,0 +1,10 @@
+# Runtime, pinned. Python 3.10 (sk24). build-engineer-Opus5.5-agent
+fastapi==0.161.1
+starlette==1.7.0
+pydantic==2.14.1
+uvicorn==0.54.0
+jinja2==3.1.6
+python-multipart==0.0.32
+pyjwt[crypto]==2.15.1
+cryptography==50.0.2
+psycopg[binary]==3.3.6

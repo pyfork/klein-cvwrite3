@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<p class="eyebrow">You're in</p>
+<h1 class="title">Welcome to cvwrite3</h1>
+<p class="lede">Signed in as <b>{{ u.email }}</b>. You have {{ u.balance }} {{ 'credit' if u.balance == 1 else 'credits' }}.</p>
+<div class="card stack">
+  <p>Uploading your master CV and writing your first CV come next.</p>
+</div>
+{% endblock %}

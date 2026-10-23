@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="{{ lang|default('en') }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}cvwrite3{% endblock %} · cvwrite3</title>
+<link rel="stylesheet" href="/static/calm.css">
+</head>
+<body class="opt-calm{% if signed_out %} signed-out{% endif %}">
+<a class="skip" href="#main">Skip to content</a>
+<div class="app">
+<header class="top">
+  <a class="brand" href="/" aria-label="cvwrite3 home">cvwrite<b>3</b></a>
+  {% if u %}
+  <a class="bal" href="/" title="Your balance">
+    <span class="bal-line"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span></span>
+  </a>
+  {% endif %}
+  {# The page stepper (Profile, Generate, Edit, Credits, Account) arrives with those pages in chunks 3 to 7. #}
+  {% if (u and u.is_owner) or o %}
+  <nav class="nav" aria-label="Pages"><a href="/admin" class="nav-admin"><i>A</i><span>Admin</span></a></nav>
+  {% endif %}
+</header>
+<main id="main" tabindex="-1">
+<section class="page">
+{% block content %}{% endblock %}
+</section>
+</main>
+<footer class="foot">
+  <a href="/privacy">Privacy notice</a>
+  <span>v{{ app_version }}</span>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}What changed{% endblock %}
+{% block content %}
+<p class="eyebrow">Privacy notice</p>
+<h1 class="title">What changed</h1>
+<p class="lede">Every version of the privacy notice, newest first.</p>
+<ol class="changelog">
+{% for v in versions %}
+  <li class="card stack">
+    <div class="row between"><b>v{{ v.version }}</b><span class="badge {{ 'badge-wait' if v.version.endswith('.0') and v.version != '1.0' else 'badge-off' }}">{{ 'First version' if v.version == '1.0' else ('Major' if v.version.endswith('.0') else 'Minor') }}</span></div>
+    <p class="meta">{{ v.date }}</p>
+    <p>{{ v.what }}</p>
+    <p class="meta">Why: {{ v.why }}</p>
+    <p><a href="/privacy/v{{ v.version }}">Read v{{ v.version }}</a></p>
+  </li>
+{% endfor %}
+</ol>
+{% endblock %}

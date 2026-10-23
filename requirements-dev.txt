@@ -1,0 +1,5 @@
+# Mac only, never on sk24.
+-r requirements.txt
+httpx==0.28.1
+# A throwaway local Postgres for tests (PG 16; sk24 runs 18, and the SQL is plain).
+pgserver==0.1.4
