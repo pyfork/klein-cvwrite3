@@ -33,6 +33,7 @@
   {% for d in pn.degraded %}<div class="alert alert-warn">Degraded since {{ d.started_at.strftime('%H:%M') }}: {{ d.kind|replace('_', ' ') }} is {{ '%.2f'|format(d.value) }} against a ceiling of {{ d.ceiling }}.</div>{% endfor %}
   <dl class="facts">
     <div><dt>Last check</dt><dd>{% if pn.last_check %}{{ pn.last_check.checked_at.strftime('%d %b, %H:%M') }} · {{ pn.last_check.ms }} ms{% if pn.last_check.detail %} · <code>{{ pn.last_check.detail }}</code>{% endif %}{% else %}none yet (the timer comes with the deploy){% endif %}</dd></div>
+    <div><dt>Last good backup</dt><dd>{% if pn.backup_days is none %}<span class="badge badge-bad">none yet</span>{% else %}<span class="badge {{ 'badge-bad' if pn.backup_days > 4 else 'badge-wait' if pn.backup_days > 2.5 else 'badge-ok' }}">{{ '%.1f'|format(pn.backup_days) }} days ago</span>{% endif %}</dd></div>
     <div><dt>Uptime</dt><dd>{% for k, v in pn.uptime.items() %}{{ k }}: {{ '%.1f'|format(v) }}%{{ ' · ' if not loop.last }}{% endfor %}</dd></div>
     <div><dt>Claude spend this month</dt><dd>${{ '%.2f'|format(pn.spend) }} of the ${{ pn.spend_stop }} stop (warning at ${{ pn.spend_warn }})</dd></div>
     <div><dt>Queue</dt><dd>{{ pn.queue }}</dd></div>

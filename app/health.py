@@ -130,6 +130,8 @@ def panel(conn):
         "queue": conn.execute("select count(*) n from jobs where status in ('queued', 'running')").fetchone()["n"],
         "degraded": degraded_now(conn),
         "incidents": incidents,
+        "backup_days": conn.execute("select extract(epoch from now() - max(finished_at)) / 86400 d from backup_runs "
+                                    "where outcome = 'ok'").fetchone()["d"],
         "spend": caps.month_spend(conn), "spend_warn": caps.MONTHLY_WARN_USD, "spend_stop": caps.MONTHLY_STOP_USD,
         "orders_waiting": conn.execute("select count(*) n from orders where status = 'pending' and paid_at < now() - interval '2 hours'").fetchone()["n"],
         "privacy_due": conn.execute("select count(*) n from problem_reports where category = 'privacy' and status = 'open' "

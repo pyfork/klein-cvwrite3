@@ -1,0 +1,9 @@
+# cvwrite3 as one tenant: other tenants win when both want the CPU, and half a core always stays free.
+[Unit]
+Description=cvwrite3 (all units)
+
+[Slice]
+MemoryHigh=600M
+MemoryMax=750M
+CPUWeight=50
+CPUQuota=150%
