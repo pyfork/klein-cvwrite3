@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Privacy notice v{{ v.version }}{% endblock %}
+{% block content %}
+<p class="eyebrow">Privacy notice v{{ v.version }} · {{ v.date }}{% if v.status == 'draft' %} · draft{% endif %}</p>
+<h1 class="title">Privacy notice</h1>
+<p class="lede">How cvwrite3 collects, uses and protects your personal data, under Malaysia's Personal Data Protection Act 2010.</p>
+{% if v.version != latest.version %}
+<div class="alert alert-info">This is an older version. <a href="/privacy">Read the current one (v{{ latest.version }})</a></div>
+{% endif %}
+<div class="card stack prose doc">{{ body|safe }}</div>
+<p class="meta"><a href="/privacy/changes">All versions and what changed</a></p>
+{% endblock %}

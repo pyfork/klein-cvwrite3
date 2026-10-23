@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<div class="admin stack">
+<p class="eyebrow">Owner only</p>
+<h1 class="title">Admin</h1>
+{# Orders, reports, health and the funnel join this page in chunks 5 and 6. #}
+<div class="card stack">
+  <form class="row between" method="post" action="/admin/wave2">
+    <input type="hidden" name="csrf" value="{{ o.csrf }}">
+    <input type="hidden" name="on" value="{{ '' if wave2 else 'yes' }}">
+    <div><b>Wave 2: approve requests automatically</b><p class="hint">Stops at {{ cap }} users in total. {{ users }} now.</p></div>
+    <button type="submit" class="btn {{ 'btn-primary' if wave2 else 'btn-ghost' }}" aria-pressed="{{ 'true' if wave2 else 'false' }}">{{ 'On: turn off' if wave2 else 'Off: turn on' }}</button>
+  </form>
+</div>
+<div class="card stack">
+  <h2>Access requests</h2>
+  {% if requests %}
+  <table class="tbl">
+    <thead><tr><th scope="col">Email</th><th scope="col">Asked</th><th scope="col">Note</th><th scope="col"><span class="sr">Actions</span></th></tr></thead>
+    <tbody>
+    {% for r in requests %}
+      <tr>
+        <td>{{ r.email }}{% if r.deleted_recently %}<span class="why">Deleted an account in the last 12 months: approving gives no free credits</span>{% endif %}</td>
+        <td>{{ r.created_at.strftime('%d %b, %H:%M') }}</td>
+        <td>{{ r.note or '–' }}</td>
+        <td class="acts">
+          <form method="post" action="/admin/requests/{{ r.id }}/approve" style="display:inline"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-primary btn-sm">Approve</button></form>
+          <form method="post" action="/admin/requests/{{ r.id }}/decline" style="display:inline"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-ghost btn-sm">Decline</button></form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="meta">No requests waiting.</p>
+  {% endif %}
+</div>
+</div>
+{% endblock %}
