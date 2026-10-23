@@ -78,7 +78,10 @@ def _render_and_check(conn, settings, run, job, md, keywords):
     except rendering.RenderFailed as e:
         _step(conn, run["id"], job["id"], "check", t0, "error", error_class=e.kind)
         return None, None
-    _step(conn, run["id"], job["id"], "check", t0, "ok" if result["passed"] else "fail")
+    why = None if result["passed"] else ",".join(
+        [f"pages_{result['pages']}"] * (result["pages"] != 2) + ["not_a4"] * (not result["a4"])
+        + [f"keywords_missing_{sum(not v for v in result['keywords'].values())}"] * (not all(result["keywords"].values())))
+    _step(conn, run["id"], job["id"], "check", t0, "ok" if result["passed"] else "fail", error_class=why)
     return tmp, result
 
 
