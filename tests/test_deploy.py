@@ -24,7 +24,7 @@ class Deploy(unittest.TestCase):
             self.assertIn(key, w)
         self.assertNotIn("\nPrivateDevices=yes", w)  # Chrome needs /dev/shm
         s = (ROOT / "deploy/systemd/cvwrite3.slice").read_text()
-        for key in ("MemoryHigh=600M", "MemoryMax=750M", "CPUWeight=50", "CPUQuota=150%"):
+        for key in ("MemoryHigh=600M", "MemoryMax=750M", "MemorySwapMax=0", "CPUWeight=50", "CPUQuota=150%"):
             self.assertIn(key, s)
 
     def test_timers(self):
