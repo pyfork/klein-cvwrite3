@@ -13,16 +13,18 @@
 <header class="top">
   <a class="brand" href="/" aria-label="cvwrite3 home">cvwrite<b>3</b></a>
   {% if u %}
-  <a class="bal" href="/" title="Your balance">
+  <a class="bal" href="/credits" title="Your balance">
     <span class="bal-line"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span></span>
+    <span class="bal-exp">{{ ('earliest expire ' ~ u.expires.strftime('%-d %b %Y')) if u.expires else 'buy more' }}</span>
   </a>
   {% endif %}
   {% if u or o %}
-  {# Credits and Account join the stepper in chunks 4 and 7. #}
+  {# Account joins the stepper in chunk 7. #}
   <nav class="nav" aria-label="Pages">
     {% if u %}
     <a href="/profile"{% if nav == 'profile' %} aria-current="page"{% endif %}><i>1</i><span>Profile</span></a>
     <a href="/generate"{% if nav == 'generate' %} aria-current="page"{% endif %}><i>2</i><span>Generate</span></a>
+    <a href="/credits"{% if nav == 'credits' %} aria-current="page"{% endif %}><i>3</i><span>Credits</span></a>
     {% endif %}
     {% if (u and u.is_owner) or o %}<a href="/admin" class="nav-admin"{% if nav == 'admin' %} aria-current="page"{% endif %}><i>A</i><span>Admin</span></a>{% endif %}
   </nav>

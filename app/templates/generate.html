@@ -4,14 +4,20 @@
 <p class="eyebrow">Generate</p>
 <h1 class="title">New CV for a job ad</h1>
 <p class="lede">Paste the whole ad. You'll get a 2-page CV in about a minute.</p>
-{% if blocked %}<div class="alert alert-info" role="alert">{{ blocked }}{% if 'Profile' in blocked or 'master CV' in blocked %} <a href="/profile">Go to Profile</a>{% endif %}</div>{% endif %}
+{% if blocked == 'out_of_credits' %}
+<div class="card stack paywall" role="alert">
+  <h2>You're out of credits</h2>
+  <p>Pick a pack to keep writing CVs. One credit is one CV that passes its check.</p>
+  {% include "_packs.html" %}
+</div>
+{% elif blocked %}<div class="alert alert-info" role="alert">{{ blocked }}{% if 'Profile' in blocked or 'master CV' in blocked %} <a href="/profile">Go to Profile</a>{% endif %}</div>{% endif %}
 {% if error %}<div class="alert alert-warn" role="alert">{{ error }}</div>{% endif %}
 <form class="card stack" method="post" action="/generate">
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
   <label class="field"><span>The job ad</span>
     <textarea name="ad" rows="12" maxlength="30000" placeholder="Paste the ad here, from the job title to the closing date.">{{ ad }}</textarea></label>
   <button type="submit" class="btn btn-primary"{% if blocked %} disabled{% endif %}>Generate · 1 credit</button>
-  <p class="hint">We only use a credit when the CV passes its check.</p>
+  <p class="hint">We only use a credit when the CV passes its check. You have {{ u.balance }} {{ 'credit' if u.balance == 1 else 'credits' }}{% if u.expires %}; the earliest expire on {{ u.expires.strftime('%-d %b %Y') }}{% endif %}.</p>
 </form>
 {% if runs %}
 <div class="card stack">

@@ -38,14 +38,6 @@ def deleted_recently(conn, email):
     ).fetchone() is not None
 
 
-def balance(conn, account_id):
-    # Chunk 4 replaces this with oldest-first spending and per-grant expiry.
-    row = conn.execute(
-        "select coalesce(sum(delta), 0) as n from credit_ledger where account_id = %s", (account_id,)
-    ).fetchone()
-    return row["n"]
-
-
 def _new_account(conn):
     while True:
         tag = "".join(secrets.choice(TAG_CHARS) for _ in range(6))
