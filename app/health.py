@@ -171,9 +171,14 @@ def funnel(conn):
     }
 
 
-def retention(conn):
-    """Daily: request logs live in journald (90 days, set in chunk 7). Here: step rows 90 days; errors, degraded
-    events and uptime checks 12 months; closed problem reports 12 months after closing."""
+def retention(conn, data_dir=None):
+    """Daily: request logs live in journald (90 days, set in chunk 7). Here: CVs, ads and PDFs 30 days; step rows
+    90 days; errors, degraded events and uptime checks 12 months; closed problem reports 12 months after closing;
+    consent records 12 months after the account was deleted."""
+    if data_dir:
+        from . import account
+        account.purge_old_runs(conn, data_dir)
+    conn.execute("delete from consents where account_deleted_at < now() - interval '12 months'")
     conn.execute("delete from run_steps where started_at < now() - interval '90 days'")
     conn.execute("delete from errors where created_at < now() - interval '12 months'")
     conn.execute("delete from degraded_events where ended_at < now() - interval '12 months'")

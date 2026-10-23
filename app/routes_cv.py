@@ -21,6 +21,8 @@ def register(app, h):
         run = c.execute("select * from runs where id = %s and account_id = %s", (run_id, u["account_id"])).fetchone()
         if not run:
             raise h.error(request, 404, "Not found", "There's no CV with that number in your account.")
+        if run["purged_at"]:
+            raise h.error(request, 410, "This CV was removed", "We keep CVs, ads and PDFs for 30 days, then delete them. Write a new one any time.")
         return run
 
     def generating(c, u):
@@ -82,7 +84,7 @@ def register(app, h):
     def generate_page(request, c, u, status=200, ad="", error=None):
         p = profile.get(c, u["account_id"])
         runs = c.execute("select r.id, r.status, r.created_at, r.ad_read->>'job_title' as title from runs r "
-                         "where account_id = %s order by created_at desc limit 10", (u["account_id"],)).fetchall()
+                         "where account_id = %s and purged_at is null order by created_at desc limit 10", (u["account_id"],)).fetchall()
         blocked = None
         if pause.current(c):
             blocked = "Generating is paused, so you can't start a new CV right now. Nothing has been charged."
@@ -276,7 +278,7 @@ def register(app, h):
                            "order by s.id desc limit 10").fetchall()
         held = c.execute("select count(*) n, min(held_at) oldest from jobs where status = 'held'").fetchone()
         accounts = []
-        for a in c.execute("select a.id, a.tag, u.email from accounts a left join allowed_users u on u.account_id = a.id "
+        for a in c.execute("select a.id, a.tag, a.refund_requested_rm, u.email from accounts a left join allowed_users u on u.account_id = a.id "
                            "where exists (select 1 from credit_ledger l where l.account_id = a.id) order by a.id").fetchall():
             s = credits.summary(c, a["id"])
             accounts.append({**a, "who": a["email"] or f"deleted-{a['tag']}", "balance": s.balance,

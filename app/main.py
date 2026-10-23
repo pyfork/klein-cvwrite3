@@ -13,16 +13,16 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, credits, db, health, notices, orders, pause, routes_cv, routes_ops, routes_pay
+from . import access, auth, config, credits, db, health, notices, orders, pause, routes_account, routes_cv, routes_ops, routes_pay
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.6.0"
+APP_VERSION = "0.7.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
-NO_CONSENT_NEEDED = ("/consent", "/privacy", "/request")
+NO_CONSENT_NEEDED = ("/consent", "/privacy", "/request", "/terms", "/deleted")
 
 
 class Page(Exception):
@@ -227,6 +227,7 @@ def create_app(settings=None, verifier=None):
     admin_health = routes_cv.register(app, helpers)
     routes_pay.register(app, helpers)
     admin_reports = routes_ops.register(app, helpers, APP_VERSION)
+    routes_account.register(app, helpers)
 
     if settings.env == "dev":
         from . import devlogin
