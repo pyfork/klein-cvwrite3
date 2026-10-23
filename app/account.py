@@ -133,6 +133,16 @@ def replay_tombstones(conn, data_dir):
     return n
 
 
+def replay_file(conn, data_dir, lines):
+    """Loads a saved tombstones file (one "hash date" per line), then deletes those accounts again.
+    After a restore, use the NEWEST tombstones file in the bucket, not the one saved next to an older dump."""
+    for line in lines:
+        parts = line.split()
+        if parts:
+            conn.execute("insert into tombstones (hash, deleted_on) values (%s, %s) on conflict do nothing", (parts[0], parts[1]))
+    return replay_tombstones(conn, data_dir)
+
+
 if __name__ == "__main__":
     # python -m app.account tombstones          prints every tombstone hash (the backup job saves this next to the dump)
     # python -m app.account replay FILE         after a restore: load the saved hashes, then delete those accounts again
@@ -144,10 +154,7 @@ if __name__ == "__main__":
             for r in c.execute("select hash, deleted_on from tombstones order by deleted_on"):
                 print(r["hash"], r["deleted_on"])
         elif len(sys.argv) == 3 and sys.argv[1] == "replay":
-            for line in open(sys.argv[2], encoding="utf-8"):
-                parts = line.split()
-                if parts:
-                    c.execute("insert into tombstones (hash, deleted_on) values (%s, %s) on conflict do nothing", (parts[0], parts[1]))
-            print("deleted again:", replay_tombstones(c, settings.data_dir))
+            with open(sys.argv[2], encoding="utf-8") as f:
+                print("deleted again:", replay_file(c, settings.data_dir, f))
         else:
             sys.exit("usage: python -m app.account tombstones | replay FILE")
