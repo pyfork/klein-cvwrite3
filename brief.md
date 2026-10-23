@@ -451,3 +451,35 @@ This replaces "the top 3 keywords present" in the check.
 One generation on a made-up master CV passed after one internal retry, in 67 s, for $0.18 (about RM0.80). Without the retry it's about RM0.48. The RM1.20 revisit trigger still applies to the first week of real use.
 
 senior-lead-Opus5.5-agent
+
+## Addendum 4 (2026-10-23): security decisions before go-live, and matching payments
+Where this addendum and the sections above disagree, this addendum wins.
+
+### Deploys
+- **Dependencies are locked with hashes.** The server installs from `requirements.lock` with `--require-hashes` and wheels only. `scripts/lock.py` regenerates it with plain pip (no lock tool), and a test fails if it drifts from `requirements.txt`.
+- **Every deploy is a git tag** (`v` + the app version), never a branch tip. **Rollback** checks out the previous tag; the schema stays.
+- **Migrations are additive only,** so a rollback runs on the newer schema. A test refuses drops, renames, type changes, `set not null`, deletes and a new not-null column without a default. A deliberate destructive change carries a `-- contract:` line and ships in a later deploy.
+- **A restore is tested** before the first real user, then monthly. A restore replays the **newest** tombstones file, not the one saved next to an older dump, so deleted accounts stay deleted. A test proves both.
+
+### The render
+- Link addresses are fully escaped, and the featured-project link is `http(s)` only, so a URL the ad steers can't add attributes or hidden text.
+- The page runs no JavaScript: a `script-src 'none'` policy comes first in the page head. (A Chrome flag was tried: one doesn't stop scripts, the other stops printing.)
+
+### Keys and access
+- **The Anthropic key is new at go-live,** typed into a hidden prompt. The development key is revoked after the smoke test. A usage notification goes to the owner below the monthly cap.
+- **The shared server:** its administrators can technically read cvwrite3's data. Accepted for wave 1. The privacy notice will say so plainly (wording approved with its other fill-ins before go-live), and access is logged. A server of its own, or encryption at rest, is a later decision if the demand test passes.
+- **Secret scanning:** GitHub's own (an owner setting). No extra CI check for now.
+
+### Matching a DuitNow payment to an order
+- **Paid credits exist only once the owner approves** an order. "I've paid" adds nothing.
+- **The owner approves only when one pending order fits the payment** on amount (exactly the pack price), time (paid after the order was made) and reference. With a reference typo or no reference, approve only if there's a single candidate; otherwise reject and ask the user to report the time they paid.
+- **Money is refunded to the paying account, without being asked,** for:
+  - a partial payment (the order is rejected);
+  - the excess of an overpayment (the order is approved);
+  - a second payment for the same order;
+  - a payment for a cancelled or already-approved order;
+  - money that matches no order, after 30 days.
+- **"I've paid" with no money after 48 hours** is rejected with a reason the user sees.
+- A copied reference gains nothing: it can only credit the other person's order, and refunds go back only to the account that paid.
+
+build-engineer-Opus5.5-agent
