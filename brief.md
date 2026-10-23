@@ -425,4 +425,29 @@ The skill's `references/cv-format.md` says 3 to 4 lines. The app uses **2 to 3**
 - **On a user's re-render,** a summary over 50 words only warns ("summary is N words, aim for 50 or fewer"). It never blocks, because it's the user's text.
 - **Not built:** measuring the summary's lines in the PDF. Revisit if 50-word summaries still wrap to 4 lines. Never clamp or cut the summary in CSS or code.
 
+## Addendum 3 (2026-10-23): keywords the candidate lacks, and the models
+Where this addendum and the sections above disagree, this addendum wins.
+
+### Top-3 keywords: backed, bridged or missing (chunk 3)
+This replaces "the top 3 keywords present" in the check.
+- **Call B reports a status for each top-3 keyword:**
+  - **backed:** the master CV shows the skill. The CV uses the keyword as the ad words it;
+  - **bridged:** the master CV shows an adjacent skill of the same kind (another tool for the same job). The CV names the real skill and bridges to the keyword honestly, e.g. "Tableau dashboards (transferable to Power BI)", and never implies the candidate has used the keyword's skill itself;
+  - **missing:** nothing related. The keyword is left out and listed under Gaps. It's never invented.
+- **The check requires backed and bridged keywords only.** A missing keyword is a warning, never a failure, so no internal retry is spent forcing it. A keyword call B doesn't report stays required.
+- **No question mid-run** (the brief has no review pause). The result page names each bridged or missing keyword: "If you do have it, add it with Edit the text (free) and to your master CV in Profile."
+- **On a re-render,** the keyword warning covers the required keywords only.
+
+### Models and limits
+- **Only Opus 5.5 and Haiku 5.5 ever run.** There's no server-side refusal fallback: a refusal fails the run, and no credit is used.
+- **Effort:** call A and call B at `medium` (the Opus 5.5 default, set explicitly); the Haiku re-format at `low`.
+- **The owner's Console workspace for cvwrite3 has its own key and limits:**
+  - Opus 20 requests, 200K input and 50K output tokens a minute;
+  - Haiku 10 requests, 50K input and 20K output tokens a minute;
+  - other models off;
+  - a monthly spend limit: $20 while testing, about $75 at launch, so it sits above the app's own $50 stop on free generations.
+
+### First real run (for the cost risk above)
+One generation on a made-up master CV passed after one internal retry, in 67 s, for $0.18 (about RM0.80). Without the retry it's about RM0.48. The RM1.20 revisit trigger still applies to the first week of real use.
+
 senior-lead-Opus5.5-agent
