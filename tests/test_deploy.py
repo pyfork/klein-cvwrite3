@@ -12,8 +12,8 @@ class Deploy(unittest.TestCase):
         self.assertEqual(len(UNITS), 4)
         for u in UNITS:
             text = u.read_text()
-            for key in ("User=cvwrite3", "Slice=cvwrite3.slice", "LogNamespace=cvwrite3", "EnvironmentFile=/srv/cvwrite3/.env",
-                        "ProtectSystem=strict", "ReadWritePaths=/srv/cvwrite3/data", "NoNewPrivileges=yes"):
+            for key in ("User=cvwrite3", "Slice=cvwrite3.slice", "LogNamespace=cvwrite3", "EnvironmentFile=/sites/cvwrite3/.env",
+                        "ProtectSystem=strict", "ReadWritePaths=/sites/cvwrite3/data", "NoNewPrivileges=yes"):
                 self.assertIn(key, text, f"{u.name}: {key}")
             for mod in re.findall(r"python -m (app\.\w+)", text) + re.findall(r"uvicorn (app\.\w+):", text):
                 self.assertTrue((ROOT / (mod.replace(".", "/") + ".py")).exists(), f"{u.name}: {mod}")

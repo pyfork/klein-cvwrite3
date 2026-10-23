@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Read-only checks after a deploy on sk24. Run as: sudo bash /srv/cvwrite3/app/deploy/smoke.sh
+# Read-only checks after a deploy on sk24. Run as: sudo bash /sites/cvwrite3/app/deploy/smoke.sh
 # It changes nothing. Exit 0 = every check passed.
 set -u
 fail=0
@@ -21,15 +21,15 @@ code=$(curl -s -o /dev/null -w '%{http_code}' -m 5 -H 'X-Forwarded-For: 1.2.3.4'
 code=$(curl -s -o /dev/null -w '%{http_code}' -m 10 https://cvwrite3.puascari.com/generate)
 case "$code" in 302|303|401|403) ok "public URL asks for sign-in first ($code)";; *) bad "public URL answered $code without sign-in";; esac
 
-stat -c '%a %U' /srv/cvwrite3/.env | grep -q '^600 cvwrite3$' && ok ".env is 0600 cvwrite3" || bad ".env permissions"
-[ -z "$(find /srv/cvwrite3/prompts -type f ! -perm 640 2>/dev/null)" ] && ok "prompts are 0640" || bad "prompts permissions"
-[ -f /srv/cvwrite3/config/qr/duitnow.png ] && ok "QR image in place" || bad "QR image missing"
+stat -c '%a %U' /sites/cvwrite3/.env | grep -q '^600 cvwrite3$' && ok ".env is 0600 cvwrite3" || bad ".env permissions"
+[ -z "$(find /sites/cvwrite3/prompts -type f ! -perm 640 2>/dev/null)" ] && ok "prompts are 0640" || bad "prompts permissions"
+[ -f /sites/cvwrite3/config/qr/duitnow.png ] && ok "QR image in place" || bad "QR image missing"
 
 journalctl --namespace=cvwrite3 -n 1 --no-pager >/dev/null 2>&1 && ok "journal namespace cvwrite3" || bad "journal namespace cvwrite3"
 nginx -t >/dev/null 2>&1 && ok "nginx config" || bad "nginx config"
 
-out=$(sudo -u cvwrite3 env $(grep -E '^CVWRITE_CHROME(_FLAGS)?=' /srv/cvwrite3/.env | xargs -d '\n') HOME=/srv/cvwrite3/data/chrome-home \
-  /srv/cvwrite3/venv/bin/python /srv/cvwrite3/app/checks/render_check.py /tmp/cvw3-smoke 2>&1)
+out=$(sudo -u cvwrite3 env $(grep -E '^CVWRITE_CHROME(_FLAGS)?=' /sites/cvwrite3/.env | xargs -d '\n') HOME=/sites/cvwrite3/data/chrome-home \
+  /sites/cvwrite3/venv/bin/python /sites/cvwrite3/app/checks/render_check.py /tmp/cvw3-smoke 2>&1)
 echo "$out" | grep -E '^FINGERPRINT'
 echo "$out" | grep -q 'RESULT: PASS' && ok "render check (compare the fingerprint with the Mac's)" || bad "render check"
 rm -rf /tmp/cvw3-smoke
