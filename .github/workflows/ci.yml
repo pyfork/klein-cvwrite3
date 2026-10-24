@@ -37,7 +37,8 @@ jobs:
           .venv/bin/pip check
 
       - name: Test-only packages (never on sk24)
-        run: grep -v '^-r' requirements-dev.txt | .venv/bin/pip install --only-binary :all: -r /dev/stdin
+        run: |
+          grep -v '^-r' requirements-dev.txt | .venv/bin/pip install --only-binary :all: -r /dev/stdin
 
       - name: Tests
         run: .venv/bin/python -m unittest discover tests
