@@ -10,11 +10,16 @@ import psycopg
 from psycopg.rows import dict_row
 
 MIGRATIONS = Path(__file__).resolve().parent.parent / "migrations"
+# The users' clock. Every connection uses it, so dates on pages are Malaysian dates whatever the
+# server's own Postgres timezone is (senior D5: CI runs in UTC; sk24 happens to be in Malaysia).
+TZ = "Asia/Kuala_Lumpur"
 
 
 def connect(url):
     """Autocommit: a single statement commits on its own; multi-step work uses conn.transaction()."""
-    return psycopg.connect(url, row_factory=dict_row, autocommit=True)
+    conn = psycopg.connect(url, row_factory=dict_row, autocommit=True)
+    conn.execute(f"set time zone '{TZ}'")
+    return conn
 
 
 def migrate(conn):

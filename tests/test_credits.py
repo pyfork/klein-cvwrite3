@@ -90,6 +90,20 @@ class Pages(AppCase):
             self.assertIn("earliest expire", page, path)
         self.assertIn(f"The earliest expire on {expiry}", self.get("/credits", self.EMAIL).text)
 
+    def test_dates_are_malaysian_whatever_the_server_timezone(self):
+        """Senior D5: no wall clock. A grant made at 23:30 UTC is the next day in Malaysia, and the page
+        must say so even when Postgres itself runs in UTC (as on CI)."""
+        import psycopg
+        from tests.support import _server_uri
+        with psycopg.connect(_server_uri(), autocommit=True) as c:
+            c.execute(f"alter database {self.dbname} set timezone = 'UTC'")
+        with self.conn() as c:
+            c.execute("insert into credit_ledger (account_id, delta, kind, created_at, expires_at) values "
+                      "(%s, 1, 'free', '2026-03-01 23:30+00', '2027-03-01 23:30+00')", (self.acct,))
+        page = self.get("/credits", self.EMAIL).text
+        self.assertIn("The earliest expire on 2 Mar 2027", page)   # 07:30 on 2 March in Malaysia
+        self.assertIn("<td>2 Mar 2026</td>", page)
+
     def test_paywall_at_zero(self):
         with self.conn() as c:
             run = c.execute("insert into runs (account_id, ad_text, status) values (%s, %s, 'passed') returning id", (self.acct, "x" * 300)).fetchone()["id"]

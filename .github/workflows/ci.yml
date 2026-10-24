@@ -1,0 +1,43 @@
+# CI on sk24's platform (senior D1): Ubuntu 22.04 and its own Python 3.10.12, the hash-locked install
+# exactly as the server does it, then the full test suite. build-engineer-Opus5.5-agent, 2026-10-24
+#
+# Supply chain: one action only, GitHub's own checkout, pinned by commit hash. No setup-python: the
+# runner's system Python is the same Ubuntu build sk24 runs. No secrets, read-only token.
+# Not run here: the render tests (they need Chrome and poppler; they run on the Mac and at runbook step 7).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Python is sk24's (3.10)
+        run: python3 -c 'import sys; print(sys.version); assert sys.version_info[:2] == (3, 10)'
+
+      - name: Install exactly as sk24 does
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install --require-hashes --only-binary :all: -r requirements.lock
+          .venv/bin/pip check
+
+      - name: Test-only packages (never on sk24)
+        run: grep -v '^-r' requirements-dev.txt | .venv/bin/pip install --only-binary :all: -r /dev/stdin
+
+      - name: Tests
+        run: .venv/bin/python -m unittest discover tests
