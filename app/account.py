@@ -115,6 +115,7 @@ def delete_account(conn, data_dir, account_id, email, refund_requested=False):
         conn.execute("delete from problem_reports where account_id = %s", (account_id,))
         conn.execute("delete from access_requests where email = %s", (email,))
         conn.execute("delete from allowed_users where account_id = %s", (account_id,))
+        conn.execute("delete from sessions where email = %s", (email,))
         conn.execute("update orders set flag = 'account deleted: refund if received' where account_id = %s and status = 'pending'", (account_id,))
         conn.execute("update consents set account_deleted_at = now() where email = %s and account_deleted_at is null", (email,))
         conn.execute("update accounts set deleted_at = now(), refund_requested_rm = %s where id = %s", (refund_rm, account_id))

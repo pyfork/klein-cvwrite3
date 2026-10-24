@@ -60,7 +60,10 @@ class Account(CVCase):
             self.assertEqual(c.execute("select count(*) n from credit_ledger where account_id = %s", (self.acct,)).fetchone()["n"], 2)
             self.assertIsNotNone(c.execute("select account_deleted_at from consents where email = %s", (self.EMAIL,)).fetchone()["account_deleted_at"])
             self.assertIsNotNone(c.execute("select 1 from tombstones where hash = %s", (account.tombstone_hash(self.acct),)).fetchone())
+            self.assertIsNone(c.execute("select 1 from sessions where email = %s", (self.EMAIL,)).fetchone())
         self.assertFalse(pdf.exists())
+        self.assertEqual(self.get("/generate", self.EMAIL).headers["location"], "/signin")   # signed out by the delete
+        self.sessions.clear()   # signing in again: the email is no longer on the list
         self.assertEqual(self.get("/generate", self.EMAIL).headers["location"], "/request")
         self.assertIn(f"deleted-", self.get("/admin", OWNER).text)
 
@@ -87,6 +90,7 @@ class Account(CVCase):
 
     def test_no_free_credits_on_rejoining(self):
         self.post("/account/delete", self.EMAIL, {"confirm": "DELETE"})
+        self.sessions.clear()   # signs in again
         self.approve(self.EMAIL)
         with self.conn() as c:
             acct = c.execute("select account_id from allowed_users where email = %s", (self.EMAIL,)).fetchone()["account_id"]

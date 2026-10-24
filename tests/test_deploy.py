@@ -45,14 +45,14 @@ class Deploy(unittest.TestCase):
         names = set()
         for f in list((ROOT / "app").glob("*.py")) + list((ROOT / "render").glob("*.py")):
             names |= set(re.findall(r'["\'](CVWRITE_[A-Z_]+|ANTHROPIC_API_KEY)["\']', f.read_text()))
-        dev_only = {"CVWRITE_DEV_KEY_FILE", "CVWRITE_CLAUDE", "CVWRITE_FONTS", "CVWRITE_HEALTHZ_URL"}
+        dev_only = {"CVWRITE_CLAUDE", "CVWRITE_FONTS", "CVWRITE_HEALTHZ_URL"}
         template = (ROOT / "env.example").read_text()
         for n in sorted(names - dev_only):
             self.assertIn(f"\n{n}=", template, n)
 
     def test_template_holds_no_values_for_secrets(self):
         for line in (ROOT / "env.example").read_text().splitlines():
-            if re.match(r"^(CVWRITE_SECRET_KEY|ANTHROPIC_API_KEY|CVWRITE_BACKUP_SECRET|CVWRITE_BACKUP_KEY_ID|CVWRITE_ACCESS_AUD)=", line):
+            if re.match(r"^(CVWRITE_SECRET_KEY|ANTHROPIC_API_KEY|CVWRITE_BACKUP_SECRET|CVWRITE_BACKUP_KEY_ID|CVWRITE_SMTP_PASSWORD)=", line):
                 self.assertTrue(line.endswith("="), line)
 
 

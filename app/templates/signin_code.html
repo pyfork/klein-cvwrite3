@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Enter your code{% endblock %}
+{% block content %}
+<h1 class="title">Check your email</h1>
+<p class="lede">We sent a 6-digit code to <b>{{ email }}</b>. It works for 10 minutes.</p>
+{% if wrong %}<div class="alert alert-bad" role="alert">That code didn't work. Check it, or ask for a new one.</div>{% endif %}
+<form class="card stack" method="post" action="/signin/code">
+  <label class="field"><span>The code</span>
+    <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus></label>
+  <button type="submit" class="btn btn-primary">Sign in</button>
+  <p class="hint">Nothing there? Check spam, or <a class="link" href="/signin">ask for a new code</a>.</p>
+</form>
+{% endblock %}

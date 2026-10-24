@@ -1,4 +1,4 @@
-# The web app: uvicorn on 127.0.0.1:8000 behind nginx and Cloudflare Access.
+# The web app: uvicorn on 127.0.0.1:8000 behind nginx and Cloudflare.
 # Its own request log is one JSON line per request (journalctl --namespace=cvwrite3), so uvicorn's is off.
 [Unit]
 Description=cvwrite3 web app

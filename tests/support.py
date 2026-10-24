@@ -1,27 +1,21 @@
-"""Shared test setup: a throwaway Postgres, one fresh database per test, a test signing key, a client.
+"""Shared test setup: a throwaway Postgres, one fresh database per test, a client, sessions made directly.
 
 All emails here are made up.
 """
 import atexit
-import json
 import shutil
 import tempfile
-import time
 import unittest
 import uuid
 from pathlib import Path
 
-import jwt
 import psycopg
-from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi.testclient import TestClient
 
-from app import config, db
+from app import config, db, mailer
 
 ORIGIN = "https://cvwrite3.test"
 OWNER = "owner@example.com"
-TEAM = "cvw3-test.cloudflareaccess.com"
-AUD = "test-aud-0123456789"
 
 _state = {}
 
@@ -50,25 +44,6 @@ def _server_uri():
     return _state["uri"]
 
 
-def _keys():
-    if "key" not in _state:
-        key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-        jwk = json.loads(jwt.algorithms.RSAAlgorithm.to_jwk(key.public_key()))
-        jwk.update(kid="t1", alg="RS256", use="sig")
-        d = Path(tempfile.mkdtemp(prefix="cvw3-keys-"))
-        (d / "certs.json").write_text(json.dumps({"keys": [jwk]}))
-        _state.update(key=key, certs=(d / "certs.json").as_uri())
-        other = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-        _state["other_key"] = other
-    return _state
-
-
-def token(email, aud=AUD, iss="https://" + TEAM, exp_in=600, key=None, kid="t1"):
-    now = int(time.time())
-    k = key or _keys()["key"]
-    return jwt.encode({"email": email, "aud": [aud], "iss": iss, "iat": now, "exp": now + exp_in}, k, algorithm="RS256", headers={"kid": kid})
-
-
 class AppCase(unittest.TestCase):
     """Each test gets its own database, cloned from a migrated template."""
 
@@ -80,12 +55,14 @@ class AppCase(unittest.TestCase):
         self.data_dir = tempfile.mkdtemp(prefix="cvw3-data-")
         self.settings = config.Settings(
             env="dev", database_url=_with_db(self.dbname), owner_email=OWNER, secret_key="x" * 40,
-            access_team=TEAM, access_aud=AUD, access_certs_url=_keys()["certs"], app_origin=ORIGIN,
+            app_origin=ORIGIN,
             data_dir=self.data_dir, claude="fake",
             qr_path=str(Path(self.data_dir) / "no-qr.png"),  # never the owner's real QR on this machine
         )
         from app.main import create_app
-        self.app = create_app(self.settings)
+        self.outbox = mailer.Outbox()
+        self.app = create_app(self.settings, mail=self.outbox)
+        self.sessions = {}
         self.client = TestClient(self.app, base_url=ORIGIN, follow_redirects=False)
 
     def tearDown(self):
@@ -98,7 +75,13 @@ class AppCase(unittest.TestCase):
         return db.connect(self.settings.database_url)
 
     def as_user(self, email):
-        return {"Cf-Access-Jwt-Assertion": token(email)}
+        """A signed-in session for this email, made directly (tests/test_signin.py covers the real flow)."""
+        email = email.lower()
+        if email not in self.sessions:
+            from app import signin
+            with self.conn() as c:
+                self.sessions[email] = signin.start_session(c, self.settings, email)
+        return {"Cookie": f"cvwrite3={self.sessions[email]}"}
 
     def get(self, path, email=None, **kw):
         return self.client.get(path, headers=self.as_user(email) if email else {}, **kw)

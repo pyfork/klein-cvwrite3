@@ -180,7 +180,9 @@ def funnel(conn):
 def retention(conn, data_dir=None):
     """Daily: request logs live in journald (90 days, set in chunk 7). Here: CVs, ads and PDFs 30 days; step rows
     90 days; errors, degraded events and uptime checks 12 months; closed problem reports 12 months after closing;
-    consent records 12 months after the account was deleted."""
+    consent records 12 months after the account was deleted; sign-in codes after a day, sessions once expired."""
+    from . import signin
+    signin.purge(conn)
     if data_dir:
         from . import account
         account.purge_old_runs(conn, data_dir)
