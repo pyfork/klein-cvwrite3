@@ -7,12 +7,12 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from . import credits
+from . import credits, db
 
 DAILY_CAP = 20
 MONTHLY_STOP_USD = Decimal("50")
 MONTHLY_WARN_USD = Decimal("20")
-TZ = "Asia/Kuala_Lumpur"
+TZ = db.TZ
 
 
 def used_today(conn, account_id):
