@@ -483,3 +483,35 @@ Where this addendum and the sections above disagree, this addendum wins.
 - A copied reference gains nothing: it can only credit the other person's order, and refunds go back only to the account that paid.
 
 build-engineer-Opus5.5-agent
+
+## Addendum 5 (2026-10-25): sign-in in the app, its one email, and how deploys are named
+Where this addendum and the sections above disagree, this addendum wins.
+
+### Sign-in (replaces Cloudflare Access in "User flow" step 1, chunk 2 and "Owner actions")
+- **No Cloudflare Access.** Its free plan counts every email that signs in, requesters included, against 50 seats, and wave 2 alone is 50 users. Cloudflare stays as the proxy, the origin certificate and the gate that refuses traffic not from Cloudflare.
+- **An emailed 6-digit code** (chunk 7j): it works across devices, and link scanners can't use it up.
+  - A code lasts 10 minutes and allows 5 tries. Asking for a new one retires the old one.
+  - Limits: 3 codes per email per 15 minutes, 10 per IP an hour, 300 a day for everyone (a ceiling on what the mail account can be made to send).
+  - Codes and session tokens are stored hashed. Sessions are server-side and last 30 days.
+  - Every email gets a code, so the reply never shows whether an email is on the list. After sign-in, the app looks the email up in `allowed_users` as before; one that isn't there gets the request-access page.
+  - No email address goes into a log.
+- **Sent over SMTP with the standard library,** so no new dependency.
+
+### The one email (an exception to "no emails" in "What isn't sent or stored" and "Out of scope")
+- **Sign-in codes are the only email the app sends.** Receipts, reminders, replies to problem reports and marketing are still out.
+- **Amazon SES, Singapore (`ap-southeast-1`),** the same country as the backups. Domain `puascari.com` (its sender reputation is shared with the owner's later projects; accepted), From `signin@puascari.com`.
+- **cvwrite3 has its own SMTP credentials:** an IAM user that may only send, and only from `signin@puascari.com`. Never the box's own AWS key or another tenant's.
+- **The v1.0 notice names Amazon Web Services (SES, Singapore)** as a recipient, for the sign-in email only, and no longer names Cloudflare for sign-in. v1.0 is still unpublished, so this is part of v1.0 and needs no new consent.
+
+### Deploys (replaces "every deploy is a git tag" in Addendum 4)
+- **Every deploy is a commit SHA on `main`.** Each one adds a line to `/sites/cvwrite3/DEPLOYS` on the box: UTC time, the full SHA, who, a note. **Rollback** is the line before; the schema stays.
+- **One GitHub release, `v1.0.0`,** when wave 1 opens.
+- **Every box step has a written undo** (the runbook, and `/sites/cvwrite3/README-BOX-CHANGES.md` on the box). Once real users exist, the user and database steps hold their data: restore from backup instead of undoing them.
+
+### CI on sk24's platform (closes "Python 3.10 parity" in Addendum 1)
+- **One CI workflow on every PR:** Ubuntu 22.04 and its own Python 3.10, the hash-locked, wheels-only install exactly as the server runs it, and the full test suite. `ci / test` is a required check on `main` (an owner setting).
+- **Tests never read the wall clock.** One test runs at 23:30 UTC (07:30 the next day in Malaysia) across the pages that show dates.
+- **Every database connection uses `Asia/Kuala_Lumpur`,** so dates are right whatever the server's own time zone.
+- **A dependency released in the last few days is held back** until it has been out for a while (`jiter` at 0.17.0 for the first deploy).
+
+build-engineer-Opus5.5-agent
