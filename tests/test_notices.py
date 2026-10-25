@@ -6,7 +6,12 @@ import unittest
 from app import i18n, notices
 
 # version -> {lang: sha256 of notices/vX.Y.<lang>.md}. Add a version when its status becomes "published".
-PINNED = {}
+PINNED = {
+    "1.0": {
+        "en": "c8f4662b8e8bc21e3a56f80538fa3e5da688dcd451b21e09b76894e5cdecd551",
+        "ms": "5281e2c2f0346c1fc5b6c9756ddb71086c1014fd3df958331b01b1b150a36c1c",
+    },
+}
 
 
 class Notices(unittest.TestCase):
