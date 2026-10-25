@@ -17,7 +17,7 @@ document.querySelectorAll(".drop input[type=file]").forEach(function (input) {
     btn.disabled = big;
     t.textContent = f ? f.name : t0;
     s.textContent = !f ? s0 : big ? size(f.size) + ": over 2 MB. Choose a smaller file."
-                                  : size(f.size) + ". Choose again to use a different file.";
+                                  : size(f.size) + ". Select a different file.";
   }
 
   input.addEventListener("change", show);
