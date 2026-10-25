@@ -33,4 +33,4 @@ You're responsible for checking that your CV is true before you send it. We can'
 If we pause generating to fix a problem, your saved requests and credits are safe. If a pause lasts more than 3 days, we may extend your credits' expiry by the length of the pause.
 
 ## 8. Contact
-Email [request email], or use "Report a problem" at the bottom of any page.
+Email privacy@puascari.com, or use "Report a problem" at the bottom of any page.
