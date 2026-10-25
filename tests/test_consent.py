@@ -57,7 +57,7 @@ class Consent(AppCase):
             r = self.get("/", ALICE)
             self.assertEqual(r.headers["location"], "/consent")
             page = self.get("/consent", ALICE).text
-            self.assertIn("We've updated our privacy notice", page)
+            self.assertIn("updated our privacy notice", page)
             self.assertIn("What changed in v2.0:", page)
             self.assertIn("What changed in v1.1:", page)
             self.agree(ALICE)
@@ -78,6 +78,25 @@ class Consent(AppCase):
 
 
 class NoticePages(AppCase):
+    def test_malay_consent_and_notice(self):
+        self.approve(ALICE)
+        page = self.get("/consent?lang=ms", ALICE).text
+        for s in ("Sebelum anda bermula", "Sesetengahnya berada di luar Malaysia", "Saya telah membaca notis privasi ini dan bersetuju.",
+                  "Teruskan", '<a href="/consent?lang=en" lang="en">English</a>'):
+            self.assertIn(s, page)
+        v = notices.latest().version
+        self.assertIn("Tandakan kotak pertama", self.post("/consent", ALICE, {"version": v, "lang": "ms"}).text)
+        self.post("/consent", ALICE, {"agree": "yes", "version": v, "lang": "ms"})
+        with self.conn() as c:
+            row = c.execute("select lang, text_hash from consents where email = %s", (ALICE,)).fetchone()
+        self.assertEqual((row["lang"], row["text_hash"]), ("ms", notices.text_hash(v, "ms")))
+        notice = self.get("/privacy?lang=ms", ALICE).text
+        self.assertIn("1. Siapa kami", notice)
+        self.assertIn('<div lang="ms">', notice)
+
+    def test_unknown_language_falls_back_to_english(self):
+        self.assertIn("1. Who we are", self.get("/privacy?lang=xx", ALICE).text)
+
     def test_pages(self):
         v = notices.latest().version
         self.assertIn("1. Who we are", self.get("/privacy", ALICE).text)
