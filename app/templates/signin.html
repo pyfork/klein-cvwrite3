@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<p class="eyebrow">Invite only, for now</p>
+<h1 class="title">Sign in to cvwrite3</h1>
+<p class="lede">We'll email you a 6-digit code. No password.</p>
+{% if problem == 'bad' %}<div class="alert alert-bad" role="alert">That doesn't look like an email address. Check it and try again.</div>
+{% elif problem == 'many' %}<div class="alert alert-warn" role="alert">Too many codes asked for. Wait 15 minutes, then try again.</div>
+{% elif problem == 'mail' %}<div class="alert alert-bad" role="alert">We couldn't send the email. Please try again in a minute.</div>{% endif %}
+<form class="card stack" method="post" action="/signin">
+  <label class="field"><span>Your email</span>
+    <input type="email" name="email" value="{{ email|default('') }}" maxlength="254" autocomplete="email" autocapitalize="off" spellcheck="false" required autofocus></label>
+  <button type="submit" class="btn btn-primary">Email me a code</button>
+  <p class="hint">New here? Sign in with your email first, then ask to join.</p>
+</form>
+<p class="meta">Questions? Email [request email]. <a href="/privacy">Privacy notice</a></p>
+{% endblock %}

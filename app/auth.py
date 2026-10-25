@@ -1,78 +1,84 @@
-"""Who is asking: the Cloudflare Access token, checked against the team's keys and the app's AUD tag.
+"""Who is asking: the session cookie set at sign-in (app.signin), and CSRF checks for forms.
 
-Cloudflare Access sits in front of the app and adds `Cf-Access-Jwt-Assertion` to every request
-it lets through. A request without a valid token never reached us through Access, so it's refused.
+The cookie holds a random token; the database holds only its HMAC. In prod the cookie is `__Host-` prefixed,
+Secure, HttpOnly and SameSite=Lax, so only this origin, over https, ever sends it.
 """
+import base64
 import hashlib
 import hmac
+import time
 
-import jwt
-
-HEADER = "Cf-Access-Jwt-Assertion"
-DEV_COOKIE = "cvwrite_dev_token"  # dev only: lets a browser carry a token minted by app.devlogin
+from . import signin
 
 
 class NotSignedIn(Exception):
     pass
 
 
-class Verifier:
-    def __init__(self, settings):
-        self.settings = settings
-        url = settings.access_certs_url
-        if url.startswith("file://"):
-            # Dev and tests: keys from a local file (config allows this only outside prod).
-            self.keys = _FileKeys(url)
-        else:
-            self.keys = jwt.PyJWKClient(url, cache_keys=True, lifespan=3600)
-
-    def email(self, request):
-        token = request.headers.get(HEADER)
-        if not token and self.settings.env == "dev":
-            token = request.cookies.get(DEV_COOKIE)
-        if not token:
-            raise NotSignedIn("no token")
-        try:
-            key = self.keys.get_signing_key_from_jwt(token).key
-            claims = jwt.decode(
-                token, key, algorithms=["RS256"],
-                audience=self.settings.access_aud, issuer=self.settings.access_issuer,
-                options={"require": ["exp", "iat", "aud", "iss", "email"]}, leeway=30,
-            )
-        except (jwt.PyJWTError, jwt.PyJWKClientError) as e:
-            raise NotSignedIn(type(e).__name__) from None
-        email = str(claims["email"]).strip().lower()
-        if "@" not in email:
-            raise NotSignedIn("bad email claim")
-        return email
+def cookie_name(settings):
+    return "__Host-cvwrite3" if settings.env == "prod" else "cvwrite3"
 
 
-class _FileKeys:
-    def __init__(self, url):
-        from urllib.parse import urlparse
-        from urllib.request import url2pathname
-        with open(url2pathname(urlparse(url).path), encoding="utf-8") as f:
-            self.keyset = jwt.PyJWKSet.from_json(f.read())
+def set_cookie(settings, response, token):
+    response.set_cookie(cookie_name(settings), token, max_age=signin.SESSION_DAYS * 86400, path="/",
+                        secure=settings.env == "prod", httponly=True, samesite="lax")
 
-    def get_signing_key_from_jwt(self, token):
-        kid = jwt.get_unverified_header(token).get("kid")
-        for key in self.keyset.keys:
-            if key.key_id == kid:
-                return key
-        raise jwt.PyJWKClientError("no matching key")
+
+def clear_cookie(settings, response):
+    response.delete_cookie(cookie_name(settings), path="/", secure=settings.env == "prod", httponly=True, samesite="lax")
+
+
+def _pending_name(settings):
+    return "__Host-cvwrite3_pending" if settings.env == "prod" else "cvwrite3_pending"
+
+
+def set_pending(settings, response, email):
+    """Between asking for a code and typing it: which email, signed, for as long as the code lasts."""
+    exp = int(time.time()) + signin.CODE_TTL_MIN * 60
+    body = f"{exp}.{base64.urlsafe_b64encode(email.encode()).decode().rstrip('=')}"
+    sig = hmac.new(settings.secret_key.encode(), b"pending:" + body.encode(), hashlib.sha256).hexdigest()[:32]
+    response.set_cookie(_pending_name(settings), f"{body}.{sig}", max_age=signin.CODE_TTL_MIN * 60, path="/",
+                        secure=settings.env == "prod", httponly=True, samesite="lax")
+
+
+def pending_email(settings, request):
+    try:
+        exp, b64, sig = (request.cookies.get(_pending_name(settings)) or "").split(".")
+        good = hmac.new(settings.secret_key.encode(), f"pending:{exp}.{b64}".encode(), hashlib.sha256).hexdigest()[:32]
+        if not hmac.compare_digest(sig, good) or int(exp) < time.time():
+            return None
+        return base64.urlsafe_b64decode(b64 + "=" * (-len(b64) % 4)).decode()
+    except ValueError:
+        return None
+
+
+def clear_pending(settings, response):
+    response.delete_cookie(_pending_name(settings), path="/", secure=settings.env == "prod", httponly=True, samesite="lax")
+
+
+def email(conn, settings, request):
+    found = signin.session_email(conn, settings, request.cookies.get(cookie_name(settings)))
+    if not found:
+        raise NotSignedIn()
+    return found
 
 
 def csrf_token(settings, email):
     return hmac.new(settings.secret_key.encode(), b"csrf:" + email.encode(), hashlib.sha256).hexdigest()[:40]
 
 
-def csrf_ok(settings, request, email, token):
-    """A form POST must carry our token and come from our own origin."""
+def origin_ok(settings, request):
+    """The form was posted from our own pages (the only check a signed-out form can have)."""
     origin = request.headers.get("origin") or ""
     if not origin:
         referer = request.headers.get("referer") or ""
         origin = referer[: len(settings.app_origin)] if referer.startswith(settings.app_origin + "/") else ""
-    return origin == settings.app_origin and hmac.compare_digest(token or "", csrf_token(settings, email))
+    return origin == settings.app_origin
+
+
+def csrf_ok(settings, request, email, token):
+    """A form POST must carry our token and come from our own origin."""
+    return origin_ok(settings, request) and hmac.compare_digest(token or "", csrf_token(settings, email))
 
 
 def hashed_id(email):

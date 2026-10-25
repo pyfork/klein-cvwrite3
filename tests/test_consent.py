@@ -102,7 +102,7 @@ class ProdGuard(AppCase):
         drafts = (notices.Version("1.0", "2026-10-22", "draft", "x", "y"),)
         with mock.patch.object(notices, "versions", lambda: drafts):
             with self.assertRaises(config.ConfigError):
-                create_app(replace(self.settings, env="prod", access_certs_url="https://example.invalid/certs"))
+                create_app(replace(self.settings, env="prod"))
 
 
 if __name__ == "__main__":

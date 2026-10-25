@@ -1,7 +1,8 @@
-"""Runs the app and the worker on this Mac with a throwaway Postgres, a dev signing key and the fake
-Claude (set CVWRITE_CLAUDE=real to use the API). Never on sk24.
+"""Runs the app and the worker on this Mac with a throwaway Postgres and the fake Claude
+(set CVWRITE_CLAUDE=real to use the API). Never on sk24.
 
-    .venv/bin/python scripts/dev.py          then open http://localhost:8766/dev/login
+    .venv/bin/python scripts/dev.py          then open http://localhost:8766/dev/login (skips the code),
+                                             or /signin (the code is printed here instead of mailed)
 
 Everything lives in data/dev/ (git-ignored). The owner email here is made up: owner@example.com.
 """
@@ -20,25 +21,20 @@ def main():
     import pgserver
     import uvicorn
 
-    from app import db, devlogin
+    from app import db
 
     DEV.mkdir(parents=True, exist_ok=True)
     pg = pgserver.get_server(str(DEV / "pg"), cleanup_mode=None)
     url = pg.get_uri()
     with db.connect(url) as c:
         print("migrations:", db.migrate(c) or "up to date")
-    key, certs = DEV / "key.pem", DEV / "certs.json"
-    if not key.exists():
-        devlogin.make_keys(key, certs)
     secret = DEV / "secret"
     if not secret.exists():
         secret.write_text(secrets.token_hex(32))
         secret.chmod(0o600)
     os.environ.update(
         CVWRITE_ENV="dev", CVWRITE_DATABASE_URL=url, CVWRITE_OWNER_EMAIL="owner@example.com",
-        CVWRITE_SECRET_KEY=secret.read_text(), CVWRITE_ACCESS_TEAM="cvw3-dev.cloudflareaccess.com",
-        CVWRITE_ACCESS_AUD="dev-aud", CVWRITE_ACCESS_CERTS_URL=certs.as_uri(),
-        CVWRITE_APP_ORIGIN=f"http://localhost:{PORT}", CVWRITE_DEV_KEY_FILE=str(key),
+        CVWRITE_SECRET_KEY=secret.read_text(), CVWRITE_APP_ORIGIN=f"http://localhost:{PORT}",
         CVWRITE_DATA_DIR=str(DEV / "files"), CVWRITE_CLAUDE=os.environ.get("CVWRITE_CLAUDE", "fake"),
     )
     # A real-API run reads the key the owner typed into data/dev/anthropic_key (0600). It's never printed.

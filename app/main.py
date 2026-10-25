@@ -1,6 +1,6 @@
 """The web app. Chunk 2: sign-in, the whitelist, request access, admin approval, the notice and consent.
 
-Run (dev): see scripts/dev.py. Prod: uvicorn "app.main:create_app" --factory, behind nginx and Access.
+Run (dev): see scripts/dev.py. Prod: uvicorn "app.main:create_app" --factory, behind nginx and Cloudflare. Sign-in: app.signin.
 """
 import json
 import logging
@@ -13,16 +13,16 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, credits, db, health, notices, orders, pause, routes_account, routes_cv, routes_ops, routes_pay
+from . import access, auth, config, credits, db, health, mailer, notices, orders, pause, routes_account, routes_cv, routes_ops, routes_pay, signin
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.7.1"
+APP_VERSION = "0.8.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
-NO_CONSENT_NEEDED = ("/consent", "/privacy", "/request", "/terms", "/deleted")
+NO_CONSENT_NEEDED = ("/consent", "/privacy", "/request", "/terms", "/deleted", "/signin")
 
 
 class Page(Exception):
@@ -32,11 +32,11 @@ class Page(Exception):
         self.response = response
 
 
-def create_app(settings=None, verifier=None):
+def create_app(settings=None, mail=None):
     settings = settings or config.load()
     if settings.env == "prod" and notices.latest().status != "published":
         raise config.ConfigError(f"privacy notice v{notices.latest().version} is still a draft")
-    verifier = verifier or auth.Verifier(settings)
+    mail = mail or (mailer.SMTPMailer(settings) if settings.env == "prod" else mailer.Outbox(echo=True))
     if not log.handlers:
         # journald stores one JSON line per request. Run uvicorn with --no-access-log: its own
         # log line carries the full URL.
@@ -93,9 +93,10 @@ def create_app(settings=None, verifier=None):
 
     def who(request):
         try:
-            email = verifier.email(request)
+            with conn() as c:
+                email = auth.email(c, settings, request)
         except auth.NotSignedIn:
-            raise error(request, 403, "Sign in first", "Open cvwrite3 from its address so you can sign in.") from None
+            raise Page(RedirectResponse("/signin", 303)) from None
         request.state.user_hash = auth.hashed_id(email)
         return email
 
@@ -120,6 +121,70 @@ def create_app(settings=None, verifier=None):
     def check_post(request, email, token):
         if not auth.csrf_ok(settings, request, email, token):
             raise error(request, 403, "That didn't work", "The form expired or came from somewhere else. Go back, reload the page and try again.")
+
+    # ---- sign in: a 6-digit code by email (chunk 7j) ---------------------------------
+    def signed_out_post(request):
+        if not auth.origin_ok(settings, request):
+            raise error(request, 403, "That didn't work", "The form came from somewhere else. Go back, reload the page and try again.")
+
+    @app.get("/signin", response_class=HTMLResponse)
+    def signin_page(request: Request):
+        with conn() as c:
+            if signin.session_email(c, settings, request.cookies.get(auth.cookie_name(settings))):
+                return RedirectResponse("/", 303)
+        return render(request, "signin.html", signed_out=True)
+
+    @app.post("/signin")
+    def signin_post(request: Request, email: str = Form("")):
+        signed_out_post(request)
+        clean = signin.clean_email(email)
+        if not clean:
+            return render(request, "signin.html", status=400, signed_out=True, problem="bad", email=email[:254])
+        # Only Cloudflare's edge can reach nginx (the 444 gate), so its client-IP header can be trusted.
+        ip = request.headers.get("cf-connecting-ip") or (request.client.host if request.client else "")
+        try:
+            with conn() as c:
+                signin.send_code(c, settings, mail, clean, ip)
+        except signin.TooMany:
+            return render(request, "signin.html", status=429, signed_out=True, problem="many", email=clean)
+        except mailer.MailError as e:
+            with conn() as c:
+                health.record_error(c, e, route=request.url.path, request_id=request.state.id)
+            return render(request, "signin.html", status=502, signed_out=True, problem="mail", email=clean)
+        r = RedirectResponse("/signin/code", 303)
+        auth.set_pending(settings, r, clean)
+        return r
+
+    @app.get("/signin/code", response_class=HTMLResponse)
+    def code_page(request: Request):
+        email = auth.pending_email(settings, request)
+        if not email:
+            return RedirectResponse("/signin", 303)
+        return render(request, "signin_code.html", signed_out=True, email=email)
+
+    @app.post("/signin/code")
+    def code_post(request: Request, code: str = Form("")):
+        signed_out_post(request)
+        email = auth.pending_email(settings, request)
+        if not email:
+            return RedirectResponse("/signin", 303)
+        with conn() as c:
+            token = signin.start_session(c, settings, email) if signin.check_code(c, settings, email, code) else None
+        if not token:
+            return render(request, "signin_code.html", status=400, signed_out=True, email=email, wrong=True)
+        r = RedirectResponse("/", 303)
+        auth.set_cookie(settings, r, token)
+        auth.clear_pending(settings, r)
+        return r
+
+    @app.post("/signout")
+    def signout(request: Request, csrf: str = Form("")):
+        check_post(request, who(request), csrf)
+        with conn() as c:
+            signin.end_session(c, settings, request.cookies.get(auth.cookie_name(settings)))
+        r = RedirectResponse("/signin", 303)
+        auth.clear_cookie(settings, r)
+        return r
 
     # ---- user pages ------------------------------------------------------------
     @app.get("/request", response_class=HTMLResponse)
@@ -173,7 +238,7 @@ def create_app(settings=None, verifier=None):
             notices.record(c, u["email"], lang, sensitive == "yes")
         return RedirectResponse("/", 303)
 
-    # ---- the notice (no sign-in needed beyond Access) --------------------------
+    # ---- the notice (no sign-in needed) ----------------------------------------
     def notice_page(request, v, lang):
         if v is None:
             raise error(request, 404, "Not found", "There's no privacy notice with that number.")

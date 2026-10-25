@@ -41,6 +41,7 @@
   {% if u %}<a href="/report?page={{ request.url.path|urlencode }}">Report a problem</a><a href="/reports">Your reports</a>{% endif %}
   <a href="/privacy">Privacy notice</a>
   <a href="/terms">Terms</a>
+  {% if u or o %}<form method="post" action="/signout" class="foot-form"><input type="hidden" name="csrf" value="{{ (u or o).csrf }}"><button type="submit">Sign out</button></form>{% endif %}
   <span>v{{ app_version }}</span>
 </footer>
 </div>
