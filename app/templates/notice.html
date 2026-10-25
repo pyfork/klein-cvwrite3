@@ -1,12 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Privacy notice v{{ v.version }}{% endblock %}
+{% block title %}{{ t.notice_title }} v{{ v.version }}{% endblock %}
 {% block content %}
-<p class="eyebrow">Privacy notice v{{ v.version }} · {{ v.date }}{% if v.status == 'draft' %} · draft{% endif %}</p>
-<h1 class="title">Privacy notice</h1>
-<p class="lede">How cvwrite3 collects, uses and protects your personal data, under Malaysia's Personal Data Protection Act 2010.</p>
+<div lang="{{ lang }}">
+<p class="eyebrow">{{ t.eyebrow.format(version=v.version) }} · {{ v.date }}{% if v.status == 'draft' %} · {{ t.draft }}{% endif %}</p>
+{% if langs|length > 1 %}<p class="meta lang-switch">{% for l in langs %}{% if l == lang %}<b>{{ names[l] }}</b>{% else %}<a href="?lang={{ l }}" lang="{{ l }}">{{ names[l] }}</a>{% endif %}{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
+<h1 class="title">{{ t.notice_title }}</h1>
+<p class="lede">{{ t.notice_lede }}</p>
 {% if v.version != latest.version %}
-<div class="alert alert-info">This is an older version. <a href="/privacy">Read the current one (v{{ latest.version }})</a></div>
+<div class="alert alert-info">{{ t.older }} <a href="/privacy?lang={{ lang }}">{{ t.read_current.format(version=latest.version) }}</a></div>
 {% endif %}
 <div class="card stack prose doc">{{ body|safe }}</div>
-<p class="meta"><a href="/privacy/changes">All versions and what changed</a></p>
+<p class="meta"><a href="/privacy/changes">{{ t.all_versions }}</a></p>
+</div>
 {% endblock %}

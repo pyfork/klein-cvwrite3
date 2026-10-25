@@ -13,12 +13,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, credits, db, health, mailer, notices, orders, pause, routes_account, routes_cv, routes_ops, routes_pay, signin
+from . import access, auth, config, credits, db, health, i18n, mailer, notices, orders, pause, routes_account, routes_cv, routes_ops, routes_pay, signin
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.9.0"
+APP_VERSION = "0.10.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -224,10 +224,11 @@ def create_app(settings=None, mail=None):
     def consent_form(request, u, need, prev, lang, status=200, missing=False):
         v = notices.latest()
         lang = lang if lang in notices.langs(v.version) else "en"
-        summary = to_html(section(notices.text(v.version, lang), "In short"))
+        t = i18n.strings(lang)
+        summary = to_html(section(notices.text(v.version, lang), t["summary_heading"]))
         changed = notices.changes_since(prev["notice_version"]) if prev else []
-        return render(request, "consent.html", status=status, u=u, v=v, lang=lang, summary=summary,
-                      need=need, changed=changed, missing=missing)
+        return render(request, "consent.html", status=status, u=u, v=v, lang=lang, summary=summary, t=t,
+                      langs=notices.langs(v.version), names=i18n.LANG_NAMES, need=need, changed=changed, missing=missing)
 
     @app.post("/consent")
     def consent_post(request: Request, csrf: str = Form(""), agree: str = Form(""), sensitive: str = Form(""),
@@ -250,7 +251,8 @@ def create_app(settings=None, mail=None):
         if v is None:
             raise error(request, 404, "Not found", "There's no privacy notice with that number.")
         lang = lang if lang in notices.langs(v.version) else "en"
-        return render(request, "notice.html", v=v, lang=lang, latest=notices.latest(),
+        return render(request, "notice.html", v=v, lang=lang, latest=notices.latest(), t=i18n.strings(lang),
+                      langs=notices.langs(v.version), names=i18n.LANG_NAMES,
                       body=to_html(notices.text(v.version, lang)), signed_out=True)
 
     @app.get("/privacy", response_class=HTMLResponse)

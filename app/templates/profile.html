@@ -6,7 +6,8 @@
 <p class="lede">One file with everything you've done. We write each new CV from it.</p>
 {% if saved %}<div class="alert alert-ok" role="status">Saved. Changes take effect at once.</div>{% endif %}
 {% if error %}<div class="alert alert-bad" role="alert">{{ error }}</div>{% endif %}
-<div class="alert alert-warn">Don't include your IC number, religion or health details. A CV doesn't need them.</div>
+<div class="alert alert-warn"><p>Don't include your IC number, religion or health details. A CV doesn't need them.</p>
+  <p lang="ms">Jangan masukkan nombor IC, maklumat agama atau maklumat kesihatan anda. CV tidak memerlukannya.</p></div>
 
 <form class="card stack" method="post" action="/profile/upload" enctype="multipart/form-data">
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
@@ -29,6 +30,7 @@
     <textarea name="master_text" rows="14" spellcheck="false" placeholder="Your CV text appears here after you upload it.">{{ text }}</textarea>
     {% if ic_hits %}
     <div class="alert alert-bad" role="alert"><b>This looks like an IC number.</b> Please remove it before saving. Nothing has been sent to the AI.
+      <span lang="ms" style="display:block"><b>Ini kelihatan seperti nombor IC.</b> Sila buangnya sebelum menyimpan. Tiada apa-apa telah dihantar kepada AI.</span>
       <ul>{% for line, masked in ic_hits %}<li>Line {{ line }}: {{ masked }}</li>{% endfor %}</ul></div>
     {% endif %}
     {% if text %}<p class="meta">{{ words }} words read.</p>{% endif %}

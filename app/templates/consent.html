@@ -1,27 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Your privacy{% endblock %}
+{% block title %}{{ t.notice_title }}{% endblock %}
 {% block content %}
-<p class="eyebrow">Privacy notice v{{ v.version }}</p>
+<div lang="{{ lang }}">
+<p class="eyebrow">{{ t.eyebrow.format(version=v.version) }}</p>
+{% if langs|length > 1 %}<p class="meta lang-switch">{% for l in langs %}{% if l == lang %}<b>{{ names[l] }}</b>{% else %}<a href="/consent?lang={{ l }}" lang="{{ l }}">{{ names[l] }}</a>{% endif %}{% if not loop.last %} · {% endif %}{% endfor %}</p>{% endif %}
 {% if need == 'major' %}
-<h1 class="title">We've updated our privacy notice</h1>
-<p class="lede">Something changed about your data, so we need you to agree again before you carry on. Your CVs and credits are safe.</p>
+<h1 class="title">{{ t.major_title }}</h1>
+<p class="lede">{{ t.major_lede }}</p>
 <div class="alert alert-info">
-  {% for c in changed %}<p><b>What changed in v{{ c.version }}:</b> {{ c.what }}</p>{% endfor %}
+  {% for c in changed %}<p><b>{{ t.what_changed.format(version=c.version) }}</b> {{ c.what }}</p>{% endfor %}
 </div>
 {% else %}
-<h1 class="title">Before you start: your privacy</h1>
-<p class="lede">cvwrite3 writes a CV for a job ad you paste. To do that, we need some of your data. Here's a summary of the notice.</p>
+<h1 class="title">{{ t.first_title }}</h1>
+<p class="lede">{{ t.first_lede }}</p>
 {% endif %}
 <div class="notice-summary card">{{ summary|safe }}</div>
-<p><a href="/privacy/v{{ v.version }}" class="link">Read the full notice</a></p>
+<p><a href="/privacy/v{{ v.version }}?lang={{ lang }}" class="link">{{ t.read_full }}</a></p>
 <form class="card consent-box stack" method="post" action="/consent">
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
   <input type="hidden" name="version" value="{{ v.version }}">
   <input type="hidden" name="lang" value="{{ lang }}">
-  {% if missing %}<div class="alert alert-bad" role="alert">Tick the first box to carry on. We can't write a CV without your agreement.</div>{% endif %}
-  <label class="check"><input type="checkbox" name="agree" value="yes"><span>I've read the privacy notice and agree.</span></label>
-  <label class="check"><input type="checkbox" name="sensitive" value="yes"><span>My CV may include sensitive data (race, religion or health). I agree to it being used to write my CV.</span></label>
-  <p class="hint">The second box is optional. Leave it unticked if your CV has none of these. Either way, we'll ask you to remove an IC number.</p>
-  <button type="submit" class="btn btn-primary">Continue</button>
+  {% if missing %}<div class="alert alert-bad" role="alert">{{ t.missing }}</div>{% endif %}
+  <label class="check"><input type="checkbox" name="agree" value="yes"><span>{{ t.agree }}</span></label>
+  <label class="check"><input type="checkbox" name="sensitive" value="yes"><span>{{ t.sensitive }}</span></label>
+  <p class="hint">{{ t.hint }}</p>
+  <button type="submit" class="btn btn-primary">{{ t.continue }}</button>
 </form>
+</div>
 {% endblock %}

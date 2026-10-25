@@ -3,7 +3,7 @@ import json
 import re
 import unittest
 
-from app import notices
+from app import i18n, notices
 
 # version -> {lang: sha256 of notices/vX.Y.<lang>.md}. Add a version when its status becomes "published".
 PINNED = {}
@@ -39,8 +39,25 @@ class Notices(unittest.TestCase):
         from app.markdown import section
         for v in notices.versions():
             for lang in notices.langs(v.version):
-                self.assertTrue(section(notices.text(v.version, lang), "In short"), f"v{v.version}.{lang} has no 'In short'")
+                heading = i18n.strings(lang)["summary_heading"]
+                self.assertTrue(section(notices.text(v.version, lang), heading), f"v{v.version}.{lang} has no '{heading}'")
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Malay(unittest.TestCase):
+    def test_same_shape_and_numbers_as_the_english(self):
+        """Every period, count and version is a promise: the Malay must carry exactly the same ones."""
+        for v in notices.versions():
+            if "ms" not in notices.langs(v.version):
+                continue
+            en, ms = notices.text(v.version, "en"), notices.text(v.version, "ms")
+            for pattern in (r"(?m)^## ", r"(?m)^- ", r"\d+"):
+                self.assertEqual(sorted(re.findall(pattern, en)), sorted(re.findall(pattern, ms)), (v.version, pattern))
+            for kept in ("privacy@puascari.com", "KIP ADVISORS", "Amazon Web Services", "Anthropic", "Cloudflare", "DigitalOcean"):
+                self.assertEqual(en.count(kept), ms.count(kept), kept)
+
+    def test_both_languages_have_every_string(self):
+        self.assertEqual(set(i18n.STRINGS["en"]), set(i18n.STRINGS["ms"]))
