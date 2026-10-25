@@ -18,7 +18,7 @@ from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.8.1"
+APP_VERSION = "0.8.2"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -72,6 +72,11 @@ def create_app(settings=None, mail=None):
             "duration_ms": round((time.perf_counter() - t0) * 1000, 1),
             "user": getattr(request.state, "user_hash", None), "app.version": APP_VERSION,
         }))
+        # Cloudflare caches .pdf and other "static" extensions by default when the origin doesn't say otherwise, and run
+        # ids are sequential: without this, one user's CV could be served to another from the edge. Fonts and the
+        # stylesheet hold no personal data, so they may be cached.
+        if not request.url.path.startswith(("/static/", "/fonts/")):
+            response.headers.setdefault("Cache-Control", "private, no-store")
         return response
 
     @app.exception_handler(Page)

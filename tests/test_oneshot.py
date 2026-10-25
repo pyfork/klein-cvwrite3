@@ -155,7 +155,11 @@ class Generate(CVCase):
         self.assertNotIn("this sentence is not in the ad", page)  # the fake's invented quote was dropped
         pdf = self.get(f"/runs/{run_id}/cv.pdf", self.EMAIL)
         self.assertEqual((pdf.status_code, pdf.content[:5]), (200, b"%PDF-"))
-        md = self.get(f"/runs/{run_id}/cv.md", self.EMAIL).text
+        md = self.get(f"/runs/{run_id}/cv.md", self.EMAIL)
+        for r in (pdf, md, self.get(f"/runs/{run_id}", self.EMAIL)):  # never cached at Cloudflare's edge
+            self.assertEqual(r.headers.get("cache-control"), "private, no-store")
+        self.assertNotIn("no-store", self.client.get("/static/calm.css").headers.get("cache-control", ""))
+        md = md.text
         self.assertIn("# Nadia Hamzah", md)
         self.assertNotIn("{{", md)
 
