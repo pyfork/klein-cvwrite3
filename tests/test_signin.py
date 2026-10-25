@@ -209,7 +209,7 @@ class RequestAccess(AppCase):
         r = self.get("/", ALICE)
         self.assertEqual((r.status_code, r.headers["location"]), (303, "/request"))
         r = self.get("/request", ALICE)
-        self.assertIn("Ask to join", r.text)
+        self.assertIn("Join the waitlist", r.text)  # open sign-ups are off by default
         self.assertIn(ALICE, r.text)
 
     def test_request_once_then_pending(self):
@@ -217,7 +217,7 @@ class RequestAccess(AppCase):
         self.post("/request", ALICE, {"note": "again"})
         with self.conn() as c:
             self.assertEqual(c.execute("select count(*) n from access_requests").fetchone()["n"], 1)
-        self.assertIn("Request sent", self.get("/request", ALICE).text)
+        self.assertIn("You're on the waitlist", self.get("/request", ALICE).text)
 
     def test_post_needs_csrf_and_our_origin(self):
         self.assertEqual(self.post("/request", ALICE, csrf=False).status_code, 403)
@@ -306,6 +306,85 @@ class Wave2(AppCase):
     def test_off_by_default(self):
         r = self.post("/request", ALICE)
         self.assertEqual(r.headers["location"], "/request")
+
+
+class Waitlist(AppCase):
+    def fill(self, n):
+        with self.conn() as c:
+            for i in range(n):
+                acct = c.execute("insert into accounts (tag) values (%s) returning id", (f"W{i:05d}",)).fetchone()["id"]
+                c.execute("insert into allowed_users (email, account_id, approved_via) values (%s, %s, 'owner')", (f"w{i}@example.com", acct))
+
+    def test_cap_is_30(self):
+        self.assertEqual(self.settings.wave2_cap, 30)
+
+    def test_open_and_room_lets_people_straight_in(self):
+        self.post("/admin/wave2", OWNER, {"on": "yes"})
+        page = self.get("/request", ALICE).text
+        self.assertIn("Join cvwrite3", page)
+        self.assertNotIn("Email me once", page)
+        self.assertEqual(self.post("/request", ALICE, {"note": ""}).headers["location"], "/")
+
+    def test_full_means_waitlist_with_an_opt_in_email(self):
+        self.post("/admin/wave2", OWNER, {"on": "yes"})
+        self.fill(self.settings.wave2_cap)
+        page = self.get("/request", ALICE).text
+        self.assertIn("Join the cvwrite3 waitlist", page)
+        self.assertIn('name="notify" value="yes">', page)  # unticked
+        self.post("/request", ALICE, {"note": "", "notify": "yes"})
+        self.post("/request", BOB, {"note": ""})
+        with self.conn() as c:
+            rows = {r["email"]: r["notify"] for r in c.execute("select email, notify from access_requests where status = 'pending'")}
+        self.assertEqual(rows, {ALICE: True, BOB: False})
+        self.assertIn("1 asked for an email", self.get("/admin", OWNER).text)
+
+    def test_email_the_waitlist_once_to_those_who_asked(self):
+        self.post("/request", ALICE, {"note": "", "notify": "yes"})
+        self.post("/request", BOB, {"note": ""})
+        self.assertEqual(self.post("/admin/waitlist/email", OWNER).status_code, 400)  # the box must be ticked
+        self.assertEqual(self.outbox.sent, [])
+        self.assertEqual(self.post("/admin/waitlist/email", ALICE, {"confirm": "yes"}).status_code, 403)  # owner only
+        r = self.post("/admin/waitlist/email", OWNER, {"confirm": "yes"})
+        self.assertEqual(r.headers["location"], "/admin?emailed=1#waitlist")
+        self.assertEqual(self.outbox.sent, [(ALICE, "open")])
+        self.post("/admin/waitlist/email", OWNER, {"confirm": "yes"})
+        self.assertEqual(self.outbox.sent, [(ALICE, "open")])  # never twice
+
+    def test_a_failed_send_stops_and_keeps_the_rest(self):
+        from app import mailer
+        for e in (ALICE, BOB):
+            self.post("/request", e, {"note": "", "notify": "yes"})
+        self.outbox.send_open = mock.Mock(side_effect=mailer.MailError("SMTPServerDisconnected"))
+        r = self.post("/admin/waitlist/email", OWNER, {"confirm": "yes"})
+        self.assertEqual(r.headers["location"], "/admin?emailed=0-stopped#waitlist")
+        with self.conn() as c:
+            self.assertEqual(c.execute("select count(*) n from access_requests where notified_at is null").fetchone()["n"], 2)
+
+    def test_waitlisted_person_joins_when_there_is_room(self):
+        self.post("/request", ALICE, {"note": "", "notify": "yes"})
+        self.post("/admin/wave2", OWNER, {"on": "yes"})
+        self.assertIn("Join now", self.get("/request", ALICE).text)
+        self.assertEqual(self.post("/request", ALICE).headers["location"], "/")
+
+    def test_open_email_says_where_to_sign_in(self):
+        from app import mailer
+        m = mailer.open_message("cvwrite3 <signin@puascari.com>", ALICE, ORIGIN)
+        self.assertEqual(m["Subject"], "There's room at cvwrite3 now")
+        self.assertIn(ORIGIN, m.get_content())
+
+    def test_retention(self):
+        from app import health
+        self.post("/request", ALICE, {"note": ""})
+        self.post("/request", BOB, {"note": ""})
+        with self.conn() as c:
+            c.execute("insert into access_requests (email, status, created_at, decided_at) values "
+                      "('old-declined@example.com', 'declined', now() - interval '14 months', now() - interval '13 months'), "
+                      "('new-declined@example.com', 'declined', now() - interval '2 months', now() - interval '1 month'), "
+                      "('old-wait@example.com', 'pending', now() - interval '13 months', null)")
+            c.execute("update access_requests set notify = true, notified_at = now() - interval '31 days' where email = %s", (ALICE,))
+            health.retention(c)
+            left = sorted(r["email"] for r in c.execute("select email from access_requests"))
+        self.assertEqual(left, [BOB, "new-declined@example.com"])
 
 
 class Ledger(AppCase):

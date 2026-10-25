@@ -1,4 +1,7 @@
-"""The whitelist: access requests, approval (by the owner or by wave 2), and the 2 free credits."""
+"""The whitelist: access requests, approval (by the owner or by open sign-ups), the waitlist, and the 2 free credits.
+
+Open sign-ups (the "wave2" switch) let people straight in until the cap; after that they join the waitlist, and
+may ask for one email when there's room."""
 import json
 import secrets
 
@@ -66,15 +69,19 @@ def _approve(conn, email, via):
     return free
 
 
-def request_access(conn, settings, email, note):
-    """Returns 'allowed', 'pending' or 'approved' (wave 2 let them straight in)."""
+def has_room(conn, settings):
+    return wave2_on(conn) and user_count(conn) < settings.wave2_cap
+
+
+def request_access(conn, settings, email, note, notify=False):
+    """Returns 'allowed', 'pending' (on the waitlist) or 'approved' (open sign-ups let them straight in)."""
     note = " ".join(note.split())[:200]
     with conn.transaction():
         conn.execute("select pg_advisory_xact_lock(%s)", (WAVE2_LOCK,))
         if allowed(conn, email):
             return "allowed"
         if not pending_request(conn, email):
-            conn.execute("insert into access_requests (email, note) values (%s, %s)", (email, note))
+            conn.execute("insert into access_requests (email, note, notify) values (%s, %s, %s)", (email, note, bool(notify)))
         if wave2_on(conn) and user_count(conn) < settings.wave2_cap:
             _approve(conn, email, "wave2")
             return "approved"
@@ -99,9 +106,39 @@ def decide(conn, request_id, approve):
         return row["email"], _approve(conn, row["email"], "owner")
 
 
+def waitlist_counts(conn):
+    return conn.execute(
+        "select count(*) n, count(*) filter (where notify and notified_at is null) to_email "
+        "from access_requests where status = 'pending'").fetchone()
+
+
+def email_waitlist(conn, mail, origin):
+    """The owner's button: one "there's room" email to each waitlisted person who asked for it, once.
+    Stops at the first failure; whoever wasn't reached stays on the list for the next press. Returns (sent, failed)."""
+    rows = conn.execute("select id, email from access_requests where status = 'pending' and notify "
+                        "and notified_at is null order by created_at").fetchall()
+    sent = 0
+    for r in rows:
+        try:
+            mail.send_open(r["email"], origin)
+        except Exception:  # MailError, or anything else: stop, nothing about the address is logged
+            return sent, True
+        conn.execute("update access_requests set notified_at = now() where id = %s", (r["id"],))
+        sent += 1
+    return sent, False
+
+
+def purge_requests(conn):
+    """Daily: declined requests 12 months after the decision; waitlist entries 30 days after their email, or
+    12 months after they asked. Approved requests go with the account."""
+    conn.execute("delete from access_requests where status = 'declined' and decided_at < now() - interval '12 months'")
+    conn.execute("delete from access_requests where status = 'pending' and (notified_at < now() - interval '30 days' "
+                 "or created_at < now() - interval '12 months')")
+
+
 def pending_requests(conn):
     return conn.execute(
-        """select r.id, r.email, r.note, r.created_at,
+        """select r.id, r.email, r.note, r.created_at, r.notify, r.notified_at,
                   exists (select 1 from consents c where c.email = r.email
                           and c.account_deleted_at > now() - interval '12 months') as deleted_recently
            from access_requests r where r.status = 'pending' order by r.created_at"""

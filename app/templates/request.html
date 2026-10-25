@@ -1,23 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Ask to join{% endblock %}
+{% block title %}{{ 'Join cvwrite3' if room else 'Join the waitlist' }}{% endblock %}
 {% block content %}
-<p class="eyebrow">Invite only, for now</p>
-<h1 class="title">Ask to join cvwrite3</h1>
-<p class="lede">You're signed in as <b>{{ email }}</b>, but that email isn't on our list yet.</p>
+<p class="eyebrow">{{ 'Open now' if room else 'Full for now' }}</p>
+<h1 class="title">{{ 'Join cvwrite3' if room else 'Join the cvwrite3 waitlist' }}</h1>
+<p class="lede">You're signed in as <b>{{ email }}</b>.</p>
 <form method="post" action="/signout" class="foot-form meta"><input type="hidden" name="csrf" value="{{ csrf }}">Not you? <button type="submit">Sign out</button></form>
-{% if pending %}
+{% if pending and room %}
+<form class="card stack" method="post" action="/request">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <p><span class="badge badge-ok">There's room now</span></p>
+  <p>You were on the waitlist, and a place is free. Places go to whoever joins first.</p>
+  <button type="submit" class="btn btn-primary">Join now</button>
+</form>
+{% elif pending %}
 <div class="card stack">
-  <p><span class="badge badge-wait">Request sent</span></p>
-  <p>Thanks. We'll review it by hand. Sign in again in a day or two: if you're approved, you'll go straight in.</p>
+  <p><span class="badge badge-wait">You're on the waitlist</span></p>
+  <p>cvwrite3 is full right now. If you asked for an email, we'll send you one, once, when there's room. You can also sign in again later to check.</p>
 </div>
-{% else %}
+{% elif room %}
 <form class="card stack" method="post" action="/request">
   <input type="hidden" name="csrf" value="{{ csrf }}">
   <p>cvwrite3 writes a 2-page CV for each job ad you paste. Your first 2 CVs are free.</p>
   <label class="field"><span>How did you hear about us? <span class="opt">optional</span></span>
     <input type="text" name="note" maxlength="200" placeholder="A friend, a post, a group…"></label>
-  <button type="submit" class="btn btn-primary">Ask to join</button>
-  <p class="hint">We review each request by hand. We don't email you about it, so sign in again in a day or two to check.</p>
+  <button type="submit" class="btn btn-primary">Join</button>
+  <p class="hint">Next you'll see our privacy notice. Nothing is uploaded until you agree to it.</p>
+</form>
+{% else %}
+<form class="card stack" method="post" action="/request">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <p>cvwrite3 writes a 2-page CV for each job ad you paste. It's full right now, but you can wait for a place.</p>
+  <label class="field"><span>How did you hear about us? <span class="opt">optional</span></span>
+    <input type="text" name="note" maxlength="200" placeholder="A friend, a post, a group…"></label>
+  <label class="check"><input type="checkbox" name="notify" value="yes"><span>Email me once when there's room</span></label>
+  <button type="submit" class="btn btn-primary">Join the waitlist</button>
+  <p class="hint">We keep your email, your note and your choice above only to let you in later: until you join, 30 days after we email you, or 12 months, whichever is first. <a href="/privacy">Privacy notice</a></p>
 </form>
 {% endif %}
 <p class="meta">Questions? Email [request email]. <a href="/privacy">Privacy notice</a></p>
