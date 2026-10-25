@@ -117,6 +117,35 @@ class Profile(AppCase):
         with self.conn() as c:
             self.assertIsNone(c.execute("select 1 from profiles").fetchone())
 
+    def upload(self, text):
+        from app import auth
+        return self.client.post("/profile/upload", data={"csrf": auth.csrf_token(self.settings, self.EMAIL)},
+                                files={"file": ("cv.md", text.encode(), "text/markdown")},
+                                headers={**self.as_user(self.EMAIL), "Origin": self.settings.app_origin})
+
+    def test_upload_fills_empty_contact_fields_and_lists_what_is_taken_out(self):
+        r = self.upload("Test Person\ntest@example.com · 012-000 0000 · linkedin.com/in/test-person\n" + "Built a daily SQL report. " * 20)
+        self.assertIn('name="email" value="test@example.com"', r.text)
+        self.assertIn('name="phone" value="012-000 0000"', r.text)
+        self.assertIn('name="links" value="linkedin.com/in/test-person"', r.text)
+        self.assertIn("We filled in your email, phone and link from your CV", r.text)
+        self.assertIn("Before anything goes to the AI, we take these out", r.text)
+        self.assertIn("Add your full name in step 3", r.text)
+
+    def test_upload_keeps_saved_contact_fields(self):
+        self.post("/profile", self.EMAIL, {"master_text": "Test Person\n" + "text " * 60, "name": "Test Person",
+                                           "email": "saved@example.com"})
+        r = self.upload("Test Person\nother@example.com\n" + "Built a daily SQL report. " * 20)
+        self.assertIn('name="email" value="saved@example.com"', r.text)
+        self.assertIn("other@example.com</li>", r.text)  # still listed: it's taken out too
+        self.assertNotIn("We filled in", r.text)
+        self.assertNotIn("isn't in this text", r.text)
+
+    def test_warns_when_the_typed_name_is_not_in_the_cv(self):
+        self.post("/profile", self.EMAIL, {"master_text": "Test Person\n" + "text " * 60, "name": "Someone Else"})
+        r = self.upload("Test Person\n" + "Built a daily SQL report. " * 20)
+        self.assertIn("<b>Someone Else</b>, isn't in this text", r.text)
+
     def test_ic_number_blocks_save(self):
         r = self.post("/profile", self.EMAIL, {"master_text": f"Name\nIC {FAKE_IC}\n" + "text " * 60, "name": "N"})
         self.assertEqual(r.status_code, 400)
@@ -124,6 +153,12 @@ class Profile(AppCase):
         self.assertNotIn(FAKE_IC, r.text.replace(f"IC {FAKE_IC}", ""))  # only the textarea echoes it back
         with self.conn() as c:
             self.assertIsNone(c.execute("select 1 from profiles").fetchone())
+
+    def test_upload_shows_the_picked_file(self):
+        self.assertIn('<script src="/static/upload.js" defer></script>', self.get("/profile", self.EMAIL).text)
+        js = self.client.get("/static/upload.js")
+        self.assertEqual(js.status_code, 200)
+        self.assertIn("is-picked", js.text)
 
     def test_generate_needs_a_profile(self):
         r = self.get("/generate", self.EMAIL)
@@ -133,6 +168,17 @@ class Profile(AppCase):
 
 @needs_render
 class Generate(CVCase):
+    def test_contact_not_typed_in_the_profile_never_reaches_the_ai(self):
+        sent, write = [], self.claude.write_cv
+        self.claude.write_cv = lambda m: (sent.append(m), write(m))[1]
+        self.start()
+        self.drain()
+        self.assertTrue(sent)
+        for m in sent:  # the fixture's own email and phone differ from the ones typed in the profile
+            self.assertNotIn("test@example.com", m)
+            self.assertNotIn("12-000 0000", m)
+            self.assertIn("[email]", m)
+
     def test_one_ad_in_one_cv_out(self):
         run_id = self.start()
         self.assertIn("Working on it", self.get(f"/runs/{run_id}", self.EMAIL).text)

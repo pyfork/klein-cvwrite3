@@ -38,6 +38,42 @@ def patterns(data):
     return out
 
 
+# Shapes taken out whatever the profile says, so an email, phone or profile link that isn't typed there
+# (or is typed differently) still never reaches the AI.
+EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
+_SEP = r"[\s.-]{0,2}"
+PHONE = re.compile(
+    r"(?<![\w+])(?:\(?\+?\s?60\)?" + _SEP + r"|0)\d(?:" + _SEP + r"\d){7,9}(?!\d)"  # Malaysian: 012-345 6789, +60 3-1234 5678
+    r"|(?<![\w+])\+\d{1,3}(?:" + _SEP + r"\d){7,12}(?!\d)")                       # any number written with a +
+PROFILE_LINK = re.compile(r"(?:https?://)?(?:[a-z]{2,3}\.)?(?:linkedin\.com/(?:in|pub)/|github\.com/)[\w%-]+/?", re.I)
+SHAPES = (("email", EMAIL), ("phone", PHONE), ("link", PROFILE_LINK))
+
+
+def _all(data):
+    return patterns(data) + list(SHAPES)
+
+
+def found(text, data):
+    """[(label, value)] that mask() takes out, each once, in the order they appear. Only for the user's own page."""
+    original, out = text, []
+    for label, rx in _all(data):
+        for m in rx.finditer(text):
+            if (label, m.group(0)) not in out:
+                out.append((label, m.group(0)))
+        text = rx.sub(f"[{label}]", text)
+    return sorted(out, key=lambda lv: original.lower().find(lv[1].lower()))
+
+
+def guess(text):
+    """{field: first value of that shape in the text}, to pre-fill empty contact fields for the user to check."""
+    out = {}
+    for field, rx in (("email", EMAIL), ("phone", PHONE), ("links", PROFILE_LINK)):
+        m = rx.search(text)
+        if m:
+            out[field] = m.group(0).strip()
+    return out
+
+
 def header_to_placeholders(text):
     """In a Markdown CV header (`# Name` ... `---`): name -> {{NAME}}, lines after the tagline -> {{CONTACT}}."""
     lines, out, i = text.splitlines(), [], 0
@@ -80,7 +116,7 @@ def mask(text, data, markdown=False):
     if markdown:
         text = header_to_placeholders(text)
     counts = {}
-    for label, rx in patterns(data):
+    for label, rx in _all(data):
         text, n = rx.subn(f"[{label}]", text)
         if n:
             counts[label] = counts.get(label, 0) + n

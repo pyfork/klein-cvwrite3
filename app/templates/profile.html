@@ -13,12 +13,13 @@
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
   <h2>1. Upload</h2>
   <label class="drop">
-    <input type="file" name="file" accept=".docx,.pdf,.md,.txt" required>
+    <input type="file" name="file" accept=".docx,.pdf,.md,.txt" required aria-describedby="drop-s">
     <span class="drop-t">Choose a file</span>
-    <span class="drop-s">.docx, .pdf, .md or .txt, up to 2 MB</span>
+    <span class="drop-s" id="drop-s" aria-live="polite">.docx, .pdf, .md or .txt, up to 2 MB</span>
   </label>
   <button type="submit" class="btn btn-ghost">Read this file</button>
 </form>
+<script src="/static/upload.js" defer></script>
 
 <form class="stack" method="post" action="/profile">
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
@@ -34,10 +35,21 @@
       <ul>{% for line, masked in ic_hits %}<li>Line {{ line }}: {{ masked }}</li>{% endfor %}</ul></div>
     {% endif %}
     {% if text %}<p class="meta">{{ words }} words read.</p>{% endif %}
+    {% if text %}
+    <div class="removed" aria-live="polite">
+      <p><b>Before anything goes to the AI, we take these out:</b></p>
+      {% if removed %}<ul>{% for label, value in removed %}<li><span class="removed-k">{{ {"name": "Name", "email": "Email", "phone": "Phone", "link": "Link", "address": "Address"}[label] }}</span> {{ value }}</li>{% endfor %}</ul>
+      {% else %}<p class="hint">Nothing yet: we found no name, email, phone or profile link in this text.</p>{% endif %}
+      {% if not fields.name %}<p class="hint">Add your full name in step 3 so we take it out too.</p>
+      {% elif not removed|selectattr(0, "equalto", "name")|list %}<p class="alert alert-warn">Your name in step 3, <b>{{ fields.name }}</b>, isn't in this text, so we can't take out the name the CV uses. Make them match, as your CV spells it.</p>{% endif %}
+      <p class="hint">Your city stays in, and so does anything else in the text. This list updates when you save.</p>
+    </div>
+    {% endif %}
   </div>
   <div class="card stack">
     <h2>3. Contact details</h2>
     <p class="hint">We add these to each CV after it's written. They're never sent to the AI.</p>
+    {% if prefilled %}<div class="alert alert-info" role="status">We filled in your {{ prefilled }} from your CV. Check before you save.</div>{% endif %}
     <div class="contact-grid">
       <label class="field"><span>Full name</span><input type="text" name="name" value="{{ fields.name }}" maxlength="120" autocomplete="name"></label>
       <label class="field"><span>Email</span><input type="email" name="email" value="{{ fields.email }}" maxlength="200" autocomplete="email"></label>
