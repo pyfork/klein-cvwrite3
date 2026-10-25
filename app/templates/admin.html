@@ -132,9 +132,22 @@
   <form class="row between" method="post" action="/admin/wave2">
     <input type="hidden" name="csrf" value="{{ o.csrf }}">
     <input type="hidden" name="on" value="{{ '' if wave2 else 'yes' }}">
-    <div><b>Wave 2: approve requests automatically</b><p class="hint">Stops at {{ cap }} users in total. {{ users }} now.</p></div>
+    <div><b>Open sign-ups: let people in automatically</b><p class="hint">Stops at {{ cap }} users in total; after that, people join the waitlist. {{ users }} now.</p></div>
     <button type="submit" class="btn {{ 'btn-primary' if wave2 else 'btn-ghost' }}" aria-pressed="{{ 'true' if wave2 else 'false' }}">{{ 'On: turn off' if wave2 else 'Off: turn on' }}</button>
   </form>
+</div>
+<div class="card stack" id="waitlist">
+  <h2>Waitlist</h2>
+  <p>{{ waitlist.n }} waiting; {{ waitlist.to_email }} asked for an email when there's room.</p>
+  {% if emailed %}<p class="meta">{% if emailed.endswith('-stopped') %}Sent {{ emailed.split('-')[0] }}, then sending failed. Press again to email the rest.{% else %}Sent {{ emailed }}.{% endif %}</p>{% endif %}
+  {% if waitlist.to_email %}
+  <form class="stack" method="post" action="/admin/waitlist/email">
+    <input type="hidden" name="csrf" value="{{ o.csrf }}">
+    <p class="hint">One email each, once. Make room first (raise the cap, or turn open sign-ups on): places go to whoever signs in first.</p>
+    <label class="check"><input type="checkbox" name="confirm" value="yes" required><span>There's room now, so email them</span></label>
+    <button type="submit" class="btn btn-primary">Email the waitlist ({{ waitlist.to_email }})</button>
+  </form>
+  {% endif %}
 </div>
 <div class="card stack">
   <h2>Access requests</h2>
@@ -146,7 +159,7 @@
       <tr>
         <td>{{ r.email }}{% if r.deleted_recently %}<span class="why">Deleted an account in the last 12 months: approving gives no free credits</span>{% endif %}</td>
         <td>{{ r.created_at.strftime('%d %b, %H:%M') }}</td>
-        <td>{{ r.note or '–' }}</td>
+        <td>{{ r.note or '–' }}{% if r.notified_at %}<span class="hint" style="display:block">Emailed {{ r.notified_at.strftime('%d %b') }}</span>{% elif r.notify %}<span class="hint" style="display:block">Wants an email when there's room</span>{% endif %}</td>
         <td class="acts">
           <form method="post" action="/admin/requests/{{ r.id }}/approve" style="display:inline"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-primary btn-sm">Approve</button></form>
           <form method="post" action="/admin/requests/{{ r.id }}/decline" style="display:inline"><input type="hidden" name="csrf" value="{{ o.csrf }}"><button class="btn btn-ghost btn-sm">Decline</button></form>

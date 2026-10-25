@@ -18,7 +18,7 @@ from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.8.2"
+APP_VERSION = "0.9.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -199,14 +199,16 @@ def create_app(settings=None, mail=None):
             if access.allowed(c, email):
                 return RedirectResponse("/", 303)
             pending = access.pending_request(c, email) is not None
-        return render(request, "request.html", email=email, pending=pending, csrf=auth.csrf_token(settings, email), signed_out=True)
+            room, open_ = access.has_room(c, settings), access.wave2_on(c)
+        return render(request, "request.html", email=email, pending=pending, room=room, open=open_,
+                      csrf=auth.csrf_token(settings, email), signed_out=True)
 
     @app.post("/request")
-    def request_post(request: Request, csrf: str = Form(""), note: str = Form("")):
+    def request_post(request: Request, csrf: str = Form(""), note: str = Form(""), notify: str = Form("")):
         email = who(request)
         check_post(request, email, csrf)
         with conn() as c:
-            result = access.request_access(c, settings, email, note)
+            result = access.request_access(c, settings, email, note, notify=notify == "yes")
         return RedirectResponse("/" if result in ("allowed", "approved") else "/request", 303)
 
     @app.get("/consent", response_class=HTMLResponse)
@@ -268,7 +270,8 @@ def create_app(settings=None, mail=None):
     def admin(request: Request):
         o = owner(request)
         with conn() as c:
-            ctx = {"requests": access.pending_requests(c), "wave2": access.wave2_on(c),
+            ctx = {"requests": access.pending_requests(c), "wave2": access.wave2_on(c), "waitlist": access.waitlist_counts(c),
+                   "emailed": request.query_params.get("emailed"),
                    "users": access.user_count(c), "cap": settings.wave2_cap, "orders": orders.for_admin(c), **admin_health(c),
                    "reports": admin_reports(c), "panel": health.panel(c), "funnel": health.funnel(c),
                    "categories": routes_ops.CATEGORIES, "reasons": routes_ops.REASONS}
@@ -283,6 +286,16 @@ def create_app(settings=None, mail=None):
         with conn() as c:
             access.decide(c, request_id, decision == "approve")
         return RedirectResponse("/admin", 303)
+
+    @app.post("/admin/waitlist/email")
+    def admin_email_waitlist(request: Request, csrf: str = Form(""), confirm: str = Form("")):
+        o = owner(request)
+        check_post(request, o["email"], csrf)
+        if confirm != "yes":
+            raise error(request, 400, "Not sent", "Tick the box to confirm there's room. Nobody was emailed.")
+        with conn() as c:
+            sent, failed = access.email_waitlist(c, mail, settings.app_origin)
+        return RedirectResponse(f"/admin?emailed={sent}{'-stopped' if failed else ''}#waitlist", 303)
 
     @app.post("/admin/wave2")
     def admin_wave2(request: Request, csrf: str = Form(""), on: str = Form("")):

@@ -1,4 +1,5 @@
-"""Sends the sign-in code: the only email cvwrite3 ever sends (Addendum 5).
+"""Sends the only two emails cvwrite3 ever sends: the sign-in code (Addendum 5), and one "there's room" email
+to a waitlisted person who asked for it (Addendum 6, sent only when the owner presses the button).
 
 SMTP from the standard library, so any provider works and there's no new dependency. Port 465 is TLS from
 the start; any other port must offer STARTTLS, or nothing is sent. Nothing about the message is logged.
@@ -16,15 +17,31 @@ If you didn't ask for a code, ignore this email: nobody can sign in without it.
 """
 
 
+OPEN_BODY = """There's room at cvwrite3 now.
+
+Sign in at {origin} to join. Places go to whoever signs in first.
+
+You asked us to email you once when there was room. This is that email: we won't send another.
+"""
+
+
 class MailError(Exception):
     pass
 
 
 def message(sender, to, code):
+    return _message(sender, to, f"{code} is your cvwrite3 code", BODY.format(code=code))
+
+
+def open_message(sender, to, origin):
+    return _message(sender, to, "There's room at cvwrite3 now", OPEN_BODY.format(origin=origin))
+
+
+def _message(sender, to, subject, body):
     m = EmailMessage()
-    m["From"], m["To"], m["Subject"] = sender, to, f"{code} is your cvwrite3 code"
+    m["From"], m["To"], m["Subject"] = sender, to, subject
     m["Message-ID"] = make_msgid(domain=sender.rsplit("@", 1)[-1].strip("> "))
-    m.set_content(BODY.format(code=code))
+    m.set_content(body)
     return m
 
 
@@ -33,6 +50,12 @@ class SMTPMailer:
         self.s = settings
 
     def send_code(self, to, code):
+        self._send(message(self.s.mail_from, to, code))
+
+    def send_open(self, to, origin):
+        self._send(open_message(self.s.mail_from, to, origin))
+
+    def _send(self, msg):
         s, ctx = self.s, ssl.create_default_context()
         try:
             if s.smtp_port == 465:
@@ -42,7 +65,7 @@ class SMTPMailer:
                 smtp.starttls(context=ctx)
             with smtp:
                 smtp.login(s.smtp_user, s.smtp_password)
-                smtp.send_message(message(s.mail_from, to, code))
+                smtp.send_message(msg)
         except (OSError, smtplib.SMTPException) as e:
             raise MailError(type(e).__name__) from None
 
@@ -57,3 +80,8 @@ class Outbox:
         self.sent.append((to, code))
         if self.echo:
             print(f"[dev mail] code for {to}: {code}", flush=True)
+
+    def send_open(self, to, origin):
+        self.sent.append((to, "open"))
+        if self.echo:
+            print(f"[dev mail] there's room, to {to}", flush=True)
