@@ -28,7 +28,9 @@ stat -c '%a %U' /sites/cvwrite3/.env | grep -q '^600 cvwrite3$' && ok ".env is 0
 journalctl --namespace=cvwrite3 -n 1 --no-pager >/dev/null 2>&1 && ok "journal namespace cvwrite3" || bad "journal namespace cvwrite3"
 nginx -t >/dev/null 2>&1 && ok "nginx config" || bad "nginx config"
 
-out=$(sudo -u cvwrite3 env $(grep -E '^CVWRITE_CHROME(_FLAGS)?=' /sites/cvwrite3/.env | xargs -d '\n') HOME=/sites/cvwrite3/data/chrome-home \
+# One array item per .env line: CVWRITE_CHROME_FLAGS holds spaces, and an unquoted $(...) split it into words.
+mapfile -t chrome_env < <(grep -E '^CVWRITE_CHROME(_FLAGS)?=' /sites/cvwrite3/.env)
+out=$(sudo -u cvwrite3 env "${chrome_env[@]}" HOME=/sites/cvwrite3/data/chrome-home \
   /sites/cvwrite3/venv/bin/python /sites/cvwrite3/app/checks/render_check.py /tmp/cvw3-smoke 2>&1)
 echo "$out" | grep -E '^FINGERPRINT'
 echo "$out" | grep -q 'RESULT: PASS' && ok "render check (compare the fingerprint with the Mac's)" || bad "render check"
