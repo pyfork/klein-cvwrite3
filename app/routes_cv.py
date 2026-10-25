@@ -37,13 +37,14 @@ def register(app, h):
         return credits.summary(c, u["account_id"]).balance - n
 
     # ---- profile ---------------------------------------------------------------
-    def profile_page(request, c, u, status=200, preview=None, filename=None, error=None, saved=False, form=None):
+    def profile_page(request, c, u, status=200, preview=None, filename=None, error=None, saved=False, form=None, prefilled=""):
         p = profile.get(c, u["account_id"])
         text = p["master_text"] if preview is None else preview
         fields = form or {k: p[k] for k in (*profile.CONTACT, "standing_edits")}
         return h.render(request, "profile.html", status=status, u=u, text=text, filename=filename or p["master_name"],
                         fields=fields, ic_hits=ic.find(text), error=error, saved=saved, unsaved=preview is not None,
-                        words=len(cvtext.words(text)))
+                        words=len(cvtext.words(text)), removed=contact_mod.found(text, fields) if text else [],
+                        prefilled=prefilled)
 
     @app.get("/profile", response_class=HTMLResponse)
     def profile_get(request: Request, saved: int = 0):
@@ -61,7 +62,13 @@ def register(app, h):
                 text = upload.read(file.filename if file else "", data)
             except upload.UploadError as e:
                 return profile_page(request, c, u, status=400, error=str(e))
-            return profile_page(request, c, u, preview=text, filename=file.filename)
+            p = profile.get(c, u["account_id"])
+            fields = {k: p[k] for k in (*profile.CONTACT, "standing_edits")}
+            guessed = {k: v for k, v in contact_mod.guess(text).items() if not fields[k]}
+            fields.update(guessed)
+            names = [{"email": "email", "phone": "phone", "links": "link"}[k] for k in guessed]
+            prefilled = " and ".join([", ".join(names[:-1]), names[-1]] if len(names) > 1 else names)
+            return profile_page(request, c, u, preview=text, filename=file.filename, form=fields, prefilled=prefilled)
 
     @app.post("/profile")
     def profile_post(request: Request, csrf: str = Form(""), master_text: str = Form(""), master_name: str = Form(""),

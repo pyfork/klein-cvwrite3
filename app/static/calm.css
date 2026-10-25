@@ -158,6 +158,10 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc);box
 .drop.is-too-big:has(input){border-color:var(--bad);background:#fee2e2}
 .drop.is-too-big .drop-t{color:var(--ink)}
 .drop.is-too-big .drop-s{color:var(--bad);font-weight:700}
+.removed{border-left:3px solid var(--acc);background:#f8fbfa;border-radius:0 12px 12px 0;padding:10px 14px}
+.removed ul{margin:6px 0;padding-left:0;list-style:none}
+.removed li{overflow-wrap:anywhere}
+.removed-k{display:inline-block;min-width:64px;font-size:13px;font-weight:700;color:var(--soft)}
 .steps{gap:0}
 .step{padding:10px 0;border-bottom:1px solid var(--line);font-weight:600}
 .step:last-child{border-bottom:0}
