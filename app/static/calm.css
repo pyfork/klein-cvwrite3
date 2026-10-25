@@ -151,8 +151,13 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc);box
 .consent-box{border:2px solid var(--acc-2)}
 .drop{border:2px dashed #b5cdc9;border-radius:16px;background:#f8fbfa}
 .drop:hover{border-color:var(--acc);background:var(--acc-2)}
-.drop-t{font-weight:800;color:var(--acc)}
+.drop-t{font-weight:800;color:var(--acc);overflow-wrap:anywhere}
 .drop-s{font-size:13px;color:var(--soft)}
+.drop:has(input:valid),.drop.is-picked{border-style:solid;border-color:var(--acc);background:var(--acc-2)}
+.drop.is-picked .drop-t{color:var(--ink);padding-left:26px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='8' fill='%2315803d'/%3E%3Cpath d='M4.5 8.5l2.2 2.2L11.5 6' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") left center/18px no-repeat}
+.drop.is-too-big:has(input){border-color:var(--bad);background:#fee2e2}
+.drop.is-too-big .drop-t{color:var(--ink)}
+.drop.is-too-big .drop-s{color:var(--bad);font-weight:700}
 .steps{gap:0}
 .step{padding:10px 0;border-bottom:1px solid var(--line);font-weight:600}
 .step:last-child{border-bottom:0}

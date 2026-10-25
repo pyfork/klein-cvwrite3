@@ -125,6 +125,12 @@ class Profile(AppCase):
         with self.conn() as c:
             self.assertIsNone(c.execute("select 1 from profiles").fetchone())
 
+    def test_upload_shows_the_picked_file(self):
+        self.assertIn('<script src="/static/upload.js" defer></script>', self.get("/profile", self.EMAIL).text)
+        js = self.client.get("/static/upload.js")
+        self.assertEqual(js.status_code, 200)
+        self.assertIn("is-picked", js.text)
+
     def test_generate_needs_a_profile(self):
         r = self.get("/generate", self.EMAIL)
         self.assertIn("Upload your master CV first", r.text)

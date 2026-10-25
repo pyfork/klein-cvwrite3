@@ -13,12 +13,13 @@
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
   <h2>1. Upload</h2>
   <label class="drop">
-    <input type="file" name="file" accept=".docx,.pdf,.md,.txt" required>
+    <input type="file" name="file" accept=".docx,.pdf,.md,.txt" required aria-describedby="drop-s">
     <span class="drop-t">Choose a file</span>
-    <span class="drop-s">.docx, .pdf, .md or .txt, up to 2 MB</span>
+    <span class="drop-s" id="drop-s" aria-live="polite">.docx, .pdf, .md or .txt, up to 2 MB</span>
   </label>
   <button type="submit" class="btn btn-ghost">Read this file</button>
 </form>
+<script src="/static/upload.js" defer></script>
 
 <form class="stack" method="post" action="/profile">
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
