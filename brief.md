@@ -529,7 +529,7 @@ Where this addendum and the sections above disagree, this addendum wins.
 - **Middle level of detail:** the summary names classes of providers and the countries; one plain line per provider (AWS, Anthropic, Cloudflare, DigitalOcean) in the body.
 - **The shared server** (replaces "say so plainly" in Addendum 4): "The server is shared with other projects; admin access to it is logged."
 - **Access is logged by Ubuntu's existing `sudo` log** (who took admin rights, and when; about 5 weeks kept). No `auditd`, no new package. Revisit with the "server of its own" question.
-- **Malay waits until the owner raises it.** v1.0 can be published in English only. PDPA s.7(3) and the brief's PDPA section ask for both languages; going live English-only is the owner's call, checked with the PDPA checks. Not legal advice.
+- **Both languages, as PDPA s.7(3) and the brief ask:** the Malay is from the owner's translator (`notices/v1.0.ms.md`), with an English / Bahasa Malaysia switch on the notice and the consent screen. A test holds the Malay to the same headings, bullets, numbers and names as the English. A few short page strings are an agent draft for the translator to check.
 
 ### Who gets in (replaces "Rollout")
 - **Open sign-ups from go-live, up to 30 users** (the old wave-2 switch, now with a cap of 30). Then a **waitlist**.
