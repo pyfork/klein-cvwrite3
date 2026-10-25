@@ -542,4 +542,15 @@ Where this addendum and the sections above disagree, this addendum wins.
 ### Keys and backups
 - **The backup bucket** is `cvwrite3-backups` (DigitalOcean, Singapore). DigitalOcean has no write-only key, so cvwrite3's key is Read/Write/Delete on that bucket only. The offline copy is the dump the monthly restore test downloads.
 
+## Addendum 7 (2026-10-25): contact details out before the AI, by shape too
+Where this addendum and the sections above disagree, this addendum wins.
+
+- **Before any AI call, the app takes out every email, phone number and profile link in the CV**, not only the values typed in the profile. The first real upload showed that values typed differently, or not typed at all, reached the AI, against notice §5.
+- **Empty contact fields are filled from the uploaded CV**, so the user only checks them.
+- **The profile page lists what is taken out** before anything goes to the AI.
+- **Limits:**
+  - a name has no shape, so it's taken out only when the typed name matches the CV, and the page warns when it doesn't;
+  - a re-render sends the user's own edited body text as typed (the header stays masked, as before).
+- Built as chunk 7s (PR #34).
+
 build-engineer-Opus5.5-agent
