@@ -515,3 +515,31 @@ Where this addendum and the sections above disagree, this addendum wins.
 - **A dependency released in the last few days is held back** until it has been out for a while (`jiter` at 0.17.0 for the first deploy).
 
 build-engineer-Opus5.5-agent
+
+## Addendum 6 (2026-10-25): where the data is, who runs it, and who gets in
+Where this addendum and the sections above disagree, this addendum wins.
+
+### Where the data is
+- **sk24 is in Seoul, South Korea** (AWS Lightsail, `ap-northeast-2`). Everything cvwrite3 stores is outside Malaysia. Its clock and every database connection still use Malaysian time.
+- **Anthropic** stores what it receives in the United States and may run the AI in other countries (its default, "global"). US-only processing costs 1.1x, so it isn't used. Opus 5.5 and Haiku 5.5 keep inputs and outputs up to 30 days (up to 2 years if flagged) and don't train on them.
+
+### The privacy notice v1.0 (fills the brief's open items)
+- **The data user:** KIP ADVISORS (Registration No. 201803365653, Company No. 002900789-V), registered in Malaysia.
+- **The request email:** `privacy@puascari.com`, forwarded by Cloudflare Email Routing to the owner's inbox. The destination is never in git.
+- **Middle level of detail:** the summary names classes of providers and the countries; one plain line per provider (AWS, Anthropic, Cloudflare, DigitalOcean) in the body.
+- **The shared server** (replaces "say so plainly" in Addendum 4): "The server is shared with other projects; admin access to it is logged."
+- **Access is logged by Ubuntu's existing `sudo` log** (who took admin rights, and when; about 5 weeks kept). No `auditd`, no new package. Revisit with the "server of its own" question.
+- **Both languages, as PDPA s.7(3) and the brief ask:** the Malay is from the owner's translator (`notices/v1.0.ms.md`), with an English / Bahasa Malaysia switch on the notice and the consent screen. A test holds the Malay to the same headings, bullets, numbers and names as the English. A few short page strings are an agent draft for the translator to check.
+
+### Who gets in (replaces "Rollout")
+- **Open sign-ups from go-live, up to 30 users** (the old wave-2 switch, now with a cap of 30). Then a **waitlist**.
+- **A waitlisted person may ask for one email when there's room** (an unticked box). The owner's "Email the waitlist" button sends it once per person. This is the **second exception to "no emails"**, after sign-in codes (Addendum 5).
+- **Retention:** waitlist entries until the person joins, 30 days after their email, or 12 months, whichever is first; declined requests 12 months after the decision.
+
+### Security fixes before go-live
+- **Every response is `Cache-Control: private, no-store`,** except the stylesheet and fonts. Cloudflare caches `.pdf` by default, and run ids are sequential, so a CV could otherwise be served to another user from the edge.
+
+### Keys and backups
+- **The backup bucket** is `cvwrite3-backups` (DigitalOcean, Singapore). DigitalOcean has no write-only key, so cvwrite3's key is Read/Write/Delete on that bucket only. The offline copy is the dump the monthly restore test downloads.
+
+build-engineer-Opus5.5-agent
