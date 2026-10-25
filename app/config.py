@@ -24,7 +24,7 @@ class Settings:
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    mail_from: str = ""     # e.g. "cvwrite3 <signin@cvwrite3.puascari.com>"
+    mail_from: str = ""     # e.g. "cvwrite3 <signin@puascari.com>"
 
 
 def load(environ=os.environ):
