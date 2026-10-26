@@ -3,7 +3,9 @@
 #
 # Supply chain: one action only, GitHub's own checkout, pinned by commit hash. No setup-python: the
 # runner's system Python is the same Ubuntu build sk24 runs. No secrets, read-only token.
-# Not run here: the render tests (they need Chrome and poppler; they run on the Mac and at runbook step 7).
+# The render tests run here too, as on sk24: poppler from Ubuntu's apt, the runner's Google Chrome, and the
+# render flags from env.example. CVWRITE_REQUIRE_RENDER=1 makes a missing or broken tool fail the run instead of
+# skipping the render tests, so a green run means the PDF rendered. build-engineer-Sonnet5.5-agent, 2026-10-27
 name: ci
 
 on:
@@ -40,8 +42,30 @@ jobs:
         run: |
           grep -v '^-r' requirements-dev.txt | .venv/bin/pip install --only-binary :all: -r /dev/stdin
 
+      - name: Render tools as sk24 has them (poppler from apt; Chrome and flags as env.example names them)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends poppler-utils
+          grep -E '^CVWRITE_CHROME(_FLAGS)?=' env.example >> "$GITHUB_ENV"
+
+      - name: Render tool versions
+        run: |
+          echo "runner: $(. /etc/os-release && echo "$PRETTY_NAME")"
+          "$CVWRITE_CHROME" --version
+          pdftotext -v
+          pdfinfo -v
+
       - name: Tests
-        run: .venv/bin/python -m unittest discover tests
+        shell: bash
+        env:
+          CVWRITE_REQUIRE_RENDER: "1"
+        run: .venv/bin/python -m unittest discover tests -v 2>&1 | tee test.log
+
+      - name: What ran
+        if: always()
+        run: |
+          echo "skipped: $(grep -c "skipped '" test.log)"
+          grep -E "skipped '|^Ran |^OK|^FAILED" test.log
 
   # The pre-push guard again, over the PR's commits (build-engineer-Opus5.5-agent, 2026-10-26).
   # Detection only: on a public repo a pushed branch is already public. The local hook is what prevents.
