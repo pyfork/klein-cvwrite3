@@ -570,3 +570,21 @@ Where this addendum and the sections above disagree, this addendum wins.
 - Advertised in the approved homepage teaser, so it is built before the teaser goes live.
 
 senior-visual-designer-Opus5.5-agent
+
+## Addendum 9 (2026-10-27): CI is the gate, and it runs the PDF render
+Where this addendum and the sections above disagree, this addendum wins.
+
+- **CI is where "green" is decided.** A change is judged by the `ci / test` run on its pull request: Ubuntu 22.04 and its own Python 3.10, as in "CI on sk24's platform" (Addendum 5). A developer's own machine is a convenience: its tools can break (a library upgrade, an OS release) without the product being wrong.
+- **CI now runs the render tests too.** Until now they were skipped there, so a green run did not show that a PDF could be made.
+  - poppler is Ubuntu's `poppler-utils` from apt, as on sk24.
+  - Chrome is the CI runner image's own `google-chrome`. Its path and render flags are read from `env.example`, the lines sk24's `.env` is made from, so the two don't drift apart.
+  - The log prints the runner's OS and the versions of Chrome, `pdftotext` and `pdfinfo`.
+- **Tests never skip silently.**
+  - In CI, `CVWRITE_REQUIRE_RENDER=1` makes a missing or broken Chrome or poppler fail the run: a render test cannot skip there.
+  - Without it, a tool that is not installed skips the render tests, with the reason on each skip. A tool that is installed but won't start is one named failure from the first test file (`tests/test_00_render_preflight.py`), not dozens that read like product bugs. Any value of the variable but `0`, `1` or empty is an error.
+  - The CI log ends with the skip count and each skip's reason. The one expected skip is `test_guard_is_on`, a check of the local hook; the `push-guard` job covers CI.
+- **Chrome is not pinned in CI yet.** The first run used Chrome 155.0.8059.39, the same major version sk24 had on 2026-10-22. The pinned `chrome-headless-shell` under the app's directory (Addendum 1, "Before go-live") stands for sk24, and when it is done CI moves to the same build. A layout check that passes on one and fails on the other is the sign to do it sooner. A change on sk24 needs the owner's OK.
+- **Open for the owner:** the `protect main` ruleset lists no required check (Addendum 5 says `ci / test` is one: an owner setting). Until it is set, only the owner's merge stops a red PR. Add `test`, and decide on `push-guard`.
+- Built in PRs #39 (the preflight and strict mode) and #40 (render in CI).
+
+build-engineer-Sonnet5.5-agent
