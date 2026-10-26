@@ -42,3 +42,24 @@ jobs:
 
       - name: Tests
         run: .venv/bin/python -m unittest discover tests
+
+  # The pre-push guard again, over the PR's commits (build-engineer-Opus5.5-agent, 2026-10-26).
+  # Detection only: on a public repo a pushed branch is already public. The local hook is what prevents.
+  # The private-strings list never leaves the Mac, so it's empty here; paths and IC numbers are checked.
+  push-guard:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Guard the PR's commits
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          : > .git/info/private-strings
+          echo "refs/heads/pr $HEAD refs/heads/pr $BASE" | python3 githooks/pre-push

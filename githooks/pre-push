@@ -2,14 +2,18 @@
 """Refuse a push that would publish private files or an IC number.
 
 Checks every commit being pushed (not only the tip), so a file added and then removed still blocks.
-Refused paths: .env*, prompts/, QR files, CLAUDE*.md. Refused text: anything that looks like a
+Refused paths: .env*, prompts/, QR files, CLAUDE*.md, docs/. Refused text: anything that looks like a
 Malaysian IC number (YYMMDD-PB-###G, with or without dashes) in an added line.
+Private strings (the Kip kit's step 3a): any line of .git/info/private-strings, case-insensitive, in a
+commit message, an added line or a file name. That list sits inside .git, so it is never committed.
+Missing list: every push is refused (fail closed); an empty file means "no private strings".
 Prints the path and line number only, never the matched text.
-Install once per clone: git config core.hooksPath githooks
+Install once per clone: git config core.hooksPath githooks, then create .git/info/private-strings
 """
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 ZERO = "0" * 40
 
@@ -19,6 +23,7 @@ BLOCKED_PATHS = [
     (re.compile(r"(^|/)config/qr/"), "QR config folder"),
     (re.compile(r"(^|/)[^/]*qr[^/]*\.(png|jpe?g|webp|gif|svg|pdf)$", re.I), "QR image"),
     (re.compile(r"(^|/)CLAUDE[^/]*\.md$", re.I), "CLAUDE*.md"),
+    (re.compile(r"^docs/"), "docs/ (private notes and the kit)"),
 ]
 
 # YYMMDD, then a 2-digit place code, then 4 digits. Month and day must be valid.
@@ -42,12 +47,31 @@ def commit_range(local_sha, remote_sha):
     return [f"{remote_sha}..{local_sha}"]
 
 
-def problems(rev_args):
+def private_strings():
+    """The lines of .git/info/private-strings, lowercased, or None when the file is missing."""
+    path = Path(git("rev-parse", "--path-format=absolute", "--git-common-dir").strip()) / "info" / "private-strings"
+    if not path.is_file():
+        return None
+    return [s.strip().lower() for s in path.read_text().splitlines() if s.strip() and not s.startswith("#")]
+
+
+def has_private(text, strings):
+    text = text.lower()
+    return any(s in text for s in strings)
+
+
+def problems(rev_args, strings=()):
     found = []
+    for entry in git("log", "--format=%h%x00%B%x1e", *rev_args).split("\x1e"):
+        sha, _, message = entry.strip().partition("\0")
+        if sha and has_private(message, strings):
+            found.append(f"commit {sha}: private string in the message")
     for path in git("log", "--format=", "--name-only", "--diff-filter=ACMR", *rev_args).splitlines():
         for rx, label in BLOCKED_PATHS:
             if path and rx.search(path):
                 found.append(f"{path}: {label}")
+        if path and has_private(path, strings):
+            found.append(f"{path}: private string in the file name")
     path, line_no, prev = "", 0, ""
     for line in git("log", "--format=", "-p", "-U0", "--no-ext-diff", "--no-color", *rev_args).splitlines():
         header, prev = prev.startswith("--- ") and line.startswith("+++ "), line
@@ -59,17 +83,24 @@ def problems(rev_args):
         elif line.startswith("+") and path:
             if has_ic(line[1:]):
                 found.append(f"{path}:{line_no}: looks like an IC number")
+            if has_private(line[1:], strings):
+                found.append(f"{path}:{line_no}: private string")
             line_no += 1
     return sorted(set(found))
 
 
 def main():
+    strings = private_strings()
+    if strings is None:
+        print("pre-push guard: push refused. .git/info/private-strings is missing: create it, one private\n"
+              "string per line (an empty file if there are none).", file=sys.stderr)
+        sys.exit(1)
     found = []
     for update in sys.stdin.read().splitlines():
         _, local_sha, _, remote_sha = update.split()
         if local_sha == ZERO:  # deleting a remote branch
             continue
-        found += problems(commit_range(local_sha, remote_sha))
+        found += problems(commit_range(local_sha, remote_sha), strings)
     if found:
         print("pre-push guard: push refused.", file=sys.stderr)
         for f in sorted(set(found)):
