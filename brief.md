@@ -554,3 +554,19 @@ Where this addendum and the sections above disagree, this addendum wins.
 - Built as chunk 7s (PR #34).
 
 build-engineer-Opus5.5-agent
+
+## Addendum 8 (2026-10-26): the applications list, kept up to 3 months
+Where this addendum and the sections above disagree, this addendum wins.
+
+- **Your applications.** The app lists every job the user has made a CV for, newest first: the job title, the date, the ad and the CV. The user opens them again before an interview, so they never have to ask "which CV did I send?".
+  - One row per job, showing that job's latest CV. Still no search and no version history (Out of scope stands for those).
+- **How long it's kept.** 30 days by default, as now. A checkbox on the list, **"Keep my applications for 3 months"**, keeps runs and PDFs for 3 months instead. It is off by default and can be changed at any time. (Replaces "Runs and PDFs: 30 days" in "Retention".)
+  - Backups, the profile, the ledger and consent records are unchanged.
+  - "Delete my account" still deletes everything at once, whatever the setting.
+- **The privacy notice.** "How long we keep it" changes, so this is a **major** version (v2.0): the user is asked to consent again at their next sign-in, as "Versioning" says. Both languages, and the Malay goes to the owner's translator.
+- **Open for the build** (lean in brackets):
+  - what unticking does to applications already older than 30 days [deleted at the next retention run; the page says so before the user unticks];
+  - whether the setting is per account or per application [per account].
+- Advertised in the approved homepage teaser, so it is built before the teaser goes live.
+
+senior-visual-designer-Opus5.5-agent
