@@ -11,7 +11,7 @@ import unittest
 
 from app import cvtext, pipeline, worker
 from tests.support import AD, MASTER, CVCase, OWNER
-from tests.test_oneshot import needs_render
+from tests.render_env import needs_render
 
 MARK = "zqx7731mark"
 

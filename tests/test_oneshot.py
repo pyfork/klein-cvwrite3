@@ -1,9 +1,8 @@
 """Chunk 3: profile and upload, one ad in -> one CV out, the retry, checkpoints, the pause, edit and re-render.
 
-Claude is the fake (app/fakeclaude.py). Renders use the real Chrome and poppler, so these tests skip without them.
+Claude is the fake (app/fakeclaude.py). Renders use the real Chrome and poppler (tests/render_env.py): without them these tests skip, or fail under CVWRITE_REQUIRE_RENDER=1.
 """
 import io
-import shutil
 import unittest
 import zipfile
 from pathlib import Path
@@ -11,11 +10,9 @@ from pathlib import Path
 import psycopg
 
 from app import adread, cvtext, ic, pause, upload, worker
-from render import build_cv
+from tests.render_env import needs_render
 from tests.support import AD, CVCase, AppCase, OWNER
 
-HAVE_RENDER = Path(build_cv.CHROME).exists() and shutil.which("pdfinfo") and shutil.which("pdftotext")
-needs_render = unittest.skipUnless(HAVE_RENDER, "needs Chrome and poppler")
 FAKE_IC = "920315" + "-10-" + "5241"  # made up, date-valid
 
 

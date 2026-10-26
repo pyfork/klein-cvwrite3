@@ -6,7 +6,7 @@ import zipfile
 
 from app import account, orders, rendering
 from tests.support import AD, OWNER, CVCase
-from tests.test_oneshot import needs_render
+from tests.render_env import needs_render
 
 
 @needs_render

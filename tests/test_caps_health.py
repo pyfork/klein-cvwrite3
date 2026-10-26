@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from app import caps, health, orders, pause
 from tests.support import AD, OWNER, AppCase, CVCase
-from tests.test_oneshot import needs_render
+from tests.render_env import needs_render
 
 
 def usage(c, acct, step, cost="0.01", n=1, when="now()"):

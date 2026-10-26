@@ -8,7 +8,7 @@ from pathlib import Path
 from unittest import mock
 
 from render import build_cv
-from tests.test_oneshot import needs_render
+from tests.render_env import needs_render
 
 HOSTILE = [
     'https://a.com/"style="display:none',
