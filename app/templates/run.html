@@ -65,6 +65,10 @@
     <div class="stack"><h3 class="kicker">Gaps</h3>{% if gaps %}<ul>{% for g in gaps %}<li>{{ g }}</li>{% endfor %}</ul>{% else %}<p class="meta">None found.</p>{% endif %}</div>
     <div class="stack"><h3 class="kicker">Red flags</h3>{% if read.red_flags %}<ul>{% for f in read.red_flags %}<li>{{ f.flag }} (“{{ f.quote }}”)</li>{% endfor %}</ul>{% else %}<p class="meta">None found.</p>{% endif %}</div>
   </div>
+  {% if run.interview_prep is not none %}<div class="card stack" id="prep">
+    <h3 class="kicker">Before the interview</h3>
+    {% with notes = run.interview_prep %}{% include "_prep.html" %}{% endwith %}
+  </div>{% endif %}
   <div class="card stack" id="feedback">
     {% if feedback %}<p class="meta" role="status">Thanks. This helps us improve. Your CV stays as it is.</p>
     {% else %}

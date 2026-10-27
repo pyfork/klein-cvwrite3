@@ -1,0 +1,3 @@
+{# Interview prep notes (Addendum 12). Needs `notes`: [{note, ad_quote, cv_line}]. #}
+{% if notes %}<ul class="prep">{% for n in notes %}<li>{{ n.note }}{% if n.ad_quote %} <span class="meta">The ad: “{{ n.ad_quote }}”</span>{% endif %}</li>{% endfor %}</ul>
+{% else %}<p class="meta">No notes for this CV.</p>{% endif %}

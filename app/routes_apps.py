@@ -11,13 +11,14 @@ KEY = "coalesce(r.ad_hash, 'run:' || r.id::text)"   # CVs made from the same ad 
 
 
 def jobs(c, account_id):
-    """[{id, status, title, created_at, working}], newest first: per job, its latest passed CV (else its latest run)."""
+    """[{id, status, title, created_at, working, problem, keywords, prep}], newest first: per job, its latest passed CV (else its latest run)."""
     rows = c.execute(
         f"""with x as (
               select r.id, r.status, r.created_at, r.ad_read->>'job_title' as title, left(r.ad_text, 200) as ad_start, {KEY} as g,
+                     r.ad_read->'problems'->0->>'problem' as problem, r.ad_read->'keywords_top' as keywords, r.interview_prep as prep,
                      bool_or(r.status = 'generating') over (partition by {KEY}) as working
               from runs r where r.account_id = %s and r.purged_at is null)
-            select distinct on (g) id, status, created_at, title, ad_start, working
+            select distinct on (g) id, status, created_at, title, ad_start, working, problem, keywords, prep
             from x order by g, (status = 'passed') desc, created_at desc""", (account_id,)).fetchall()
     rows.sort(key=lambda r: r["created_at"], reverse=True)
     return [{**r, "title": r["title"] or cvtext.ad_title(r["ad_start"])} for r in rows]

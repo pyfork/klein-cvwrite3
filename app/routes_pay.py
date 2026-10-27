@@ -100,7 +100,7 @@ def register(app, h):
         o = h.owner(request)
         h.check_post(request, o["email"], csrf)
         with h.conn() as c:
-            orders.approve(c, order_id)  # approves once; a second press does nothing
+            orders.thank(c, orders.approve(c, order_id), h.mail, h.settings.app_origin)  # approves and thanks once; a second press does nothing
         return RedirectResponse("/admin#orders", 303)
 
     @app.post("/admin/orders/{order_id}/reject")

@@ -6,7 +6,7 @@ from . import health, pause
 
 CATEGORIES = {"broke": "Something broke", "paid": "I paid but have no credits", "output": "The CV is wrong",
               "privacy": "A privacy or data request", "other": "Something else"}
-REASONS = {"problem": "Wrong main problem", "keywords": "Wrong keywords", "long": "Too long", "wording": "Wording", "other": "Other"}
+REASONS = {"problem": "Wrong main problem", "keywords": "Wrong keywords", "long": "Too long", "wording": "Wording", "prep": "Interview prep", "other": "Other"}
 LOOPBACK = ("127.0.0.1", "::1")
 
 

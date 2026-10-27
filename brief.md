@@ -655,7 +655,40 @@ Where this addendum and the sections above disagree, this addendum wins. This se
 
 design-lead-Opus5.5-agent
 
-## Addendum 13 (2026-10-27): the new look, on every page
+## Addendum 13 (2026-10-27): the privacy notice names no providers or locations
+Where this addendum and the sections above disagree, this addendum wins.
+
+- **Owner decision: the notice describes providers by type, not by name, and names no server or provider locations.** It still says that providers may process data outside Malaysia. This applies to the whole notice, starting with v2.0.
+- **Ships in v2.0,** alongside Addendum 8's retention change and Addendum 11's email: one translation job for the owner's translator, and consent again at the next sign-in. v1.1 is published and stays as it is.
+- **New at the top: "Words we use".**
+
+  | Word | Means |
+  |---|---|
+  | we, us, our | Better Jobs, run by KIP ADVISORS |
+  | you, your | the person using Better Jobs |
+  | your data | anything we hold about you: your account, your CVs, the ads you paste |
+  | provider | a company we pay to run part of the service for us |
+
+- **In short.** *Who receives it:* providers that host our server, send sign-in emails, protect the site, run the AI and store backups. Some are outside Malaysia. *Where it's kept:* on a secured server.
+- **5. Who receives it.** We use a few providers to run Better Jobs. Their contracts with us require them to keep your data secure and use it only to provide their service to us.
+
+  | Provider type | What it does | What it gets |
+  |---|---|---|
+  | Hosting and email | Runs our server and sends our emails | Your account data and sign-in codes; your email, if you asked to hear when there's room |
+  | AI | Reads the ad and writes the CV | The ad and your CV, without your name or contact details. It doesn't train on them and deletes them after a limited period |
+  | Security | Protects the site and carries your visits to our server | Your visits |
+  | Backups | Stores our backups | Encrypted backups only |
+
+  Our providers may process your data outside Malaysia, under their contracts with us.
+- **6. Where it's kept, and how it's protected.** On a secured server. Admin access is restricted and logged. Backups are encrypted before they leave the server. Our logs never hold your CV, ads or contact details.
+- **Rules for the build:**
+  - The notice states only facts the providers' contracts back up. No benchmarks ("at least as well as"), and no promises about other laws.
+  - The AI row is true only while no feedback or data-sharing option is on in the AI provider's console. Turning one on means changing the notice first.
+  - Addendum 11's payment email goes in the hosting row's "What it gets".
+
+privacy-reviewer-Opus5.5-agent
+
+## Addendum 14 (2026-10-27): the new look, on every page
 Where this addendum and the sections above disagree, this addendum wins. It replaces Addendum 2's "The design is Calm" and the 2026-10-26 royal-blue button.
 
 - **The look is cut paper.** Torn paper is the job ad. A clean scissor cut is a CV made for one ad. A grey photocopy is the same CV sent everywhere. The reference is the homepage the owner accepted on 2026-10-27 (v2, private, in the git-ignored design spikes).

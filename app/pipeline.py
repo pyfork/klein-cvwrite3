@@ -9,7 +9,7 @@ from pathlib import Path
 
 from render import contact as contact_mod
 
-from . import adread, claude as claude_mod, cvtext, pause, profile, rendering
+from . import adread, claude as claude_mod, cvtext, pause, prep, profile, rendering
 
 MAX_DRAFTS = 2  # the first draft and one internal retry
 MAX_RERENDERS = 3
@@ -150,8 +150,9 @@ def generate(conn, settings, claude, job):
         draft = str(r.data.get("cv_markdown", ""))
         gaps = [str(g)[:200] for g in r.data.get("gaps", [])][:8]
         status = keyword_status(read["keywords_top"], r.data.get("keyword_status", []))
-        conn.execute("update runs set draft_md = %s, gaps = %s, keyword_status = %s, drafts = drafts + 1 where id = %s",
-                     (draft, json.dumps(gaps), json.dumps(status), run["id"]))
+        notes = prep.verify(r.data.get("interview_prep", []), run["ad_text"], masked)  # the draft that passes brings its own
+        conn.execute("update runs set draft_md = %s, gaps = %s, keyword_status = %s, interview_prep = %s, drafts = drafts + 1 where id = %s",
+                     (draft, json.dumps(gaps), json.dumps(status), json.dumps(notes), run["id"]))
         run["draft_md"], run["drafts"], run["keyword_status"] = draft, run["drafts"] + 1, status
 
     if run["draft_md"] is None:

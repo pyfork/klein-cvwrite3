@@ -8,7 +8,7 @@ import time
 from dataclasses import dataclass
 from decimal import Decimal
 
-from . import adread, prompts
+from . import adread, prep, prompts
 
 OPUS = "claude-opus-5-5"
 HAIKU = "claude-haiku-5-5"
@@ -41,7 +41,7 @@ def cost(model, input_tokens, output_tokens):
 
 
 WRITE_SCHEMA = {
-    "type": "object", "additionalProperties": False, "required": ["cv_markdown", "keyword_status", "gaps"],
+    "type": "object", "additionalProperties": False, "required": ["cv_markdown", "keyword_status", "gaps", "interview_prep"],
     "properties": {
         "cv_markdown": {"type": "string"},
         "keyword_status": {
@@ -54,6 +54,7 @@ WRITE_SCHEMA = {
         },
         "gaps": {"type": "array", "items": {"type": "string"},
                  "description": "what the ad asks for that the master CV can't show, one line each"},
+        "interview_prep": prep.SCHEMA,
     },
 }
 REFORMAT_SCHEMA = {

@@ -1,5 +1,6 @@
-"""Sends the only two emails Better Jobs ever sends: the sign-in code (Addendum 5), and one "there's room" email
-to a waitlisted person who asked for it (Addendum 6, sent only when the owner presses the button).
+"""Sends the only three emails Better Jobs ever sends: the sign-in code (Addendum 5), one "there's room" email
+to a waitlisted person who asked for it (Addendum 6, sent only when the owner presses the button), and a thank-you
+when the owner approves an order (Addendum 11).
 
 SMTP from the standard library, so any provider works and there's no new dependency. Port 465 is TLS from
 the start; any other port must offer STARTTLS, or nothing is sent. Nothing about the message is logged.
@@ -25,6 +26,10 @@ You asked us to email you once when there was room. This is that email: we won't
 """
 
 
+THANKS_BODY = """We've received your payment and {credits} credits have been added to your account (order {ref}). You can use them now: {origin}
+"""
+
+
 class MailError(Exception):
     pass
 
@@ -35,6 +40,10 @@ def message(sender, to, code):
 
 def open_message(sender, to, origin):
     return _message(sender, to, "There's room at Better Jobs now", OPEN_BODY.format(origin=origin))
+
+
+def thanks_message(sender, to, credits, ref, origin):
+    return _message(sender, to, "Thank you for your payment!", THANKS_BODY.format(credits=credits, ref=ref, origin=origin))
 
 
 def _message(sender, to, subject, body):
@@ -54,6 +63,9 @@ class SMTPMailer:
 
     def send_open(self, to, origin):
         self._send(open_message(self.s.mail_from, to, origin))
+
+    def send_thanks(self, to, credits, ref, origin):
+        self._send(thanks_message(self.s.mail_from, to, credits, ref, origin))
 
     def _send(self, msg):
         s, ctx = self.s, ssl.create_default_context()
@@ -85,3 +97,8 @@ class Outbox:
         self.sent.append((to, "open"))
         if self.echo:
             print(f"[dev mail] there's room, to {to}", flush=True)
+
+    def send_thanks(self, to, credits, ref, origin):
+        self.sent.append((to, "thanks", credits, ref))
+        if self.echo:
+            print(f"[dev mail] payment thanks, to {to}", flush=True)
