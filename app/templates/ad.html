@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% set nav = 'applications' %}
+{% block title %}The ad: {{ heading }}{% endblock %}
+{% block content %}
+<p class="eyebrow">Applications</p>
+<h1 class="title">{{ heading }}</h1>
+<p class="lede">The ad you pasted on {{ run.created_at.strftime('%-d %b %Y') }}.</p>
+<div class="card stack"><pre class="ad-text">{{ run.ad_text }}</pre></div>
+<div class="row">
+  {% if run.status == 'passed' %}<a class="btn btn-primary" href="/runs/{{ run.id }}">Open the CV</a>{% endif %}
+  <a class="btn btn-ghost" href="/applications">Back to your applications</a>
+</div>
+{% endblock %}

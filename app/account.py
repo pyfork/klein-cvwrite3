@@ -38,10 +38,19 @@ def purge_run(conn, data_dir, run):
         rendering.pdf_path(data_dir, run["id"], run["pdf_rev"]).unlink(missing_ok=True)
 
 
+def retention_label(conn, account_id):
+    """How long this account's CVs, ads and PDFs are kept: 30 days, or 3 months if the user chose that."""
+    row = conn.execute("select keep_applications from accounts where id = %s", (account_id,)).fetchone()
+    return "3 months" if row and row["keep_applications"] else "30 days"
+
+
 def purge_old_runs(conn, data_dir, days=30):
+    """Runs older than `days`, or older than 3 months for an account that chose to keep its applications."""
     rows = conn.execute(
-        "select id, pdf_rev from runs where purged_at is null and status <> 'generating' "
-        "and created_at < now() - make_interval(days => %s)", (days,)).fetchall()
+        "select r.id, r.pdf_rev from runs r join accounts a on a.id = r.account_id "
+        "where r.purged_at is null and r.status <> 'generating' "
+        "and r.created_at < now() - case when a.keep_applications then interval '3 months' else make_interval(days => %s) end",
+        (days,)).fetchall()
     for r in rows:
         purge_run(conn, data_dir, r)
     return len(rows)
@@ -62,9 +71,10 @@ def export_zip(conn, data_dir, account_id, email):
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("README.txt", "Your data from cvwrite3, as of " + datetime.now().strftime("%d %b %Y %H:%M") +
-                   ".\nruns/ holds each CV we still have (we keep CVs for 30 days).\n")
+                   ".\nruns/ holds each CV we still have (we keep CVs for " + retention_label(conn, account_id) + ").\n")
         z.writestr("profile.json", _json({"email": email, **{k: p[k] for k in (*profile.CONTACT, "standing_edits")},
-                                          "master_cv_file": p["master_name"]}))
+                                          "master_cv_file": p["master_name"],
+                                          "keep_applications_3_months": retention_label(conn, account_id) == "3 months"}))
         z.writestr("master_cv.txt", p["master_text"])
         data = profile.contact(p)
         for r in conn.execute("select * from runs where account_id = %s and purged_at is null order by id", (account_id,)):

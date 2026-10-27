@@ -296,3 +296,12 @@ dialog::backdrop{background:rgba(20,48,44,.35)}
 .cv-head{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:baseline;padding:12px 14px;border-radius:12px;background:var(--bg)}
 .cv-head span{color:var(--soft);font-size:14px;overflow-wrap:anywhere}
 .cv-head a{margin-left:auto;font-size:14px;font-weight:600}
+/* Chunk 7v (Addendum 8): the applications list and the ad page. */
+.apps td:first-child{font-weight:600;overflow-wrap:anywhere}
+.ad-text{margin:0;font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}
+@media (max-width:560px){
+  .nav{gap:2px;padding:4px}
+  .apps tr{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 14px}
+  .apps td:first-child{flex-basis:100%}
+}
+@media (max-width:400px){.nav a{font-size:12px}}
