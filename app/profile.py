@@ -38,3 +38,15 @@ def ready(p):
     if not p.get("name"):
         return "Add your name in Profile first. It goes at the top of every CV."
     return None
+
+
+PHRASES = {"master": "upload your master CV", "name": "add your full name"}
+
+
+def missing(p):
+    """What's still to do before a first CV, as keys of PHRASES, in the order a person would do them."""
+    return [k for k, gap in (("master", not p["master_text"].strip()), ("name", not p.get("name"))) if gap]
+
+
+def todo_text(keys):
+    return " and ".join(PHRASES[k] for k in keys)

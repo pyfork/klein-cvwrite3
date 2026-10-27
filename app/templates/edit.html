@@ -4,22 +4,27 @@
 <p class="eyebrow">Edit</p>
 <h1 class="title">Edit your CV</h1>
 <p class="lede">Change the words, then re-render. We only fix the layout. We never rewrite your text.</p>
+<p><a class="btn btn-ghost btn-sm" href="/runs/{{ run.id }}">← Back to your result</a></p>
 {% if error %}<div class="alert alert-bad" role="alert">{{ error }}</div>{% endif %}
 {% if job and job.status in ('queued', 'running') %}
 <div class="card stack"><ol class="steps"><li class="step is-run"><span class="dot" aria-hidden="true"></span><span class="s-name">Re-rendering…</span><span class="s-time"></span></li></ol></div>
 {% elif job and job.outcome == 'passed' %}
 <div class="alert {{ 'alert-warn' if job.message else 'alert-ok' }}" role="status"><b>Re-rendered.</b> The PDF and .md downloads are updated. Every word you wrote was kept, in order.{% if job.message %}<br>{{ job.message }}{% endif %}
-  <a href="/runs/{{ run.id }}/cv.pdf">Download PDF</a></div>
+  <a href="/runs/{{ run.id }}/cv.pdf">Download PDF</a> · <a href="/runs/{{ run.id }}/cv.md">Download .md</a></div>
 {% elif job and job.message %}
 <div class="alert alert-bad" role="status">{{ job.message }}</div>
 {% endif %}
 <form class="card stack" method="post" action="/runs/{{ run.id }}/edit">
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
   <div class="row between">
-    <a class="meta" href="/runs/{{ run.id }}">{{ run.ad_read.job_title or 'Your CV' }}</a>
+    <span class="meta">{{ run.ad_read.job_title or 'Your CV' }}</span>
     <span class="chip{% if left <= 0 %} chip-out{% endif %}">{{ left ~ ' of 3 free re-renders left' if left > 0 else 'No free re-renders left' }}</span>
   </div>
-  <p class="hint">Headings in CAPS. Bullets start with “- ”. The lines above the first heading are your name and contact details: change those in <a href="/profile">Profile</a>.</p>
+  <div class="cv-head" aria-label="Your name and contact line, from Profile">
+    <b>{{ head.name or '[NAME]' }}</b><span>{{ head.contact or '[CONTACT]' }}</span>
+    <a href="/profile">Change in Profile</a>
+  </div>
+  <p class="hint">Headings in CAPS. Bullets start with “- ”. Your name and contact line, above, come from Profile and go on every download.</p>
   <label class="sr" for="cvtext">CV text</label>
   <textarea id="cvtext" name="text" rows="24" maxlength="30000">{{ text }}</textarea>
   <div class="row">

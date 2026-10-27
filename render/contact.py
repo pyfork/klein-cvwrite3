@@ -74,6 +74,31 @@ def guess(text):
     return out
 
 
+_NOT_A_NAME = {"curriculum", "vitae", "resume", "résumé", "cv", "profile", "summary", "contact", "experience",
+               "education", "skills", "objective"}
+_NAME_JOINERS = {"bin", "binti", "bte", "bt", "a/l", "a/p", "s/o", "d/o", "van", "de", "von", "al", "el"}
+
+
+def guess_name(text):
+    """A suggestion for the empty Full name field: the CV's first line, if it reads like a person's name
+    (2 to 6 words, no digits, no contact shapes, not a heading like "Curriculum Vitae"). The user checks it."""
+    for line in text.splitlines():
+        s = line.strip().lstrip("#").strip().strip("*_ ").strip()
+        if not s or set(s) <= set("-=_*"):
+            continue
+        words = s.split()
+        if not 2 <= len(words) <= 6 or len(s) > 60 or re.search(r"[\d@:|·•]|https?|www\.", s):
+            return ""
+        if {w.lower().strip(".,") for w in words} & _NOT_A_NAME:
+            return ""
+        if any("/" in w and w.lower() not in _NAME_JOINERS for w in words):
+            return ""
+        if not all(w[0].isupper() or w.lower() in _NAME_JOINERS for w in words):
+            return ""
+        return " ".join(words)
+    return ""
+
+
 def header_to_placeholders(text):
     """In a Markdown CV header (`# Name` ... `---`): name -> {{NAME}}, lines after the tagline -> {{CONTACT}}."""
     lines, out, i = text.splitlines(), [], 0

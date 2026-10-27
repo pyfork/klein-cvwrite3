@@ -204,7 +204,7 @@ blockquote{font-size:15px;color:#2f4a46;background:var(--bg);border-radius:12px;
 dialog{background:var(--card);color:var(--ink);border-radius:20px;box-shadow:0 20px 50px rgba(20,48,44,.25)}
 dialog::backdrop{background:rgba(20,48,44,.35)}
 .toast{background:var(--ink);color:#fff;border-radius:12px;font-weight:600;font-size:14px}
-@media (max-width:560px){.nav a span{display:none}.nav a[aria-current=page] span{display:inline}.nav a{flex:none}.nav a[aria-current=page]{flex:1}}
+@media (max-width:560px){.nav a{gap:0;padding:10px 4px;font-size:13px}.nav i{display:none}.nav a.done span::after{content:" ✓"}}
 /* Calm: the screens added after the pick (account, signed-out pages, notice and terms, admin). */
 .brand{white-space:nowrap}
 .nav-admin{margin-left:auto}
@@ -285,3 +285,14 @@ dialog::backdrop{background:rgba(20,48,44,.35)}
 .packs form{display:contents}
 .pack{width:100%;cursor:pointer;font:inherit;color:inherit}
 .qr-img{display:block;width:220px;max-width:100%;height:auto}
+/* Chunk 7t (UX audit): the two steps and the plain tabs, who is waiting on what, the profile checklist, the edit header. */
+.nav a.done i{background:var(--acc-2);color:var(--acc)}
+.bal-use{font-size:12px;font-weight:600;color:var(--soft)}
+.opt.need{background:#fef3c7;color:#713f12}
+.todo{list-style:none;padding:0;display:grid;gap:10px}
+.todo li{display:flex;gap:10px;align-items:center;font-weight:600}
+.todo .dot{flex:none}
+.cvbar b{font-weight:800}
+.cv-head{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:baseline;padding:12px 14px;border-radius:12px;background:var(--bg)}
+.cv-head span{color:var(--soft);font-size:14px;overflow-wrap:anywhere}
+.cv-head a{margin-left:auto;font-size:14px;font-weight:600}

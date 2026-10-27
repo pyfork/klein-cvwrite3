@@ -1,6 +1,7 @@
 """CV text helpers: Markdown <-> the plain edit-box text, the summary word count, the Haiku word check,
 and where each keyword sits in a CV. No Claude calls here."""
 import difflib
+import hashlib
 import re
 
 SUMMARY = "PROFESSIONAL SUMMARY"
@@ -20,6 +21,20 @@ def strip_markup(md):
     t = re.sub(r"^---+$", " ", t, flags=re.M)
     t = re.sub(r"^\s*[-*] ", "", t, flags=re.M)
     return t.replace("|", " ")
+
+
+def ad_title(ad_text, limit=50):
+    """A title for a CV whose ad hasn't been read (or never will be): the ad's first line, cut short."""
+    for line in (ad_text or "").splitlines():
+        line = " ".join(line.split())
+        if line:
+            return line if len(line) <= limit else line[: limit - 1].rstrip() + "…"
+    return "Your ad"
+
+
+def ad_hash(ad_text):
+    """The same ad pasted again hashes the same (case and spacing ignored). Kept only on the run, so it goes with it."""
+    return hashlib.sha256(" ".join(ad_text.split()).lower().encode("utf-8")).hexdigest()
 
 
 def summary_words(md):

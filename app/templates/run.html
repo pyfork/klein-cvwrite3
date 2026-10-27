@@ -1,8 +1,8 @@
 {% extends "base.html" %}{% set nav = 'generate' %}
-{% block title %}{{ read.job_title or 'Your CV' }}{% endblock %}
+{% block title %}{{ heading }}{% endblock %}
 {% block content %}
 <p class="eyebrow">Generate</p>
-<h1 class="title">{{ read.job_title or 'Your new CV' }}</h1>
+<h1 class="title">{{ heading }}</h1>
 
 {% if run.status == 'generating' %}
   {% if job and job.status == 'held' %}
@@ -22,8 +22,11 @@
   <div class="card stack">
     <h2>{{ 'We couldn\'t make a CV that passes for this ad' if run.failure == 'check_failed' else 'This CV didn\'t finish' }}</h2>
     <p>{{ job.message if job and job.message else 'No credit used.' }}</p>
-    <div class="row"><a class="btn btn-primary" href="/generate">Try again</a>
-      <a class="btn btn-ghost" href="/report?category=output&run={{ run.id }}&page=/runs/{{ run.id }}">Report this problem</a></div>
+    {% if not can_retry %}<p>This ad has failed 3 times, so another try is unlikely to help. Report it and we'll take a look.</p>{% endif %}
+    <div class="row">{% if can_retry %}<a class="btn btn-primary" href="/generate?from={{ run.id }}">Try again</a>
+      <a class="btn btn-ghost" href="/report?category=output&run={{ run.id }}&page=/runs/{{ run.id }}">Report this problem</a>
+      {% else %}<a class="btn btn-primary" href="/report?category=output&run={{ run.id }}&page=/runs/{{ run.id }}">Report this problem</a>
+      <a class="btn btn-ghost" href="/generate">Write a different CV</a>{% endif %}</div>
     <p class="meta">Run id: r_{{ run.id }}</p>
   </div>
 
