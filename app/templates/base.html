@@ -24,6 +24,7 @@
     {% if u %}
     <a href="/profile"{% if u.ready %} class="done"{% endif %}{% if nav == 'profile' %} aria-current="page"{% endif %}><i>{{ '✓' if u.ready else '1' }}</i><span>Profile{% if u.ready %}<span class="sr"> (done)</span>{% endif %}</span></a>
     <a href="/generate"{% if nav == 'generate' %} aria-current="page"{% endif %}><i>2</i><span>Generate</span></a>
+    <a href="/applications"{% if nav == 'applications' %} aria-current="page"{% endif %}><span>Applications</span></a>
     <a href="/credits"{% if nav == 'credits' %} aria-current="page"{% endif %}><span>Credits</span></a>
     <a href="/account"{% if nav == 'account' %} aria-current="page"{% endif %}><span>Account</span></a>
     {% endif %}

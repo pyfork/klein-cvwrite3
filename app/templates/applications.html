@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% set nav = 'applications' %}
+{% block title %}Your applications{% endblock %}
+{% block content %}
+<p class="eyebrow">Applications</p>
+<h1 class="title">Your applications</h1>
+<p class="lede">Every job you've made a CV for, newest first. Open the ad and the CV again before the interview.</p>
+{% if saved == 'on' %}<div class="alert alert-ok" role="status">Saved. We keep your applications for 3 months.</div>
+{% elif saved == 'off' %}<div class="alert alert-ok" role="status">Saved. We keep your applications for 30 days. Anything older goes at the next daily clean-up.</div>{% endif %}
+{% if confirm %}
+<form class="card stack" method="post" action="/applications/keep">
+  <input type="hidden" name="csrf" value="{{ u.csrf }}"><input type="hidden" name="keep" value=""><input type="hidden" name="confirm" value="yes">
+  <h2>Keep them for 30 days only?</h2>
+  <p>{{ confirm }} {{ 'application is' if confirm == 1 else 'applications are' }} older than 30 days. If you turn this off, {{ 'it is' if confirm == 1 else 'they are' }} deleted at the next daily clean-up, with the ad and the CV. This can't be undone.</p>
+  <div class="row"><button type="submit" class="btn btn-danger">Turn off and delete {{ 'it' if confirm == 1 else 'them' }}</button>
+    <a class="btn btn-ghost" href="/applications">Keep them for 3 months</a></div>
+</form>
+{% endif %}
+{% if jobs %}
+<div class="card stack">
+  <h2>{{ total }} {{ 'job' if total == 1 else 'jobs' }}</h2>
+  <table class="tbl apps">
+    <thead><tr><th scope="col">Job</th><th scope="col">Date</th><th scope="col">Ad</th><th scope="col">CV</th></tr></thead>
+    <tbody>
+    {% for j in jobs %}
+      <tr><td><a href="/runs/{{ j.id }}">{{ j.title }}</a></td><td>{{ j.created_at.strftime('%-d %b %Y') }}</td>
+        <td><a href="/runs/{{ j.id }}/ad">Ad</a></td>
+        <td>{% if j.status == 'passed' %}<a href="/runs/{{ j.id }}/cv.pdf">CV (PDF)</a>{% if j.working %} <span class="badge badge-wait">New one working</span>{% endif %}
+          {% elif j.status == 'generating' %}<span class="badge badge-wait">Working</span>
+          {% else %}<span class="badge badge-off">{{ 'No credit used' if j.status == 'failed' else 'Cancelled' }}</span>{% endif %}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if more %}<p class="hint">Showing your latest {{ jobs|length }}.</p>{% endif %}
+</div>
+{% else %}
+<div class="card stack"><h2>No applications yet</h2><p>When you write a CV for a job ad, the job appears here.</p>
+  <div class="row"><a class="btn btn-primary" href="/generate">Write your first CV</a></div></div>
+{% endif %}
+{% if choice %}
+<form class="card stack" method="post" action="/applications/keep">
+  <input type="hidden" name="csrf" value="{{ u.csrf }}">
+  <label class="check"><input type="checkbox" name="keep" value="yes"{% if keep %} checked{% endif %}><span><b>Keep my applications for 3 months</b> <span class="meta">(otherwise 30 days)</span></span></label>
+  <p class="hint">We count from the day each CV was made. If you untick this later, anything older than 30 days is deleted at the next daily clean-up, and we tell you before it happens.</p>
+  <div class="row"><button type="submit" class="btn btn-ghost btn-sm">Save</button></div>
+</form>
+{% else %}
+<p class="hint">We keep each application for 30 days from the day its CV was made, then delete it.</p>
+{% endif %}
+{% endblock %}

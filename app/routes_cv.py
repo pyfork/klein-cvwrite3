@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Red
 
 from render import contact as contact_mod
 
-from . import caps, credits, cvtext, ic, orders, pause, pipeline, profile, rendering, upload
+from . import account, caps, credits, cvtext, ic, orders, pause, pipeline, profile, rendering, upload
 
 STEP_NAMES = {"call_a": "Reading the ad", "call_b": "Writing your CV", "retry": "Fixing the draft",
               "render": "Making the PDF", "check": "Checking: 2 pages, A4, keywords",
@@ -24,7 +24,7 @@ def register(app, h):
         if not run:
             raise h.error(request, 404, "Not found", "There's no CV with that number in your account.")
         if run["purged_at"]:
-            raise h.error(request, 410, "This CV was removed", "We keep CVs, ads and PDFs for 30 days, then delete them. Write a new one any time.")
+            raise h.error(request, 410, "This CV was removed", f"We keep CVs, ads and PDFs for {account.retention_label(c, u['account_id'])}, then delete them. Write a new one any time.")
         return run
 
     def generating(c, u):
@@ -188,6 +188,13 @@ def register(app, h):
         title = (run["ad_read"] or {}).get("job_title", "") or "cv"
         slug = "".join(ch if ch.isalnum() else "-" for ch in title.lower()).strip("-")[:40] or "cv"
         return f"cv-{slug}.{ext}"
+
+    @app.get("/runs/{run_id}/ad", response_class=HTMLResponse)
+    def run_ad(request: Request, run_id: int):
+        with h.conn() as c:
+            u = h.user(request, c)
+            run = own_run(request, c, u, run_id)
+            return h.render(request, "ad.html", u=u, run=run, heading=(run["ad_read"] or {}).get("job_title") or cvtext.ad_title(run["ad_text"]))
 
     @app.get("/runs/{run_id}/cv.pdf")
     def run_pdf(request: Request, run_id: int):

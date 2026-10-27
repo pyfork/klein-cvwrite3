@@ -48,6 +48,12 @@ def latest():
     return versions()[-1]
 
 
+def keeps_choice():
+    """The "keep my applications for 3 months" choice exists once the latest notice is v2.0 or newer, the version that
+    says so (Addendum 8). Prod never runs on a draft latest notice, so there it means: v2.0 is published."""
+    return latest().key >= (2, 0)
+
+
 def get(version):
     return next((v for v in versions() if v.version == version), None)
 
