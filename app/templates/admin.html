@@ -85,6 +85,11 @@
     <tr><td>Re-renders per CV</td><td>{{ '%.1f'|format(f.rerenders_per_cv) }}</td><td></td></tr>
     <tr><td>CVs edited</td><td>{{ '%.0f%%'|format(f.edited_share * 100) if f.edited_share is not none else '–' }}</td><td></td></tr>
   </tbody></table>
+  <h3 class="kicker">Latest CVs: cost and credits</h3>
+  {% if cost_rows %}<table class="tbl"><thead><tr><th scope="col">Run</th><th scope="col">Date</th><th scope="col">Status</th><th scope="col">Tokens in / out</th><th scope="col">Cost</th><th scope="col">Re-renders</th><th scope="col">Credits</th><th scope="col">Prep</th></tr></thead><tbody>
+    {% for r in cost_rows %}<tr><td>{{ r.run_id }}</td><td>{{ r.created_at.strftime('%-d %b %H:%M') }}</td><td>{{ r.status }}</td><td>{{ r.input_tokens }} / {{ r.output_tokens }}</td><td>${{ '%.3f'|format(r.cost_usd) }}</td><td>${{ '%.3f'|format(r.rerender_cost_usd) }}</td><td>{{ r.credits_used }}</td><td>{{ 'yes' if r.interview_prep else 'no' }}</td></tr>{% endfor %}
+  </tbody></table>{% else %}<p class="meta">None yet.</p>{% endif %}
+  <p class="hint">The latest 20. <a href="/admin/costs.csv">Download all as CSV</a> (numbers only, no CV or ad text).</p>
   <h3 class="kicker">“Not good” reasons ({{ f.feedback_n }})</h3>
   {% if f.reasons %}<table class="tbl"><tbody>{% for r in f.reasons %}<tr><td>{{ reasons[r.reason] }}</td><td>{{ r.n }}{% if r.reason == 'problem' and f.passed %} ({{ '%.0f%%'|format(100 * r.n / f.passed) }} of CVs; revisit the pause over 20%){% endif %}</td></tr>{% endfor %}</tbody></table>
   {% else %}<p class="meta">None yet.</p>{% endif %}
