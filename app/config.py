@@ -14,7 +14,7 @@ class Settings:
     database_url: str
     owner_email: str
     secret_key: str         # signs CSRF tokens; keys the HMACs of sign-in codes and session tokens
-    app_origin: str         # e.g. "https://cvwrite3.puascari.com"; POSTs must come from here
+    app_origin: str         # e.g. "https://betterjobs.puascari.com"; POSTs must come from here
     wave2_cap: int = 30   # open sign-ups stop here; the rest join the waitlist (owner, 2026-10-25)
     data_dir: str = str(Path(__file__).resolve().parent.parent / "data")  # PDFs live under data/pdfs/
     claude: str = "real"    # "fake" (dev and tests only) answers without calling Claude

@@ -41,6 +41,15 @@ class Deploy(unittest.TestCase):
         self.assertIn("proxy_pass http://127.0.0.1:8000", n)
         self.assertIn("127.0.0.1 --port 8000", (ROOT / "deploy/systemd/cvwrite3-app.service").read_text())
 
+    def test_one_address_for_the_app(self):
+        """The app takes POSTs from one origin: nginx serves the app there and redirects the first address to it."""
+        n = (ROOT / "deploy/nginx/cvwrite3.conf").read_text()
+        host = re.search(r"^CVWRITE_APP_ORIGIN=https://(\S+)$", (ROOT / "env.example").read_text(), re.M).group(1)
+        self.assertIn(f"server_name {host};", n)
+        self.assertIn(f"ssl_certificate     /etc/ssl/cloudflare/{host}.pem;", n)
+        self.assertIn(f"return 301 https://{host}$request_uri;", n)
+        self.assertIn(f"https://{host}/generate", (ROOT / "deploy/smoke.sh").read_text())
+
     def test_every_setting_the_code_reads_is_in_the_template(self):
         names = set()
         for f in list((ROOT / "app").glob("*.py")) + list((ROOT / "render").glob("*.py")):
