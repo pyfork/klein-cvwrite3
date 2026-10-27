@@ -51,19 +51,21 @@ class Consent(AppCase):
 
     def test_major_version_asks_again(self):
         self.agree(ALICE)
-        with mock.patch.object(notices, "versions", lambda: fake_versions("1.0", "1.1", "2.0")), \
+        major, minor = notices.parse(notices.latest().version)   # the version Alice just agreed to
+        base, minor_next, major_next = f"{major}.{minor}", f"{major}.{minor + 1}", f"{major + 1}.0"
+        with mock.patch.object(notices, "versions", lambda: fake_versions(base, minor_next, major_next)), \
              mock.patch.object(notices, "text_hash", lambda v, lang: "b" * 64), \
              mock.patch.object(notices, "text", lambda v, lang: "## In short\n- **New:** something"):
             r = self.get("/", ALICE)
             self.assertEqual(r.headers["location"], "/consent")
             page = self.get("/consent", ALICE).text
             self.assertIn("updated our privacy notice", page)
-            self.assertIn("What changed in v2.0:", page)
-            self.assertIn("What changed in v1.1:", page)
+            self.assertIn(f"What changed in v{major_next}:", page)
+            self.assertIn(f"What changed in v{minor_next}:", page)
             self.agree(ALICE)
             self.assertEqual(self.get("/generate", ALICE).status_code, 200)
         with self.conn() as c:
-            self.assertEqual([r["notice_version"] for r in c.execute("select notice_version from consents order by id")], ["1.0", "2.0"])
+            self.assertEqual([r["notice_version"] for r in c.execute("select notice_version from consents order by id")], [base, major_next])
 
     def test_minor_version_doesnt_ask(self):
         self.agree(ALICE)

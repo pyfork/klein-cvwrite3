@@ -183,7 +183,7 @@ class Mail(unittest.TestCase):
     def test_message_has_the_code_and_nothing_else_of_ours(self):
         from app import mailer
         m = mailer.message("cvwrite3 <signin@cvwrite3.test>", ALICE, "123456")
-        self.assertEqual(m["Subject"], "123456 is your cvwrite3 code")
+        self.assertEqual(m["Subject"], "123456 is your Better Jobs code")
         self.assertIn("123456", m.get_content())
         self.assertTrue(m["Message-ID"].endswith("@cvwrite3.test>"))
 
@@ -321,7 +321,7 @@ class Waitlist(AppCase):
     def test_open_and_room_lets_people_straight_in(self):
         self.post("/admin/wave2", OWNER, {"on": "yes"})
         page = self.get("/request", ALICE).text
-        self.assertIn("Join cvwrite3", page)
+        self.assertIn("Join Better Jobs", page)
         self.assertNotIn("Email me once", page)
         self.assertEqual(self.post("/request", ALICE, {"note": ""}).headers["location"], "/")
 
@@ -329,7 +329,7 @@ class Waitlist(AppCase):
         self.post("/admin/wave2", OWNER, {"on": "yes"})
         self.fill(self.settings.wave2_cap)
         page = self.get("/request", ALICE).text
-        self.assertIn("Join the cvwrite3 waitlist", page)
+        self.assertIn("Join the Better Jobs waitlist", page)
         self.assertIn('name="notify" value="yes">', page)  # unticked
         self.post("/request", ALICE, {"note": "", "notify": "yes"})
         self.post("/request", BOB, {"note": ""})
@@ -368,8 +368,8 @@ class Waitlist(AppCase):
 
     def test_open_email_says_where_to_sign_in(self):
         from app import mailer
-        m = mailer.open_message("cvwrite3 <signin@puascari.com>", ALICE, ORIGIN)
-        self.assertEqual(m["Subject"], "There's room at cvwrite3 now")
+        m = mailer.open_message("Better Jobs <signin@puascari.com>", ALICE, ORIGIN)
+        self.assertEqual(m["Subject"], "There's room at Better Jobs now")
         self.assertIn(ORIGIN, m.get_content())
 
     def test_retention(self):
