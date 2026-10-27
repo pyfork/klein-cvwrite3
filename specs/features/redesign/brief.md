@@ -1,4 +1,4 @@
-<!-- senior-lead-Sonnet5.5-agent, 2026-10-28. Feature brief from the template; the Shape drafted on the same branch. -->
+<!-- senior-lead-Sonnet5.5-agent, 2026-10-28. Feature brief from the template; the Shape drafted on the same branch. Slice list and Shape updated 2026-10-28 in the slice-plan PR for S-001 (foundation cut into four; nav has three tabs). -->
 # Brief: redesign
 
 ## Who it's for
@@ -34,23 +34,28 @@ Checked by tests and by the six responsive checks, 320 to 1440 px, light and dar
 - Responsive rules (320 to 1440 px, six checks, body text 16 px or more) and content rules (the home shows invented samples only).
 - CI: `test` and `push-guard` stay green. The art script's packages (OpenCV, numpy, Pillow) are dev-only, pinned in `gen/requirements.txt`; CI never installs them, and they never enter `requirements.lock` or the server.
 - Collects nothing new and sets no cookie, so no privacy-notice change.
-- Phone weight: slice 2's plan sets a budget for the home.
+- Phone weight: the plan of the signed-out home sets a budget for it.
 - `specs/adr/` is empty and there is no PRD, so there is nothing else to cite.
 
 ## Anything to match
 Brief Addendums 14 and 15 (tokens, type, shape, motion, copy, and what is settled), and the owner-accepted collage homepage v2 (a private design spike kept out of git). Samples: the three invented sample roles.
 
 ## Rough slice list
-1. **Foundation** (SHARED, risky: every page): a new stylesheet with tokens and dark mode in place of `calm.css`; web fonts in `fonts/`; the `base.html` shell (nav, slabs, pill buttons, torn-edge bands); the art in `app/static/`, with its generator moved into the repo. The new stylesheet keeps the old class names, so this slice edits only `base.html` and the stylesheet. Each later page slice rewrites its own markup and drops the old names; the last page slice deletes what is left.
-2. **The signed-out home:** the v2 page.
-3. **Profile, Generate and the result:** the ad read, drag-to-compare before and after, the interview prep panel.
-4. **Edit and re-render:** "You are in control".
-5. **Your applications,** with the "before the interview" panel.
-6. **Credits and pay.**
-7. **Account, notice, consent, terms, deleted, error and report pages.**
-8. **Admin,** plainer.
+1. **The new look, light** (SHARED, risky: every page): a new stylesheet with light tokens in place of `calm.css`; web fonts in `fonts/`; the `base.html` shell (nav, slabs, pill buttons). The new stylesheet keeps the old class names, so this slice edits only `base.html` and the stylesheet. Each later page slice rewrites its own markup and drops the old names; the last page slice deletes what is left.
+2. **Dark mode** (SHARED): the dark token set; paper and CV previews stay light; a test renders each route once per theme.
+3. **Scripts allow-list:** a test lists the allowed scripts and fails on any other, so the first slice that adds a script cannot ship an unlisted one.
+4. **The art and its generator:** the generator moved into the repo (dev-only) with its pinned requirements, and the WebP art the home uses. Torn-edge bands that need an image mask wait for this slice.
+5. **The signed-out home:** the v2 page.
+6. **Profile, Generate and the result:** the ad read, drag-to-compare before and after, the interview prep panel.
+7. **Edit and re-render:** "You are in control".
+8. **Your applications,** with the "before the interview" panel.
+9. **Credits and pay.**
+10. **Account, notice, consent, terms, deleted, error and report pages.**
+11. **Admin,** plainer.
 
 Why this order: every page shares the foundation, so it is the riskiest and goes first. It still gives users something: every existing page gets the new shell at once. SHARED changes get their own slice.
+
+Changed in the plan for slice 1 (2026-10-28): the rough list had the foundation as one slice and Addendum 15 counts eight slices; it is now eleven. One foundation slice fails the coherence guard (its sentence needs "and": the look, dark mode, the script rule, the art) and is over the 700-line limit by estimate: the art generator alone is 577 lines, and the new stylesheet restyles the 307 lines of `calm.css` and adds tokens, dark mode and the shell on top. The build measures; these are not results. Each part has one reason to exist and is checked on its own. Slices 2 to 4 are planned when reached.
 
 ## Open questions
 None. Addendum 15 settles the open items of Addendum 14.
@@ -62,7 +67,7 @@ No entity is added, so there is nothing to add to `specs/architecture.md` (the f
 
 | Shared piece | Invariants (what must always be true) |
 |---|---|
-| The page shell (`base.html`) | Every page keeps the skip link, the balance with its expiry, the nav (two steps, two tabs, Admin for the owner), the pause or slow banner, the CV bar, and the footer (report a problem, notice, terms, sign out, version). |
+| The page shell (`base.html`) | Every page keeps the skip link, the balance with its expiry, the nav (two steps, three tabs: Applications, Credits, Account; Admin for the owner), the pause or slow banner, the CV bar, and the footer (report a problem, notice, terms, sign out, version). |
 | The stylesheet | One file, no framework. Its URL carries `?v=<app version>`. Light and dark both work. Paper and CV previews stay light in dark mode. |
 | `fonts/` | Every file the PDF render names stays. New fonts sit beside them, each with its licence file. |
 | Scripts | Only those on the allow-list. Each loads only on the pages that use it. Every page works with scripts off. |
@@ -82,7 +87,7 @@ None. The home's motion plays once per page view in the browser and keeps no sta
 |---|---|---|---|
 | Users with accounts | up to 30, then a waitlist | brief Addendum 6 | none; static files cost the app almost nothing |
 | Visitors to the public home | unknown; `/` is `no-store`, so every view reaches the app | no measurement yet | the app unit (one worker, `MemoryMax=250M`, Addendum 1) |
-| Home page weight | page about 93 KB plus about 30 KB of sample data; the whole art folder is 668 KB for 25 images, and the home uses a subset | the design spike's files, measured 2026-10-27 | phone data; slice 2's plan sets the budget |
+| Home page weight | page about 93 KB plus about 30 KB of sample data; the whole art folder is 668 KB for 25 images, and the home uses a subset | the design spike's files, measured 2026-10-27 | phone data; the home slice's plan sets the budget |
 | Stylesheet | 21 KB today | `calm.css`, 21,023 bytes | slice 1's plan sets the budget |
 | Screens to check | 24 templates; each page at 7 widths (320, 360, 390, 768, 1024, 1280, 1440), light and dark | the templates and the responsive rules | review time, not run time |
 
@@ -106,16 +111,16 @@ None. The home's motion plays once per page view in the browser and keeps no sta
 ### Risky slices
 | Slice | Class (DATA, ACCESS or SHARED) | The assumption it tests | What changes if it is wrong |
 |---|---|---|---|
-| 1 Foundation | SHARED | The old class names still style every existing page acceptably under the new stylesheet; the versioned URL keeps old markup from meeting old CSS; the PDF render is untouched. Every feature relies on it: every page extends `base.html`. | Every page breaks at once, the consent form included, and that blocks sign-in for everyone. The undo is a revert (static files and templates, no schema), run on a non-live copy. |
-| 2 The signed-out home | ACCESS | `/` can show a public page without weakening any other redirect or exposing account data, and the soft sign-in check does not start a session. | A signed-out visitor sees the wrong page, or a signed-in one sees the home. The undo is a revert to the redirect. No `specs/threat-model.md` exists yet; the slice plan says so on its Threat model line. |
+| 1 The new look, light | SHARED | The old class names still style every existing page acceptably under the new stylesheet; the versioned URL keeps old markup from meeting old CSS; the PDF render is untouched. Every feature relies on it: every page extends `base.html`. | Every page breaks at once, the consent form included, and that blocks sign-in for everyone. The undo is a revert (static files and templates, no schema), run on a non-live copy. |
+| 5 The signed-out home | ACCESS | `/` can show a public page without weakening any other redirect or exposing account data, and the soft sign-in check does not start a session. | A signed-out visitor sees the wrong page, or a signed-in one sees the home. The undo is a revert to the redirect. No `specs/threat-model.md` exists yet; the slice plan says so on its Threat model line. |
 
-Slice 7 holds the consent form, which gates every sign-in. It is not a class (who gets in does not change), but its tests run in full.
+Slice 10 holds the consent form, which gates every sign-in. It is not a class (who gets in does not change), but its tests run in full.
 
 ### Shared standards still missing
-- Dark mode: one token set for both themes (slice 1).
-- The scripts allow-list test (slice 1).
-- A test that renders every route once per theme (slice 1).
-- The no-script and reduced-motion convention: each motion has an end state that shows without scripts (set in slice 1, first used in slice 2).
+- Dark mode: one token set for both themes (slice 2; slice 1 defines the light tokens so that dark only overrides them).
+- The scripts allow-list test (slice 3).
+- A test that renders every route once per theme (slice 2).
+- The no-script and reduced-motion convention: each motion has an end state that shows without scripts (set in slice 3, first used in slice 5).
 - Evidence for the six responsive checks: run on a local browser per slice, with screenshots attached to the PR. CI has no screenshot step.
 
 senior-lead-Sonnet5.5-agent
