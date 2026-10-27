@@ -15,6 +15,7 @@ render never needs the internet.
 import html
 import os
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -328,10 +329,23 @@ def _chrome_child():
         pass
 
 
+def _kill_group(pgid):
+    """SIGKILL Chrome's whole process group: Chrome may not exit on its own after printing."""
+    try:
+        os.killpg(pgid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    except PermissionError:
+        # macOS answers EPERM when the group leader has already exited and not yet been reaped. Skipping the kill
+        # there can leave Chrome's helper processes behind: acceptable on a developer's Mac. Anywhere else it
+        # would be a real failure to stop Chrome (sk24 is a small box), so it still raises.
+        if sys.platform != "darwin":
+            raise
+
+
 def render_pdf(md, dst, style=1, timeout=30):
     """Markdown text -> A4 PDF at dst. Chrome runs in its own process group, which is killed whole
     when it finishes or after `timeout` seconds. Raises RenderError if no complete PDF appears."""
-    import signal
     name, body = convert(md)
     airy = LAYOUT_AIRY in md
     dst = Path(dst).resolve()
@@ -361,10 +375,7 @@ def render_pdf(md, dst, style=1, timeout=30):
         try:
             done = wait_for_pdf(dst, proc, timeout)
         finally:
-            try:
-                os.killpg(proc.pid, signal.SIGKILL)  # Chrome may not exit on its own after printing
-            except ProcessLookupError:
-                pass
+            _kill_group(proc.pid)
             proc.wait()
     if not done:
         raise RenderError("timeout" if proc.returncode in (None, -9) else f"chrome_exit_{proc.returncode}")
