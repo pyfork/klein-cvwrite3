@@ -69,7 +69,8 @@ class Consent(AppCase):
 
     def test_minor_version_doesnt_ask(self):
         self.agree(ALICE)
-        with mock.patch.object(notices, "versions", lambda: fake_versions("1.0", "1.1")):
+        major, minor = notices.parse(notices.latest().version)   # the version Alice just agreed to
+        with mock.patch.object(notices, "versions", lambda: fake_versions(f"{major}.{minor}", f"{major}.{minor + 1}")):
             self.assertEqual(self.get("/generate", ALICE).status_code, 200)
 
     def test_deleted_accounts_consent_doesnt_count(self):
