@@ -21,7 +21,7 @@ Credits expire 12 months after we add them, the free ones included. We always us
 3. Expired credits can't be refunded.
 4. Refunds only go back to the bank account that paid.
 5. You can always delete your account. If you have money pending or unused paid credits, we'll refund what's owed.
-6. If cvwrite3 closes, we'll refund every unused paid credit without being asked.
+6. If Better Jobs closes, we'll refund every unused paid credit without being asked.
 
 ## 5. Fair use
 Up to 20 CVs and re-renders a day per person. Don't upload other people's CVs, or anything you don't have the right to use.

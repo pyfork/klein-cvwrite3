@@ -133,7 +133,7 @@ def create_app(settings=None, mail=None):
     def owner(request):
         email = who(request)
         if email != settings.owner_email:
-            raise error(request, 403, "Owner only", "This page is for the owner of cvwrite3.")
+            raise error(request, 403, "Owner only", "This page is for the owner of Better Jobs.")
         return {"email": email, "csrf": auth.csrf_token(settings, email), "is_owner": True}
 
     def check_post(request, email, token):

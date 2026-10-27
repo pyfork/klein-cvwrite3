@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}cvwrite3{% endblock %} · cvwrite3</title>
+<title>{% block title %}Better Jobs{% endblock %} · Better Jobs</title>
 <link rel="stylesheet" href="/static/calm.css?v={{ app_version }}">
 {% if refresh %}<meta http-equiv="refresh" content="2">{% endif %}
 </head>
@@ -11,7 +11,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <div class="app">
 <header class="top">
-  <a class="brand" href="/" aria-label="cvwrite3 home">cvwrite<b>3</b></a>
+  <a class="brand" href="/" aria-label="Better Jobs home">Better <b>Jobs</b></a>
   {% if u %}
   <a class="bal" href="/credits" title="Your balance">
     <span class="bal-line"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span>{% if u.in_use %} <span class="bal-use">· {{ u.in_use }} in use</span>{% endif %}</span>

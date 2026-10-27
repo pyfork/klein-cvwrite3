@@ -4,7 +4,7 @@ import json
 import unittest
 import zipfile
 
-from app import account, orders, rendering
+from app import account, notices, orders, rendering
 from tests.support import AD, OWNER, CVCase
 from tests.render_env import needs_render
 
@@ -20,7 +20,7 @@ class Account(CVCase):
 
     def test_account_page(self):
         page = self.get("/account", self.EMAIL).text
-        self.assertIn("You agreed to <b>Privacy notice v1.0</b>", page)
+        self.assertIn(f"You agreed to <b>Privacy notice v{notices.latest().version}</b>", page)
         self.assertIn("You didn&#39;t tick the sensitive-data line.", page)
         self.assertIn("Download my data", page)
         self.assertIn("Delete my account", page)

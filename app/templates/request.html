@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}{{ 'Join cvwrite3' if room else 'Join the waitlist' }}{% endblock %}
+{% block title %}{{ 'Join Better Jobs' if room else 'Join the waitlist' }}{% endblock %}
 {% block content %}
 <p class="eyebrow">{{ 'Open now' if room else 'Full for now' }}</p>
-<h1 class="title">{{ 'Join cvwrite3' if room else 'Join the cvwrite3 waitlist' }}</h1>
+<h1 class="title">{{ 'Join Better Jobs' if room else 'Join the Better Jobs waitlist' }}</h1>
 <p class="lede">You're signed in as <b>{{ email }}</b>.</p>
 <form method="post" action="/signout" class="foot-form meta"><input type="hidden" name="csrf" value="{{ csrf }}">Not you? <button type="submit">Sign out</button></form>
 {% if pending and room %}
@@ -15,12 +15,12 @@
 {% elif pending %}
 <div class="card stack">
   <p><span class="badge badge-wait">You're on the waitlist</span></p>
-  <p>cvwrite3 is full right now. If you asked for an email, we'll send you one, once, when there's room. You can also sign in again later to check.</p>
+  <p>Better Jobs is full right now. If you asked for an email, we'll send you one, once, when there's room. You can also sign in again later to check.</p>
 </div>
 {% elif room %}
 <form class="card stack" method="post" action="/request">
   <input type="hidden" name="csrf" value="{{ csrf }}">
-  <p>cvwrite3 writes a 2-page CV for each job ad you paste. Your first 2 CVs are free.</p>
+  <p>Better Jobs writes a 2-page CV for each job ad you paste. Your first 2 CVs are free.</p>
   <label class="field"><span>How did you hear about us? <span class="opt">optional</span></span>
     <input type="text" name="note" maxlength="200" placeholder="A friend, a post, a group…"></label>
   <button type="submit" class="btn btn-primary">Join</button>
@@ -29,7 +29,7 @@
 {% else %}
 <form class="card stack" method="post" action="/request">
   <input type="hidden" name="csrf" value="{{ csrf }}">
-  <p>cvwrite3 writes a 2-page CV for each job ad you paste. It's full right now, but you can wait for a place.</p>
+  <p>Better Jobs writes a 2-page CV for each job ad you paste. It's full right now, but you can wait for a place.</p>
   <label class="field"><span>How did you hear about us? <span class="opt">optional</span></span>
     <input type="text" name="note" maxlength="200" placeholder="A friend, a post, a group…"></label>
   <label class="check"><input type="checkbox" name="notify" value="yes"><span>Email me once when there's room</span></label>

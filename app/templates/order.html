@@ -7,7 +7,7 @@
 {% if already_open %}<div class="alert alert-info" role="status">You already have this order waiting for payment. Pay it or cancel it before starting another.</div>{% endif %}
 <div class="card stack pay">
   <div class="pay-grid">
-    <div class="qr"><img src="/orders/qr" alt="DuitNow QR code to pay cvwrite3" class="qr-img"></div>
+    <div class="qr"><img src="/orders/qr" alt="DuitNow QR code to pay Better Jobs" class="qr-img"></div>
     <ol class="pay-steps">
       <li>Scan the code with your bank or e-wallet app. On your phone? Save the image and open it in the app.</li>
       <li>Pay exactly <b>RM{{ '%.2f'|format(order.amount_rm) }}</b> for {{ order.credits }} credits.</li>

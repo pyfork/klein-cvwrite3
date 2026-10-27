@@ -11,6 +11,10 @@ PINNED = {
         "en": "c8f4662b8e8bc21e3a56f80538fa3e5da688dcd451b21e09b76894e5cdecd551",
         "ms": "5281e2c2f0346c1fc5b6c9756ddb71086c1014fd3df958331b01b1b150a36c1c",
     },
+    "1.1": {
+        "en": "5be2197ce43bbb2dd9a06c5f3a89d25d73440723e842f0fa144465b997ae81bd",
+        "ms": "494cd40f9098cbd6bbd64754f3e6d8e232b63bf97ff722d64b087857c2aabd57",
+    },
 }
 
 

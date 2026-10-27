@@ -70,7 +70,7 @@ def export_zip(conn, data_dir, account_id, email):
     p = profile.get(conn, account_id)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("README.txt", "Your data from cvwrite3, as of " + datetime.now().strftime("%d %b %Y %H:%M") +
+        z.writestr("README.txt", "Your data from Better Jobs, as of " + datetime.now().strftime("%d %b %Y %H:%M") +
                    ".\nruns/ holds each CV we still have (we keep CVs for " + retention_label(conn, account_id) + ").\n")
         z.writestr("profile.json", _json({"email": email, **{k: p[k] for k in (*profile.CONTACT, "standing_edits")},
                                           "master_cv_file": p["master_name"],

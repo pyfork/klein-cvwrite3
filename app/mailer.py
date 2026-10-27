@@ -1,4 +1,4 @@
-"""Sends the only two emails cvwrite3 ever sends: the sign-in code (Addendum 5), and one "there's room" email
+"""Sends the only two emails Better Jobs ever sends: the sign-in code (Addendum 5), and one "there's room" email
 to a waitlisted person who asked for it (Addendum 6, sent only when the owner presses the button).
 
 SMTP from the standard library, so any provider works and there's no new dependency. Port 465 is TLS from
@@ -9,7 +9,7 @@ import ssl
 from email.message import EmailMessage
 from email.utils import make_msgid
 
-BODY = """Your cvwrite3 sign-in code is {code}
+BODY = """Your Better Jobs sign-in code is {code}
 
 It works for 10 minutes. Type it on the page where you asked for it.
 
@@ -17,7 +17,7 @@ If you didn't ask for a code, ignore this email: nobody can sign in without it.
 """
 
 
-OPEN_BODY = """There's room at cvwrite3 now.
+OPEN_BODY = """There's room at Better Jobs now.
 
 Sign in at {origin} to join. Places go to whoever signs in first.
 
@@ -30,11 +30,11 @@ class MailError(Exception):
 
 
 def message(sender, to, code):
-    return _message(sender, to, f"{code} is your cvwrite3 code", BODY.format(code=code))
+    return _message(sender, to, f"{code} is your Better Jobs code", BODY.format(code=code))
 
 
 def open_message(sender, to, origin):
-    return _message(sender, to, "There's room at cvwrite3 now", OPEN_BODY.format(origin=origin))
+    return _message(sender, to, "There's room at Better Jobs now", OPEN_BODY.format(origin=origin))
 
 
 def _message(sender, to, subject, body):
