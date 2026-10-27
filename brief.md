@@ -599,10 +599,9 @@ Where this addendum and the sections above disagree, this addendum wins.
 - **One bar on every page** points at the CV being written, or at a finished one the user has not opened yet (for 7 days).
 - **The edit box starts at the first heading.** The name and contact line show above it, read-only, from the profile; changes to the header are still ignored.
 - **The stepper has two steps** (Profile and Generate, with a tick once the profile is ready) **and two plain tabs** (Credits and Account). On a phone all four labels show. This replaces the prototype's numbered steps.
-- **Built as chunk 7t** (PR #44, app 0.13.0, migration 010: additive).
+- **Built as chunk 7t** (PR #44, app 0.13.0, migration 010: additive). The pending-payment page says a check takes "usually within 24 hours" (the owner's number; PR #46).
 - **Still open:**
   - The recent-CVs list stops at 10 until Addendum 8's applications list is built (it needs the v2.0 notice and the translator's Malay).
-  - A typical wait time on the pending-payment page: the owner's number.
   - The Terms page's "draft" title: the owner's call.
 
 build-engineer-Sonnet5.5-agent
