@@ -12,5 +12,12 @@
     "status": "published",
     "what": "The service is now called Better Jobs (it was cvwrite3). Only the name changed.",
     "why": "The service moved to its own name and address. What we collect, why, who receives it, where it goes and how long we keep it are the same."
+  },
+  {
+    "version": "2.0",
+    "date": "2026-10-27",
+    "status": "published",
+    "what": "You can keep your applications for 3 months. We write interview prep notes with each CV, and email you once when your payment is confirmed. We now describe our providers by what they do, and the notice starts with the words we use.",
+    "why": "New features change how long we keep data, why we use it and what we email you, so we ask you to agree again."
   }
 ]

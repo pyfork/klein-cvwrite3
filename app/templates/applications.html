@@ -27,6 +27,10 @@
         <td>{% if j.status == 'passed' %}<a href="/runs/{{ j.id }}/cv.pdf">CV (PDF)</a>{% if j.working %} <span class="badge badge-wait">New one working</span>{% endif %}
           {% elif j.status == 'generating' %}<span class="badge badge-wait">Working</span>
           {% else %}<span class="badge badge-off">{{ 'No credit used' if j.status == 'failed' else 'Cancelled' }}</span>{% endif %}</td></tr>
+      {% if j.status == 'passed' and j.prep is not none %}<tr class="prep-row"><td colspan="4"><details><summary>Before the interview</summary>
+        <div class="stack">{% if j.problem %}<p><b>What they're looking for:</b> {{ j.problem }}</p>{% endif %}
+          {% if j.keywords %}<p><b>Top keywords:</b> {{ j.keywords|join(' · ') }}</p>{% endif %}
+          {% with notes = j.prep %}{% include "_prep.html" %}{% endwith %}</div></details></td></tr>{% endif %}
     {% endfor %}
     </tbody>
   </table>

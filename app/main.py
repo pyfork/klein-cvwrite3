@@ -18,7 +18,7 @@ from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.14.0"
+APP_VERSION = "0.15.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -321,7 +321,7 @@ def create_app(settings=None, mail=None):
         return RedirectResponse("/admin", 303)
 
     from types import SimpleNamespace
-    helpers = SimpleNamespace(conn=conn, render=render, user=user, owner=owner, check_post=check_post, error=error, settings=settings)
+    helpers = SimpleNamespace(conn=conn, render=render, user=user, owner=owner, check_post=check_post, error=error, settings=settings, mail=mail)
     admin_health = routes_cv.register(app, helpers)
     routes_pay.register(app, helpers)
     admin_reports = routes_ops.register(app, helpers, APP_VERSION)
