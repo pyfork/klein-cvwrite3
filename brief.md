@@ -731,3 +731,15 @@ Where this addendum and the sections above disagree, this addendum wins. It repl
 - **Built as slices** from a Shape: the foundation first (tokens, fonts, the stylesheet and the page shell, since every page shares them), then the pages.
 
 design-lead-Opus5.5-agent
+
+## Addendum 15 (2026-10-28): the new look, settled
+Where this addendum and the sections above disagree, this addendum wins. It settles the open items of Addendum 14 and corrects two of its lines.
+
+- **The emails stay plain text.** Addendum 11 fixes the payment email as plain text, so there is nothing for the tokens to style. This drops "the emails" from Addendum 14's "Every page follows it" and its "The emails use the tokens and no images [lean]". An HTML part can be added later if an email needs layout; that amends Addendum 11 first.
+- **No animated teaser on the home.** The home's sections already use the teaser's names and say what it says, and a long autoplay breaks Addendum 14's motion rule. This closes Addendum 14's open item "the teaser video on the new home". If a tour is wanted later, it is a button that plays only when pressed, with its script hosted by the app.
+- **The home may promise interview prep.** It is built (chunk 7w), so Addendum 12's condition is met. This closes Addendum 14's second open item.
+- **`/` shows the home to a signed-out visitor.** Today it redirects to sign-in. A signed-in visitor is redirected as now (Generate, or Profile until the profile is ready). Every other page still sends a signed-out visitor to sign-in. The home is the same for every visitor and shows only the invented samples. It is still sent `private, no-store` (Addendum 6), because `/` answers differently by sign-in.
+- **Scripts.** The look needs a few small scripts (a switch that plays once, a drag-to-compare slider). They are plain JavaScript files, each loaded only by the pages that use it: no framework, no build step, no script from another host. A test lists the allowed scripts and fails on any other. Every page works with scripts off: the slider shows "After" and the hero shows its end state. This changes the Screens line of `docs-public/project-rules.md` ("one small script"), which only the owner changes, in a PR of its own, before the first slice that adds a script.
+- **Built as eight slices** from the feature brief, `specs/features/redesign/brief.md`: the foundation, the home, Profile and Generate and the result, edit and re-render, Your applications, credits and pay, the account, notice, consent, terms, error and report pages, and the admin page.
+
+senior-lead-Sonnet5.5-agent
