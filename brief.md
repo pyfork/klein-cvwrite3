@@ -584,7 +584,25 @@ Where this addendum and the sections above disagree, this addendum wins.
   - Without it, a tool that is not installed skips the render tests, with the reason on each skip. A tool that is installed but won't start is one named failure from the first test file (`tests/test_00_render_preflight.py`), not dozens that read like product bugs. Any value of the variable but `0`, `1` or empty is an error.
   - The CI log ends with the skip count and each skip's reason. The one expected skip is `test_guard_is_on`, a check of the local hook; the `push-guard` job covers CI.
 - **Chrome is not pinned in CI yet.** The first run used Chrome 155.0.8059.39, the same major version sk24 had on 2026-10-22. The pinned `chrome-headless-shell` under the app's directory (Addendum 1, "Before go-live") stands for sk24, and when it is done CI moves to the same build. A layout check that passes on one and fails on the other is the sign to do it sooner. A change on sk24 needs the owner's OK.
-- **Open for the owner:** the `protect main` ruleset lists no required check (Addendum 5 says `ci / test` is one: an owner setting). Until it is set, only the owner's merge stops a red PR. Add `test`, and decide on `push-guard`.
+- **Required checks:** the `protect main` ruleset requires `test` and `push-guard`, with "up to date before merging" off (set by the owner on 2026-10-27), so a red run blocks the merge. This closes the open item that stood here.
 - Built in PRs #39 (the preflight and strict mode) and #40 (render in CI).
+
+build-engineer-Sonnet5.5-agent
+
+## Addendum 10 (2026-10-27): the user flow, from the UX audit
+Where this addendum and the sections above disagree, this addendum wins.
+
+- **A new user starts at Profile.** `/` goes to Profile until the profile is ready (a master CV and a full name), then to Generate. Profile opens with "Step 1 of 2". Until it is ready, Generate shows a short checklist in place of the ad box. (The Calm prototype never designed this first run.)
+- **The name is suggested from the CV's first line,** for the user to check, like the email and phone in Addendum 7. A name still has no shape, so it is taken out only when the typed name matches the CV, and the page warns when it doesn't. Saving a profile without a name warns, and says what is still to do.
+- **A blocked Generate says why, at the button.** The order is: profile, pause, credits, daily cap. While paused, the ad box is read-only. A credit held by a CV that is still being written shows as "in use" next to the balance, and is never reported as "out of credits".
+- **"Try again" keeps the ad.** After a content failure (the ad or the CV, not our service) it is offered twice for the same ad (same text, ignoring case and spacing), then the page asks for a report instead. This builds the copy rule in Addendum 1. A failure on our side (the AI service, the renderer, a timeout) never uses up the tries.
+- **One bar on every page** points at the CV being written, or at a finished one the user has not opened yet (for 7 days).
+- **The edit box starts at the first heading.** The name and contact line show above it, read-only, from the profile; changes to the header are still ignored.
+- **The stepper has two steps** (Profile and Generate, with a tick once the profile is ready) **and two plain tabs** (Credits and Account). On a phone all four labels show. This replaces the prototype's numbered steps.
+- **Built as chunk 7t** (PR #44, app 0.13.0, migration 010: additive). The pending-payment page says a check takes "usually within 24 hours" (the owner's number; PR #46). The Terms page is no longer labelled a draft (the owner's decision; PR #47).
+- **Addendum 8 is built as chunk 7v** (PR #48). Its two open items are settled by its own leans: the setting is per account, and unticking deletes what is older than 30 days at the next retention run, with the page saying so first. The 3-month tick shows only once the latest privacy notice is v2.0 or newer; until then the page says 30 days.
+- **Still open:**
+  - The v2.0 notice, in both languages, needs the translator's Malay. Prod refuses to start on a draft notice, so v2.0 lands in the PR that publishes it.
+  - The approved teaser also shows a source label on each application ("LinkedIn") and a "before the interview" panel. Addendum 8 lists neither, so neither is built: the owner decides whether to add them or change the teaser.
 
 build-engineer-Sonnet5.5-agent
