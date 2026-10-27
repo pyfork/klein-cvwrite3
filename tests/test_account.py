@@ -113,6 +113,9 @@ class Account(CVCase):
             self.assertEqual(account.purge_old_runs(c, self.data_dir), 1)
         self.assertEqual(self.get(f"/runs/{self.run_id}", self.EMAIL).status_code, 410)
         self.assertNotIn(f"/runs/{self.run_id}", self.get("/generate", self.EMAIL).text)
+        with self.conn() as c:   # nothing of the ad is kept, not even its hash
+            row = c.execute("select ad_text, ad_hash from runs where id = %s", (self.run_id,)).fetchone()
+        self.assertEqual((row["ad_text"], row["ad_hash"]), (None, None))
 
     def test_terms(self):
         page = self.get("/terms", self.EMAIL).text

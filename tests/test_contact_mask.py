@@ -43,6 +43,18 @@ class Mask(unittest.TestCase):
                                                "links": "linkedin.com/in/test-person"})
         self.assertEqual(contact.guess("No contact here. " * 20), {})
 
+    def test_guess_name_takes_a_first_line_that_reads_like_a_name(self):
+        for text, name in (("# Test Person\nShah Alam", "Test Person"), ("**Lim Wei Jie**\n", "Lim Wei Jie"), ("---\nJohn Tan", "John Tan"),
+                           ("NURUL AIN BINTI ZAKARIA\n012", "NURUL AIN BINTI ZAKARIA"), ("Kumar a/l Raman\n", "Kumar a/l Raman"),
+                           ("Ahmad bin Ali", "Ahmad bin Ali"), ("Dr. Mary-Ann O'Connor", "Dr. Mary-Ann O'Connor")):
+            self.assertEqual(contact.guess_name(text), name, text)
+
+    def test_guess_name_leaves_anything_else_for_the_user(self):
+        for text in ("Curriculum Vitae\nTest Person", "Resume", "test@example.com\nTest Person", "Test", "Test Person 2024",
+                     "Built a daily SQL report", "Skills: SQL, Excel", "https://example.com/x", "Seven Words Is Too Many For Name",
+                     "A very long line " * 6, "lowercase name here", ""):
+            self.assertEqual(contact.guess_name(text), "", text)
+
 
 if __name__ == "__main__":
     unittest.main()

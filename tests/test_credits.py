@@ -105,6 +105,7 @@ class Pages(AppCase):
         self.assertIn("<td>2 Mar 2026</td>", page)
 
     def test_paywall_at_zero(self):
+        self.post("/profile", self.EMAIL, {"master_text": "Test Person\n" + "text " * 60, "name": "Test Person"})   # the profile comes first
         with self.conn() as c:
             run = c.execute("insert into runs (account_id, ad_text, status) values (%s, %s, 'passed') returning id", (self.acct, "x" * 300)).fetchone()["id"]
             run2 = c.execute("insert into runs (account_id, ad_text, status) values (%s, %s, 'passed') returning id", (self.acct, "x" * 300)).fetchone()["id"]

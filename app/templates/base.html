@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}cvwrite3{% endblock %} · cvwrite3</title>
-<link rel="stylesheet" href="/static/calm.css">
+<link rel="stylesheet" href="/static/calm.css?v={{ app_version }}">
 {% if refresh %}<meta http-equiv="refresh" content="2">{% endif %}
 </head>
 <body class="opt-calm{% if signed_out %} signed-out{% endif %}">
@@ -14,24 +14,25 @@
   <a class="brand" href="/" aria-label="cvwrite3 home">cvwrite<b>3</b></a>
   {% if u %}
   <a class="bal" href="/credits" title="Your balance">
-    <span class="bal-line"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span></span>
+    <span class="bal-line"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span>{% if u.in_use %} <span class="bal-use">· {{ u.in_use }} in use</span>{% endif %}</span>
     <span class="bal-exp">{{ ('earliest expire ' ~ u.expires.strftime('%-d %b %Y')) if u.expires else 'buy more' }}</span>
   </a>
   {% endif %}
   {% if u or o %}
-  {# Account joins the stepper in chunk 7. #}
+  {# Profile and Generate are the two steps, in order (a tick once the profile is ready); Credits and Account are plain tabs. #}
   <nav class="nav" aria-label="Pages">
     {% if u %}
-    <a href="/profile"{% if nav == 'profile' %} aria-current="page"{% endif %}><i>1</i><span>Profile</span></a>
+    <a href="/profile"{% if u.ready %} class="done"{% endif %}{% if nav == 'profile' %} aria-current="page"{% endif %}><i>{{ '✓' if u.ready else '1' }}</i><span>Profile{% if u.ready %}<span class="sr"> (done)</span>{% endif %}</span></a>
     <a href="/generate"{% if nav == 'generate' %} aria-current="page"{% endif %}><i>2</i><span>Generate</span></a>
-    <a href="/credits"{% if nav == 'credits' %} aria-current="page"{% endif %}><i>3</i><span>Credits</span></a>
-    <a href="/account"{% if nav == 'account' %} aria-current="page"{% endif %}><i>4</i><span>Account</span></a>
+    <a href="/credits"{% if nav == 'credits' %} aria-current="page"{% endif %}><span>Credits</span></a>
+    <a href="/account"{% if nav == 'account' %} aria-current="page"{% endif %}><span>Account</span></a>
     {% endif %}
     {% if (u and u.is_owner) or o %}<a href="/admin" class="nav-admin"{% if nav == 'admin' %} aria-current="page"{% endif %}><i>A</i><span>Admin</span></a>{% endif %}
   </nav>
   {% endif %}
 </header>
 {% if banner %}<div class="banner" role="status">{{ banner }}</div>{% endif %}
+{% if cvbar and request.url.path != '/runs/' ~ cvbar.id %}<div class="banner banner-info cvbar" role="status">{{ 'A CV is being written:' if cvbar.working else 'Your CV is ready:' }} <b>{{ cvbar.title }}</b> <a href="/runs/{{ cvbar.id }}">Open it</a></div>{% endif %}
 <main id="main" tabindex="-1">
 <section class="page">
 {% block content %}{% endblock %}

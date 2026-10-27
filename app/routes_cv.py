@@ -1,7 +1,7 @@
 """Chunk 3 pages: profile, generate, the run (progress and result), downloads, edit and re-render."""
 import json
 
-from fastapi import File, Form, Request, UploadFile
+from fastapi import File, Form, Query, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, RedirectResponse
 
 from render import contact as contact_mod
@@ -12,6 +12,8 @@ STEP_NAMES = {"call_a": "Reading the ad", "call_b": "Writing your CV", "retry": 
               "render": "Making the PDF", "check": "Checking: 2 pages, A4, keywords",
               "reformat": "Fixing the layout", "word_check": "Checking every word was kept"}
 AD_MIN, AD_MAX, EDIT_MAX = 200, 30000, 30000
+CONTENT_FAILURES = ("ad_read_failed", "check_failed")   # the ad or the CV was the problem; the rest are ours (Addendum 1)
+RETRIES_PER_AD = 2   # "try again" is offered after a content failure at most this many times for one ad
 
 
 def register(app, h):
@@ -44,7 +46,7 @@ def register(app, h):
         return h.render(request, "profile.html", status=status, u=u, text=text, filename=filename or p["master_name"],
                         fields=fields, ic_hits=ic.find(text), error=error, saved=saved, unsaved=preview is not None,
                         words=len(cvtext.words(text)), removed=contact_mod.found(text, fields) if text else [],
-                        prefilled=prefilled)
+                        prefilled=prefilled, todo=profile.missing(p), todo_text=profile.todo_text(profile.missing(p)))
 
     @app.get("/profile", response_class=HTMLResponse)
     def profile_get(request: Request, saved: int = 0):
@@ -65,8 +67,11 @@ def register(app, h):
             p = profile.get(c, u["account_id"])
             fields = {k: p[k] for k in (*profile.CONTACT, "standing_edits")}
             guessed = {k: v for k, v in contact_mod.guess(text).items() if not fields[k]}
+            suggestion = contact_mod.guess_name(text) if not fields["name"] else ""
+            if suggestion:
+                guessed = {"name": suggestion, **guessed}
             fields.update(guessed)
-            names = [{"email": "email", "phone": "phone", "links": "link"}[k] for k in guessed]
+            names = [{"name": "name", "email": "email", "phone": "phone", "links": "link"}[k] for k in guessed]
             prefilled = " and ".join([", ".join(names[:-1]), names[-1]] if len(names) > 1 else names)
             return profile_page(request, c, u, preview=text, filename=file.filename, form=fields, prefilled=prefilled)
 
@@ -88,33 +93,47 @@ def register(app, h):
         return RedirectResponse("/profile?saved=1", 303)
 
     # ---- generate ----------------------------------------------------------------
-    def generate_page(request, c, u, status=200, ad="", error=None):
-        p = profile.get(c, u["account_id"])
-        runs = c.execute("select r.id, r.status, r.created_at, r.ad_read->>'job_title' as title from runs r "
-                         "where account_id = %s and purged_at is null order by created_at desc limit 10", (u["account_id"],)).fetchall()
-        blocked = None
+    def generate_block(c, u, p):
+        """Why a new CV can't start, as {kind, text, ...}, or None. In the order a user can fix them."""
+        todo = profile.missing(p)
+        if todo:
+            return {"kind": "profile", "todo": todo, "text": "Finish your profile first: " + profile.todo_text(todo) + "."}
         if pause.current(c):
-            blocked = "Generating is paused, so you can't start a new CV right now. Nothing has been charged."
-        elif available(c, u) < 1:
-            blocked = "out_of_credits"
-        elif profile.ready(p):
-            blocked = profile.ready(p)
-        elif capped(c, u):
-            blocked = capped(c, u)
-        return h.render(request, "generate.html", status=status, u=u, ad=ad, error=error, blocked=blocked, runs=runs,
-                        buying_closed=orders.buying_closed(pause.current_with_age(c)))
+            return {"kind": "paused", "text": "Generating is paused, so you can't start a new CV right now. Nothing has been charged."}
+        if u["balance"] - u["in_use"] < 1:
+            if u["balance"] >= 1:   # the balance still shows it: a CV that's being written holds the credit
+                run = c.execute("select id from runs where account_id = %s and status = 'generating' order by created_at desc limit 1",
+                                (u["account_id"],)).fetchone()
+                return {"kind": "in_use", "run": run and run["id"],
+                        "text": "Your last credit is held for the CV that's being written. You only pay if it passes."}
+            return {"kind": "credits", "text": "You're out of credits. Pick a pack above to write another CV."}
+        msg = capped(c, u)
+        return {"kind": "capped", "text": msg} if msg else None
+
+    def generate_page(request, c, u, status=200, ad="", error=None, from_run=False):
+        p = profile.get(c, u["account_id"])
+        rows = c.execute("select r.id, r.status, r.created_at, r.ad_read->>'job_title' as title, left(r.ad_text, 200) as ad_start from runs r "
+                         "where account_id = %s and purged_at is null order by created_at desc limit 10", (u["account_id"],)).fetchall()
+        runs = [{**r, "title": r["title"] or cvtext.ad_title(r["ad_start"])} for r in rows]
+        return h.render(request, "generate.html", status=status, u=u, ad=ad, error=error, block=generate_block(c, u, p), runs=runs,
+                        todo=profile.missing(p), from_run=from_run, buying_closed=orders.buying_closed(pause.current_with_age(c)))
 
     @app.get("/")
     def home(request: Request):
         with h.conn() as c:
-            h.user(request, c)
-        return RedirectResponse("/generate", 303)
+            u = h.user(request, c)
+        return RedirectResponse("/generate" if u["ready"] else "/profile", 303)   # step 1 first, until the profile is ready
 
     @app.get("/generate", response_class=HTMLResponse)
-    def generate_get(request: Request):
+    def generate_get(request: Request, from_: int = Query(0, alias="from")):
         with h.conn() as c:
             u = h.user(request, c)
-            return generate_page(request, c, u)
+            ad = ""
+            if from_:   # "Try again" on a CV that didn't finish: put its ad back in the box
+                row = c.execute("select ad_text from runs where id = %s and account_id = %s and purged_at is null and status in ('failed', 'cancelled')",
+                                (from_, u["account_id"])).fetchone()
+                ad = (row or {}).get("ad_text") or ""
+            return generate_page(request, c, u, ad=ad, from_run=bool(ad))
 
     @app.post("/generate")
     def generate_post(request: Request, csrf: str = Form(""), ad: str = Form("")):
@@ -130,7 +149,8 @@ def register(app, h):
                 c.execute("select pg_advisory_xact_lock(%s)", (u["account_id"],))  # one balance check at a time per user
                 if pause.current(c) or available(c, u) < 1 or profile.ready(profile.get(c, u["account_id"])) or capped(c, u):
                     return generate_page(request, c, u, 409, ad)
-                run_id = c.execute("insert into runs (account_id, ad_text) values (%s, %s) returning id", (u["account_id"], ad)).fetchone()["id"]
+                run_id = c.execute("insert into runs (account_id, ad_text, ad_hash) values (%s, %s, %s) returning id",
+                                   (u["account_id"], ad, cvtext.ad_hash(ad))).fetchone()["id"]
                 c.execute("insert into jobs (run_id, kind) values (%s, 'generate')", (run_id,))
         return RedirectResponse(f"/runs/{run_id}", 303)
 
@@ -140,6 +160,8 @@ def register(app, h):
         with h.conn() as c:
             u = h.user(request, c)
             run = own_run(request, c, u, run_id)
+            if run["status"] == "passed" and not run["opened_at"]:
+                c.execute("update runs set opened_at = now() where id = %s and opened_at is null", (run_id,))
             job = c.execute("select * from jobs where run_id = %s and kind = 'generate' order by id desc limit 1", (run_id,)).fetchone()
             steps = c.execute("select step, outcome, duration_ms from run_steps where run_id = %s and job_id = %s and step = any(%s) order by id",
                               (run_id, job["id"], list(STEP_NAMES))).fetchall() if job else []
@@ -148,8 +170,13 @@ def register(app, h):
             kw_status = run["keyword_status"] or {}
             gave = feedback or c.execute("select 1 from feedback where run_id = %s", (run_id,)).fetchone() is not None
             from .routes_ops import REASONS
+            fails = 0   # CVs for this same ad that failed on content, this one included
+            if run["status"] == "failed" and run["failure"] in CONTENT_FAILURES and run["ad_hash"]:
+                fails = c.execute("select count(*) n from runs where account_id = %s and ad_hash = %s and status = 'failed' and failure = any(%s) "
+                                  "and purged_at is null", (u["account_id"], run["ad_hash"], list(CONTENT_FAILURES))).fetchone()["n"]
             return h.render(request, "run.html", u=u, run=run, job=job, read=read, places=places, kw_status=kw_status,
-                            feedback=gave, reasons=REASONS,
+                            feedback=gave, reasons=REASONS, heading=read.get("job_title") or cvtext.ad_title(run["ad_text"]),
+                            can_retry=fails <= RETRIES_PER_AD,
                             lacking=[kw for kw in read.get("keywords_top", []) if kw_status.get(kw) in ("bridged", "missing")],
                             steps=[{"name": STEP_NAMES[s["step"]], **s} for s in steps], gaps=run["gaps"] or [],
                             refresh=run["status"] == "generating" and job and job["status"] in ("queued", "running"))
@@ -200,7 +227,10 @@ def register(app, h):
         if job_id:
             job = c.execute("select * from jobs where id = %s and run_id = %s and kind = 'rerender'", (job_id, run["id"])).fetchone()
         busy = c.execute("select 1 from jobs where run_id = %s and kind = 'rerender' and status in ('queued', 'running')", (run["id"],)).fetchone()
-        return h.render(request, "edit.html", status=status, u=u, run=run, text=text if text is not None else cvtext.to_plain(run["draft_md"]),
+        p = profile.get(c, u["account_id"])
+        full = text if text is not None else cvtext.to_plain(run["draft_md"])
+        return h.render(request, "edit.html", status=status, u=u, run=run, text=cvtext.plain_body(full)[0],
+                        head={"name": p["name"], "contact": contact_mod.contact_line(profile.contact(p))},
                         left=pipeline.MAX_RERENDERS - run["rerenders_used"], error=error, job=job, busy=bool(busy),
                         paused=bool(pause.current(c)), refresh=bool(busy))
 

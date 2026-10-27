@@ -2,7 +2,9 @@
 
 Claude is the fake (app/fakeclaude.py). Renders use the real Chrome and poppler (tests/render_env.py): without them these tests skip, or fail under CVWRITE_REQUIRE_RENDER=1.
 """
+import html
 import io
+import re
 import unittest
 import zipfile
 from pathlib import Path
@@ -125,9 +127,17 @@ class Profile(AppCase):
         self.assertIn('name="email" value="test@example.com"', r.text)
         self.assertIn('name="phone" value="012-000 0000"', r.text)
         self.assertIn('name="links" value="linkedin.com/in/test-person"', r.text)
-        self.assertIn("We filled in your email, phone and link from your CV", r.text)
+        self.assertIn('name="name" value="Test Person"', r.text)   # the first line, suggested for the user to check
+        self.assertIn("We filled in your name, email, phone and link from your CV", r.text)
         self.assertIn("Before anything goes to the AI, we take these out", r.text)
-        self.assertIn("Add your full name in step 3", r.text)
+        self.assertIn("Test Person</li>", r.text)   # and the suggested name is taken out too
+        self.assertNotIn("Add your full name in Contact details", r.text)
+
+    def test_upload_does_not_suggest_a_heading_as_the_name(self):
+        r = self.upload("Curriculum Vitae\ntest@example.com\n" + "Built a daily SQL report. " * 20)
+        self.assertIn('name="name" value=""', r.text)
+        self.assertIn("We filled in your email from your CV", r.text)
+        self.assertIn("Add your full name in Contact details so we take it out too", r.text)
 
     def test_upload_keeps_saved_contact_fields(self):
         self.post("/profile", self.EMAIL, {"master_text": "Test Person\n" + "text " * 60, "name": "Test Person",
@@ -159,7 +169,8 @@ class Profile(AppCase):
 
     def test_generate_needs_a_profile(self):
         r = self.get("/generate", self.EMAIL)
-        self.assertIn("Upload your master CV first", r.text)
+        self.assertIn("Before your first CV", r.text)
+        self.assertIn("Upload your master CV", r.text)
         self.assertEqual(self.post("/generate", self.EMAIL, {"ad": AD}).status_code, 409)
 
 
@@ -397,6 +408,34 @@ class Rerender(CVCase):
         self.assertIn("Twelve years", run["draft_md"])
         self.assertEqual(run["pdf_rev"], 2)
         self.assertIn("# Nadia Hamzah", self.get(f"/runs/{self.run_id}/cv.md", self.EMAIL).text)
+
+    def box_text(self, page):
+        return html.unescape(re.search(r'<textarea id="cvtext"[^>]*>(.*?)</textarea>', page, re.S).group(1))
+
+    def test_the_box_starts_at_the_first_heading_and_your_name_sits_above_it(self):
+        page = self.get(f"/runs/{self.run_id}/edit", self.EMAIL).text
+        self.assertTrue(self.box_text(page).lstrip().startswith("PROFESSIONAL SUMMARY"))
+        self.assertNotIn("[NAME]", page)
+        self.assertNotIn("[CONTACT]", page)
+        self.assertRegex(page, r'<div class="cv-head"[^>]*>\s*<b>Nadia Hamzah</b><span>Shah Alam · \+60 12-345 6789 · nadia@example.com</span>')
+
+    def test_the_box_as_shown_re_renders_and_keeps_the_header(self):
+        box = self.box_text(self.get(f"/runs/{self.run_id}/edit", self.EMAIL).text)
+        self.post(f"/runs/{self.run_id}/edit", self.EMAIL, {"text": box.replace("Eleven years", "Twelve years")})
+        self.drain()
+        run = self.run_row(self.run_id)
+        self.assertEqual(run["rerenders_used"], 1)
+        self.assertIn("Twelve years", run["draft_md"])
+        self.assertIn("{{NAME}}", run["draft_md"])
+        self.assertIn("# Nadia Hamzah", self.get(f"/runs/{self.run_id}/cv.md", self.EMAIL).text)
+
+    def test_the_banner_links_the_md_and_the_way_back(self):
+        self.edit(lambda t: t.replace("Eleven years", "Twelve years"))
+        with self.conn() as c:
+            job = c.execute("select id from jobs where kind = 'rerender' order by id desc limit 1").fetchone()["id"]
+        page = self.get(f"/runs/{self.run_id}/edit?job={job}", self.EMAIL).text
+        self.assertIn(f'href="/runs/{self.run_id}/cv.md">Download .md', page)
+        self.assertIn(f'href="/runs/{self.run_id}">← Back to your result', page)
 
     def test_header_changes_are_ignored(self):
         self.edit(lambda t: t.replace("[NAME]", "Somebody Else"))

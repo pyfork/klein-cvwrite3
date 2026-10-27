@@ -13,12 +13,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, credits, db, health, i18n, mailer, notices, orders, pause, routes_account, routes_cv, routes_ops, routes_pay, signin
+from . import access, auth, config, credits, cvtext, db, health, i18n, mailer, notices, orders, pause, profile, routes_account, routes_cv, routes_ops, routes_pay, signin
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.12.0"
+APP_VERSION = "0.13.0"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -86,11 +86,22 @@ def create_app(settings=None, mail=None):
     def conn():
         return db.connect(settings.database_url)
 
+    def cv_bar(c, account_id):
+        """The CV to point at from every page: one being written, else a finished one not opened yet (7 days)."""
+        r = c.execute(
+            "select id, status, ad_read->>'job_title' as title, left(ad_text, 200) as ad_start from runs "
+            "where account_id = %s and purged_at is null and (status = 'generating' or "
+            "(status = 'passed' and opened_at is null and passed_at > now() - interval '7 days')) "
+            "order by (status = 'generating') desc, created_at desc limit 1", (account_id,)).fetchone()
+        return r and {"id": r["id"], "working": r["status"] == "generating", "title": r["title"] or cvtext.ad_title(r["ad_start"])}
+
     def render(request, name, status=200, **ctx):
-        if ctx.get("u") and "banner" not in ctx:
+        if ctx.get("u"):
             with conn() as c:
-                ctx["banner"] = pause.banner(pause.current_with_age(c)) or (
-                    "Generating is slower than usual right now." if health.degraded_now(c) else None)
+                if "banner" not in ctx:
+                    ctx["banner"] = pause.banner(pause.current_with_age(c)) or (
+                        "Generating is slower than usual right now." if health.degraded_now(c) else None)
+                ctx.setdefault("cvbar", cv_bar(c, ctx["u"]["account_id"]))
         return templates.TemplateResponse(request, name, {"app_version": APP_VERSION, **ctx}, status_code=status)
 
     def error(request, status, title, message):
@@ -114,8 +125,10 @@ def create_app(settings=None, mail=None):
         if consent and notices.needs_consent((notices.latest_consent(c, email) or {}).get("notice_version")):
             raise Page(RedirectResponse("/consent", 303))
         cs = credits.summary(c, row["account_id"])
+        in_use = c.execute("select count(*) n from runs where account_id = %s and status = 'generating'", (row["account_id"],)).fetchone()["n"]
         return {"email": email, "account_id": row["account_id"], "balance": cs.balance, "expires": cs.earliest_expiry,
-                "csrf": auth.csrf_token(settings, email), "is_owner": email == settings.owner_email}
+                "csrf": auth.csrf_token(settings, email), "is_owner": email == settings.owner_email,
+                "in_use": in_use, "ready": profile.ready(profile.get(c, row["account_id"])) is None}
 
     def owner(request):
         email = who(request)

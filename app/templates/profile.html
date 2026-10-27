@@ -3,15 +3,19 @@
 {% block content %}
 <p class="eyebrow">Profile</p>
 <h1 class="title">Your master CV</h1>
-<p class="lede">One file with everything you've done. We write each new CV from it.</p>
-{% if saved %}<div class="alert alert-ok" role="status">Saved. Changes take effect at once.</div>{% endif %}
+{% if u.ready %}<p class="lede">One file with everything you've done. We write each new CV from it.</p>
+{% else %}<p class="lede"><b>Step 1 of 2.</b> Upload your CV and add your full name. Then you can paste a job ad.</p>{% endif %}
+{% if saved %}
+  {% if todo %}<div class="alert alert-warn" role="status">Saved. Still to do before you can write a CV: {{ todo_text }}.</div>
+  {% else %}<div class="alert alert-ok stack" role="status"><p>Saved. Changes take effect at once.</p><div class="row"><a class="btn btn-primary btn-sm" href="/generate">Paste a job ad</a></div></div>{% endif %}
+{% endif %}
 {% if error %}<div class="alert alert-bad" role="alert">{{ error }}</div>{% endif %}
 <div class="alert alert-warn"><p>Don't include your IC number, religion or health details. A CV doesn't need them.</p>
   <p lang="ms">Jangan masukkan nombor IC, maklumat agama atau maklumat kesihatan anda. CV tidak memerlukannya.</p></div>
 
 <form class="card stack" method="post" action="/profile/upload" enctype="multipart/form-data">
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
-  <h2>1. Upload</h2>
+  <h2>Upload</h2>
   <label class="drop">
     <input type="file" name="file" accept=".docx,.pdf,.md,.txt" required aria-describedby="drop-s">
     <span class="drop-t">Choose a file</span>
@@ -25,7 +29,7 @@
   <input type="hidden" name="csrf" value="{{ u.csrf }}">
   <input type="hidden" name="master_name" value="{{ filename }}">
   <div class="card stack">
-    <h2>2. Check what we read</h2>
+    <h2>Check what we read</h2>
     {% if unsaved %}<div class="alert alert-info">We read <b>{{ filename }}</b>. Check the text below, then save. Nothing is saved yet.</div>{% endif %}
     <p class="hint">We'll work from this text. Fix anything that's missing or garbled. Text in tables and text boxes is the usual problem.</p>
     <textarea name="master_text" rows="14" spellcheck="false" placeholder="Your CV text appears here after you upload it.">{{ text }}</textarea>
@@ -40,18 +44,18 @@
       <p><b>Before anything goes to the AI, we take these out:</b></p>
       {% if removed %}<ul>{% for label, value in removed %}<li><span class="removed-k">{{ {"name": "Name", "email": "Email", "phone": "Phone", "link": "Link", "address": "Address"}[label] }}</span> {{ value }}</li>{% endfor %}</ul>
       {% else %}<p class="hint">Nothing yet: we found no name, email, phone or profile link in this text.</p>{% endif %}
-      {% if not fields.name %}<p class="hint">Add your full name in step 3 so we take it out too.</p>
+      {% if not fields.name %}<p class="hint">Add your full name in Contact details so we take it out too.</p>
       {% elif not removed|selectattr(0, "equalto", "name")|list %}<p class="alert alert-warn">Your name in step 3, <b>{{ fields.name }}</b>, isn't in this text, so we can't take out the name the CV uses. Make them match, as your CV spells it.</p>{% endif %}
       <p class="hint">Your city stays in, and so does anything else in the text. This list updates when you save.</p>
     </div>
     {% endif %}
   </div>
   <div class="card stack">
-    <h2>3. Contact details</h2>
+    <h2>Contact details</h2>
     <p class="hint">We add these to each CV after it's written. They're never sent to the AI.</p>
     {% if prefilled %}<div class="alert alert-info" role="status">We filled in your {{ prefilled }} from your CV. Check before you save.</div>{% endif %}
     <div class="contact-grid">
-      <label class="field"><span>Full name</span><input type="text" name="name" value="{{ fields.name }}" maxlength="120" autocomplete="name"></label>
+      <label class="field"><span>Full name <span class="opt need">needed to write a CV</span></span><input type="text" name="name" value="{{ fields.name }}" maxlength="120" autocomplete="name"></label>
       <label class="field"><span>Email</span><input type="email" name="email" value="{{ fields.email }}" maxlength="200" autocomplete="email"></label>
       <label class="field"><span>Phone</span><input type="tel" name="phone" value="{{ fields.phone }}" maxlength="60" autocomplete="tel"></label>
       <label class="field"><span>City</span><input type="text" name="location" value="{{ fields.location }}" maxlength="120"></label>
@@ -59,7 +63,7 @@
     </div>
   </div>
   <div class="card stack">
-    <h2>4. Standing edits <span class="opt">optional</span></h2>
+    <h2>Standing edits <span class="opt">optional</span></h2>
     <p class="hint">Rules for every CV we write for you.</p>
     <textarea name="standing_edits" rows="3" maxlength="2000" placeholder="For example: call me a supply chain analyst, never a logistics officer.">{{ fields.standing_edits }}</textarea>
   </div>
