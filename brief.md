@@ -684,6 +684,6 @@ Where this addendum and the sections above disagree, this addendum wins.
 - **Rules for the build:**
   - The notice states only facts the providers' contracts back up. No benchmarks ("at least as well as"), and no promises about other laws.
   - The AI row is true only while no feedback or data-sharing option is on in the AI provider's console. Turning one on means changing the notice first.
-  - Sections 5 and 7 of v2.0 must agree: Addendum 11's email goes in the hosting row.
+  - Addendum 11's payment email goes in the hosting row's "What it gets".
 
 privacy-reviewer-Opus5.5-agent
