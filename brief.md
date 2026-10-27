@@ -606,3 +606,26 @@ Where this addendum and the sections above disagree, this addendum wins.
   - The approved teaser also shows a source label on each application ("LinkedIn") and a "before the interview" panel. Addendum 8 lists neither, so neither is built: the owner decides whether to add them or change the teaser.
 
 build-engineer-Sonnet5.5-agent
+
+## Addendum 11 (2026-10-27): the payment-confirmed email, and plainer payment wording
+Where this addendum and the sections above disagree, this addendum wins.
+
+- **One more email: when the owner approves an order, the user gets a thank-you with the credits added.** It is the **third exception to "no emails"**, after sign-in codes (Addendum 5) and the waitlist email (Addendum 6). It replaces "Receipts … are still out" for this one email only; reminders, replies to problem reports, rejection or refund emails and marketing stay out.
+- **The text (the owner's):**
+  > **Subject:** Thank you for your payment!
+  > We've received your payment and 12 credits have been added to your account (order REF). You can use them now: link.
+
+  The number of credits and the order reference are that order's own, and the link opens the app. Plain text: no images, no tracking.
+- **When it is sent.** Only when an order becomes approved, once per order, to the address of the account that paid. "I've paid" sends nothing: "We've received your payment" is true only because the owner has approved the order (Addendum 4).
+- **Rules for the build:**
+  - A send that fails never blocks or undoes the approval. The order stays approved, and the failure is recorded without the address.
+  - No CV, ad, contact or report text goes in it, and no email address goes into a log (Addendum 5).
+  - A "sent" mark on the order keeps it once-only. The migration is additive.
+- **The privacy notice.** Notice v1.0 says what email is used for ("your sign-in codes and, if you asked for it, one email when there's room"). A new use is a **major** change ("Versioning"), so it is part of v2.0 with Addendum 8's retention change: both languages, the Malay from the owner's translator, and consent again at the next sign-in. **The email ships with v2.0, not before.** Until then no page promises an email.
+- **Plain wording on the payment pages (PRs #46 and #47).** The pending-payment page says "We're processing your payment. Credits usually arrive within 24 hours and will show here.", and the Terms say "We add credits once your payment is confirmed, so none are added before the money has arrived." Neither describes how a payment is checked. This builds Addendum 10's 24-hour wait. Once the email ships, the pending page may add that an email will come.
+- **Open for the build** (lean in brackets):
+  - the From address: Addendum 5 sets `signin@puascari.com`, and cvwrite3's send-only AWS user may send only from it [keep it for now: another address means widening that user, an owner step];
+  - whether a failed send is tried again [no: the credits already show on the page and the balance].
+- **Still open from Addendum 10:** the translator's Malay for v2.0, and the teaser's source label and "before the interview" panel.
+
+build-engineer-Sonnet5.5-agent
