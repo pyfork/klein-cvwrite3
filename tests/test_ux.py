@@ -302,7 +302,8 @@ class Pending(AppCase):
         page = self.get(f"/orders/{ref}", self.EMAIL).text
         self.assertIn("Payment pending", page)
         self.assertIn("come back later and check your balance in the top corner", page)
-        self.assertIn("by hand, usually within 24 hours", page)
+        self.assertIn("We're processing your payment. Credits usually arrive within 24 hours", page)
+        self.assertNotIn("by hand", page)
 
 
 class Units(unittest.TestCase):

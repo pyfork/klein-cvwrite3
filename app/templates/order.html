@@ -26,7 +26,7 @@
 <h1 class="title">Payment pending</h1>
 <div class="card stack">
   <p><span class="badge badge-wait">Pending</span> <b>{{ order.ref }}</b> · {{ order.credits }} credits · RM{{ '%.2f'|format(order.amount_rm) }}</p>
-  <p>We check each payment in the bank by hand, usually within 24 hours. Your credits will show here once we've seen it. You don't need to do anything else: come back later and check your balance in the top corner, or <a href="/credits">your credits page</a>.</p>
+  <p>We're processing your payment. Credits usually arrive within 24 hours and will show here. You don't need to do anything else: come back later and check your balance in the top corner, or <a href="/credits">your credits page</a>.</p>
   <p class="meta">Paid, but still no credits after a day? <a href="/report?category=paid&order={{ order.ref }}&page=/orders/{{ order.ref }}">Report a problem</a>.</p>
 </div>
 {% elif order.status == 'approved' %}
