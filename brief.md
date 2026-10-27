@@ -606,3 +606,28 @@ Where this addendum and the sections above disagree, this addendum wins.
   - The approved teaser also shows a source label on each application ("LinkedIn") and a "before the interview" panel. Addendum 8 lists neither, so neither is built: the owner decides whether to add them or change the teaser.
 
 build-engineer-Sonnet5.5-agent
+
+## Addendum 12 (2026-10-27): interview prep, and the "before the interview" panel
+Where this addendum and the sections above disagree, this addendum wins. This settles the open item at the end of Addendum 10.
+
+- **Interview prep.** Each CV comes with 3 to 5 short notes that help the user get ready for that job's interview. They come from the same ad read and masked master CV the CV is written from:
+  - what the employer is most likely to ask about (the ad's problems), and which line of the user's experience answers it;
+  - for each **bridged** keyword, how to talk about the related skill honestly (for example, "have your 4 Figma screens ready to show");
+  - for each **missing** keyword, a short way to prepare for the question (what to say they can do now, and how they would learn it), never a way to claim it;
+  - the interview steps, when the ad states them (for example, "the first round is a practical task").
+- **Rules, the same as for the CV:**
+  - each note points to a quote from the ad, word for word, or to a line of the master CV, or both; the app checks the quotes the way it checks call A's, and drops a note that fails;
+  - a note never suggests saying the user has done something the master CV doesn't show;
+  - plain English, at about the A2/B1 level: "you", one or two short sentences per note.
+- **Where it is made:** in call B, as one more field of its structured output [lean: call B, so there is no extra AI call and no extra credit]. It adds about 300 to 500 output tokens, about RM0.03 to RM0.05 per generation (estimate), so the first week's `usage` is read against the RM1.20 trigger. When the internal retry runs, the prep comes from the draft that passes the check.
+- **Not part of the CV.** The prep is not in the PDF or the Markdown CV, and the 2-page check doesn't count it. A re-render (the Haiku re-format) doesn't change it. A re-analysis (1 credit) makes it again.
+- **Where it shows:**
+  - on the result page, under the ad read, as "Before the interview";
+  - in Your applications (Addendum 8): each row opens a "Before the interview" panel with what the employer is looking for (the main problem, in one line), the top 3 keywords and the prep notes. This is the approved teaser's panel.
+- **The teaser's source label** ("LinkedIn" on each application) is not built [lean: take it out of the teaser; the app can't know where a pasted ad came from, and asking would add a field to Generate].
+- **Kept and deleted with its run:** 30 days or 3 months (Addendum 8). Included in "Download my data", deleted with the account, never in logs.
+- **The privacy notice.** "Why we use it" gains interview prep, and a change to why is **major**. [lean: add it to the v2.0 draft from Addendum 8 before that goes to the translator, so users are asked to consent once. §3 becomes "To write and check your CVs and your interview prep, …", and §4 "We only use these to write your CV and your interview prep".]
+- **"Not good" feedback** gains a reason: "interview prep".
+- **The homepage** may promise interview prep only once it is built. Until then, a design that shows it labels its notes as examples.
+
+design-lead-Opus5.5-agent
