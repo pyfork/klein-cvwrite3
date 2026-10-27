@@ -9,16 +9,16 @@ import uuid
 from pathlib import Path
 
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, credits, cvtext, db, health, i18n, mailer, notices, orders, pause, profile, routes_account, routes_apps, routes_cv, routes_ops, routes_pay, signin
+from . import access, auth, config, costs, credits, cvtext, db, health, i18n, mailer, notices, orders, pause, profile, routes_account, routes_apps, routes_cv, routes_ops, routes_pay, signin
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.15.0"
+APP_VERSION = "0.15.1"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -281,13 +281,21 @@ def create_app(settings=None, mail=None):
         return notice_page(request, notices.get(version), lang)
 
     # ---- admin -----------------------------------------------------------------
+    @app.get("/admin/costs.csv")
+    def admin_costs_csv(request: Request):
+        owner(request)
+        with conn() as c:
+            body = costs.to_csv(c)
+        return Response(body, media_type="text/csv", headers={"Content-Disposition": 'attachment; filename="better-jobs-costs.csv"',
+                                                               "Cache-Control": "no-store"})
+
     @app.get("/admin", response_class=HTMLResponse)
     def admin(request: Request):
         o = owner(request)
         with conn() as c:
             ctx = {"requests": access.pending_requests(c), "wave2": access.wave2_on(c), "waitlist": access.waitlist_counts(c),
                    "emailed": request.query_params.get("emailed"),
-                   "users": access.user_count(c), "cap": settings.wave2_cap, "orders": orders.for_admin(c), **admin_health(c),
+                   "users": access.user_count(c), "cap": settings.wave2_cap, "orders": orders.for_admin(c), "cost_rows": costs.rows(c, 20), **admin_health(c),
                    "reports": admin_reports(c), "panel": health.panel(c), "funnel": health.funnel(c),
                    "categories": routes_ops.CATEGORIES, "reasons": routes_ops.REASONS}
         return render(request, "admin.html", o=o, **ctx)
