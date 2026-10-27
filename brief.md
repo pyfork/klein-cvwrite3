@@ -631,7 +631,7 @@ Where this addendum and the sections above disagree, this addendum wins.
 build-engineer-Sonnet5.5-agent
 
 ## Addendum 12 (2026-10-27): interview prep, and the "before the interview" panel
-Where this addendum and the sections above disagree, this addendum wins. This settles the open item at the end of Addendum 10.
+Where this addendum and the sections above disagree, this addendum wins. This settles the teaser's source label and "before the interview" panel, left open in Addendums 10 and 11.
 
 - **Interview prep.** Each CV comes with 3 to 5 short notes that help the user get ready for that job's interview. They come from the same ad read and masked master CV the CV is written from:
   - what the employer is most likely to ask about (the ad's problems), and which line of the user's experience answers it;
