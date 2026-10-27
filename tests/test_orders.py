@@ -34,6 +34,8 @@ class Orders(AppCase):
         self.assertIn("Pay RM30.00 by DuitNow QR", page)
         self.assertIn(f"<code>{ref}</code>", page)
         self.assertIn("Placeholder QR", page)
+        self.assertIn("We add credits once your payment is confirmed. Credits last 12 months", page)
+        self.assertNotIn("in the bank", page)  # the page says the state, never how a payment is checked
         qr = self.get("/orders/qr", self.EMAIL)
         self.assertEqual((qr.status_code, qr.headers["content-type"].split(";")[0]), (200, "image/svg+xml"))
         self.assertIn("no-store", qr.headers["cache-control"])
