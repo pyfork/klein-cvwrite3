@@ -120,6 +120,8 @@ class Account(CVCase):
     def test_terms(self):
         page = self.get("/terms", self.EMAIL).text
         self.assertIn("Unused paid credits that haven&#x27;t expired can be refunded", page)
+        self.assertIn('<p class="eyebrow">Terms</p>', page)   # no longer labelled a draft (owner, 2026-10-27)
+        self.assertNotIn("draft", page.lower())
 
 
 if __name__ == "__main__":
