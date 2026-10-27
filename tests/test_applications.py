@@ -109,6 +109,13 @@ class Apps(CVCase):
 
     # ---- how long they are kept --------------------------------------------------
     def test_until_v2_the_page_says_30_days_and_has_no_tick(self):
+        with patch("app.notices.keeps_choice", return_value=False):
+            self._before_v2()
+
+    def test_v2_is_published_so_the_tick_shows(self):
+        self.assertIn('name="keep"', self.page())
+
+    def _before_v2(self):
         page = self.page()
         self.assertIn("30 days from the day its CV was made", page)
         self.assertNotIn('name="keep"', page)

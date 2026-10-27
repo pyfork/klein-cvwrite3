@@ -84,7 +84,7 @@ class NoticePages(AppCase):
     def test_malay_consent_and_notice(self):
         self.approve(ALICE)
         page = self.get("/consent?lang=ms", ALICE).text
-        for s in ("Sebelum anda bermula", "Sesetengahnya berada di luar Malaysia", "Saya telah membaca notis privasi ini dan bersetuju.",
+        for s in ("Sebelum anda bermula", "Sesetengah penyedia berada di luar Malaysia", "Saya telah membaca notis privasi ini dan bersetuju.",
                   "Teruskan", '<a href="/consent?lang=en" lang="en">English</a>'):
             self.assertIn(s, page)
         v = notices.latest().version

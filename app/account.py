@@ -32,7 +32,7 @@ def purge_run(conn, data_dir, run):
     """Removes a run's content and its PDF. The row stays, empty, because the ledger points at it."""
     conn.execute(
         "update runs set ad_text = null, ad_hash = null, ad_read = null, draft_md = null, gaps = null, checks = null, "
-        "keyword_status = null, purged_at = now() where id = %s", (run["id"],))
+        "keyword_status = null, interview_prep = null, purged_at = now() where id = %s", (run["id"],))
     conn.execute("update jobs set input_text = null where run_id = %s", (run["id"],))
     if run.get("pdf_rev"):
         rendering.pdf_path(data_dir, run["id"], run["pdf_rev"]).unlink(missing_ok=True)
@@ -82,6 +82,8 @@ def export_zip(conn, data_dir, account_id, email):
             z.writestr(f"{d}/ad.txt", r["ad_text"] or "")
             if r["ad_read"]:
                 z.writestr(f"{d}/ad_read.json", _json(r["ad_read"]))
+            if r["interview_prep"]:
+                z.writestr(f"{d}/interview_prep.json", _json(r["interview_prep"]))
             if r["status"] == "passed" and r["draft_md"]:
                 try:
                     md = contact_mod.merge(r["draft_md"], data)

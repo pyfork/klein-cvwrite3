@@ -64,6 +64,24 @@ def approve(conn, order_id):
     return o
 
 
+def thank(conn, order, mail, origin):
+    """Addendum 11: one thank-you email per approved order, to the account that paid. A failed send never undoes the
+    approval: it's recorded without the address and not tried again (the credits already show on the page)."""
+    if order is None or order.get("thanked_at"):
+        return False
+    row = conn.execute("select email from allowed_users where account_id = %s", (order["account_id"],)).fetchone()
+    if not row:
+        return False
+    try:
+        mail.send_thanks(row["email"], order["credits"], order["ref"], origin)
+    except Exception as e:  # MailError, or anything else: nothing about the address is logged
+        from . import health
+        health.record_error(conn, e, route="orders.thank")
+        return False
+    conn.execute("update orders set thanked_at = now() where id = %s and thanked_at is null", (order["id"],))
+    return True
+
+
 def reject(conn, order_id, reason):
     reason = " ".join((reason or "").split())[:300]
     if not reason:

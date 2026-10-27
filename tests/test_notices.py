@@ -15,6 +15,10 @@ PINNED = {
         "en": "5be2197ce43bbb2dd9a06c5f3a89d25d73440723e842f0fa144465b997ae81bd",
         "ms": "494cd40f9098cbd6bbd64754f3e6d8e232b63bf97ff722d64b087857c2aabd57",
     },
+    "2.0": {
+        "en": "8c0ba52b566adf16b6b011e44f5c836795802d1966edc43ee40e3b5202069bf9",
+        "ms": "edb97e1e178b33ae98ab0b8b6204e2672426f567fc58844a6a179ec234ea7eab",
+    },
 }
 
 
@@ -65,8 +69,18 @@ class Malay(unittest.TestCase):
             en, ms = notices.text(v.version, "en"), notices.text(v.version, "ms")
             for pattern in (r"(?m)^## ", r"(?m)^- ", r"\d+"):
                 self.assertEqual(sorted(re.findall(pattern, en)), sorted(re.findall(pattern, ms)), (v.version, pattern))
-            for kept in ("privacy@puascari.com", "KIP ADVISORS", "Amazon Web Services", "Anthropic", "Cloudflare", "DigitalOcean"):
+            for kept in ("privacy@puascari.com", "KIP ADVISORS", "Amazon Web Services", "Anthropic", "Cloudflare", "DigitalOcean", "|"):
                 self.assertEqual(en.count(kept), ms.count(kept), kept)
 
     def test_both_languages_have_every_string(self):
         self.assertEqual(set(i18n.STRINGS["en"]), set(i18n.STRINGS["ms"]))
+
+    def test_from_v2_no_provider_or_location_is_named(self):
+        """Addendum 13: providers by type only, and no server or provider location beyond "outside Malaysia"."""
+        for v in notices.versions():
+            if v.key < (2, 0):
+                continue
+            for lang in notices.langs(v.version):
+                text = notices.text(v.version, lang)
+                for name in ("Amazon", "AWS", "Anthropic", "Claude", "Cloudflare", "DigitalOcean", "Korea", "Singapore", "United States", "Amerika"):
+                    self.assertNotIn(name, text, (v.version, lang, name))

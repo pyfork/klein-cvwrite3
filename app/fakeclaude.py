@@ -68,8 +68,12 @@ class FakeClaude:
             # The last top keyword isn't in the master CV: leave it out and say so.
             md = md.replace(", " + keywords[2], "").replace(keywords[2], "") if len(keywords) > 2 else md
             status[-1]["status"] = "missing"
+        ad = re.search(r"<job_ad>\n?(.*?)\n?</job_ad>", user_message, re.S)
+        first = next((l.strip() for l in (ad.group(1) if ad else "").splitlines() if l.strip()), "")
+        prep = [{"note": "Expect questions on the main job. Have one example from your last role ready.", "ad_quote": first[:60], "cv_line": ""},
+                {"note": "Made-up quote, dropped by the check.", "ad_quote": "this sentence is not in the ad", "cv_line": ""}]
         return Result({"cv_markdown": md, "keyword_status": status,
-                       "gaps": ["The ad asks for Power BI; the master CV shows another tool."]},
+                       "gaps": ["The ad asks for Power BI; the master CV shows another tool."], "interview_prep": prep},
                       OPUS, 6200, 3100, "req_fake_b")
 
     def reformat(self, user_message):
