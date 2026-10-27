@@ -8,7 +8,7 @@ Stack file: `docs/rules/stacks/python.md`. FastAPI (ASGI) on the server's own Py
 Something else: server-rendered HTML from Jinja templates and plain HTML forms. One small stylesheet (`app/static/calm.css`) and self-hosted fonts. No JavaScript framework and no build step; one small script (`app/static/upload.js`). English first; the privacy notice and consent screen also in Bahasa Malaysia.
 
 ## Tests
-`python -m unittest discover tests` (the standard library's runner, not pytest), on real PostgreSQL. The render tests need Chrome and poppler; CI skips them and they run on the Mac and at the deploy runbook's render check.
+`python -m unittest discover tests` (the standard library's runner, not pytest), on real PostgreSQL. The render tests need Chrome and poppler. CI installs both and runs them with `CVWRITE_REQUIRE_RENDER=1`, so a missing or broken tool fails the run instead of skipping; they also run at the deploy runbook's render check.
 
 ## PDF render
 Headless Chrome (Chromium on the server, its path from an environment variable), with self-hosted fonts. A render's page count, fonts and text hash are checked against a known fingerprint after each deploy.
