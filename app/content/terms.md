@@ -10,7 +10,7 @@ You pay only for CVs that pass their check, credits last a year, and unused paid
 ## 2. Prices and payment
 - 5 credits for RM10, or 20 credits for RM30.
 - You pay by DuitNow QR, with the order reference in the transfer note.
-- We check each payment in the bank by hand. We only add credits once we've seen the money arrive.
+- We add credits once your payment is confirmed, so none are added before the money has arrived.
 
 ## 3. Expiry
 Credits expire 12 months after we add them, the free ones included. We always use your oldest credits first. Your balance shows the next expiry date.
