@@ -654,3 +654,47 @@ Where this addendum and the sections above disagree, this addendum wins. This se
 - **The homepage** may promise interview prep only once it is built. Until then, a design that shows it labels its notes as examples.
 
 design-lead-Opus5.5-agent
+
+## Addendum 13 (2026-10-27): the new look, on every page
+Where this addendum and the sections above disagree, this addendum wins. It replaces Addendum 2's "The design is Calm" and the 2026-10-26 royal-blue button.
+
+- **The look is cut paper.** Torn paper is the job ad. A clean scissor cut is a CV made for one ad. A grey photocopy is the same CV sent everywhere. The reference is the homepage the owner accepted on 2026-10-27 (v2, private, in the git-ignored design spikes).
+- **Every page follows it:** the signed-out home (where the teaser lives), every app page and the emails. The admin page uses the same tokens in a plainer, denser layout [lean].
+- **Tokens:**
+  - ground `#F2F1ED`, white slabs, ink `#13233A`;
+  - coral `#FF5A47` only for "after" and the main button;
+  - photocopy grey `#D6D4CE` and `#5A585E` for "before";
+  - lilac, teal and marigold paper for the three sample ads.
+  - Light and dark follow the device setting. Paper and CV previews stay light in dark mode.
+- **Shape:**
+  - rounded white slabs on the ground;
+  - dark navy bands with torn edges for a few key sections;
+  - navy pill buttons, with coral for the main one;
+  - cards only for things you can tap.
+- **Type:**
+  - Schibsted Grotesk for headings and text;
+  - Libre Caslon Text italic for short notes only;
+  - Geist Mono for small labels.
+  - All three are OFL fonts, **self-hosted** in `fonts/` (no Google Fonts), as the brief already asks.
+  - The CV PDF style (Archivo) does not change.
+- **One stylesheet, no framework,** in place of `calm.css`.
+- **The art:** the cut-paper images are static WebP files, made by a script in the repo (OpenCV, seeded, so a rerun gives the same files). The emails use the tokens and no images [lean].
+- **Icons:** Heroicons only.
+- **Motion:** restrained and slow. A demonstration plays once, then waits for the user. No loops, no endless pulses, and one moving thing per screen at most. Reduced motion shows the final state.
+- **Controls people must notice** look like what they are (a real switch, a drag-to-compare slider), sit next to what they change, and show their effect once.
+- **Copy:**
+  - plain English at about the A2/B1 level: short sentences, "we" and "you", British spelling;
+  - the teaser's section names (for example "Customisable / You are in control", "Your applications / No more 'Which CV did I send?'", "Privacy / We protect your privacy", "Pricing / One job, one credit");
+  - helpful, not rigid: show the user's experience at its best; gaps become bridges and interview prep (Addendum 12);
+  - no technical diagrams on user-facing pages.
+- **Examples on the home page** use the three invented sample roles, never a real person's CV. People, employers and numbers are labelled as made up.
+- **Kept as they are:**
+  - the two-step stepper and two tabs (Addendum 10), restyled [lean];
+  - every behaviour, check, price and wording rule in the sections above. This is a new look, not new features.
+- **Open** (lean in brackets):
+  - the teaser video on the new home [the collage hero leads; the teaser stays as a section further down];
+  - whether the home page's interview prep shows before Addendum 12 is built [no: the home only promises what is built, as Addendum 12 says].
+- **Out of scope:** the Malay copy (it follows the English, as before); the CV PDF style; the Go/chi move.
+- **Built as slices** from a Shape: the foundation first (tokens, fonts, the stylesheet and the page shell, since every page shares them), then the pages.
+
+design-lead-Opus5.5-agent
