@@ -18,8 +18,10 @@ echo "$h" | grep -q '"ok":true' && ok "/healthz: $h" || bad "/healthz: ${h:-no a
 code=$(curl -s -o /dev/null -w '%{http_code}' -m 5 -H 'X-Forwarded-For: 1.2.3.4' http://127.0.0.1:8000/healthz)
 [ "$code" = 404 ] && ok "/healthz refuses proxied calls" || bad "/healthz answered a proxied call ($code)"
 
-code=$(curl -s -o /dev/null -w '%{http_code}' -m 10 https://cvwrite3.puascari.com/generate)
+code=$(curl -s -o /dev/null -w '%{http_code}' -m 10 https://betterjobs.puascari.com/generate)
 case "$code" in 302|303|401|403) ok "public URL asks for sign-in first ($code)";; *) bad "public URL answered $code without sign-in";; esac
+code=$(curl -s -o /dev/null -w '%{http_code}' -m 10 https://cvwrite3.puascari.com/generate)
+[ "$code" = 301 ] && ok "the first address redirects ($code)" || bad "the first address answered $code, not a redirect"
 
 stat -c '%a %U' /sites/cvwrite3/.env | grep -q '^600 cvwrite3$' && ok ".env is 0600 cvwrite3" || bad ".env permissions"
 [ -z "$(find /sites/cvwrite3/prompts -type f ! -perm 640 2>/dev/null)" ] && ok "prompts are 0640" || bad "prompts permissions"
