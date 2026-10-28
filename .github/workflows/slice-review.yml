@@ -37,6 +37,8 @@ jobs:
       lang: ${{ steps.record.outputs.lang }}
       version: ${{ steps.record.outputs.version }}
       jdk: ${{ steps.record.outputs.jdk }}
+      tools: ${{ steps.record.outputs.tools }}
+      check_env: ${{ steps.record.outputs.check_env }}
     steps:
       - name: Check out main's runtime record
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -130,6 +132,30 @@ jobs:
           bash trusted/.github/scripts/runtime-check.sh machine trusted/docs-public/guard-data/runtime.txt > "$RUNNER_TEMP/runtime-line.txt" || true
           cat "$RUNNER_TEMP/runtime-line.txt"
 
+      # kit-keeper-Opus5.5-agent, 2026-10-28 (KIT-015): the system programs
+      # main's record names (TOOLS, apt names), installed as root before
+      # checker exists, so they land root-owned and the next step closes and
+      # checks them like any other program. A CHECK_ENV program that isn't
+      # there fails closed: a check that needs it could only fail
+      - name: Install the record's tools
+        env:
+          TOOLS: ${{ needs.runtime.outputs.tools }}
+          CHECK_ENV: ${{ needs.runtime.outputs.check_env }}
+        run: |
+          set -f
+          if [ -n "$TOOLS" ]; then
+            sudo apt-get update -qq
+            # shellcheck disable=SC2086
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends $TOOLS > /dev/null \
+              || echo "FAIL TOOLS: apt could not install the record's TOOLS ($TOOLS)" >> "$RUNNER_TEMP/runtime-line.txt"
+          fi
+          for e in $CHECK_ENV; do
+            [ -x "${e#*=}" ] && [ -f "${e#*=}" ] \
+              || echo "FAIL TOOLS: CHECK_ENV ${e%%=*} names ${e#*=}, which is not a program on this runner" >> "$RUNNER_TEMP/runtime-line.txt"
+          done
+          [ -z "$TOOLS$CHECK_ENV" ] || echo "TOOLS ${TOOLS:-none}; CHECK_ENV ${CHECK_ENV:-none}" >> "$RUNNER_TEMP/runtime-line.txt"
+          cat "$RUNNER_TEMP/runtime-line.txt"
+
       # checker owns its copy of the PR and can read main's checks, nothing
       # more. Results live in a runner-only folder outside the workspace.
       # kit-keeper-Opus5.5-agent, 2026-10-26 (senior Q7, PROOF-14): the image
@@ -140,6 +166,8 @@ jobs:
       # then fail closed if checker can still write a folder on PATH, one
       # above it, a file in it, or main's checks (sticky folders excepted)
       - name: Set up the checker user
+        env:
+          CHECK_ENV: ${{ needs.runtime.outputs.check_env }}
         run: |
           # No --create-home: it copies the image's /etc/skel, 17 to 39 s
           sudo useradd --no-create-home --shell /bin/bash checker
@@ -153,6 +181,8 @@ jobs:
           # <cache>/<tool>/<version>, and main's checks: everything in them
           bins=(); ups=(); roots=(/srv/kit-trusted)
           IFS=: read -ra path <<< "$PATH"
+          # A CHECK_ENV program's folder is closed and checked as a PATH folder
+          set -f; for e in $CHECK_ENV; do path+=("$(dirname "${e#*=}")"); done; set +f
           for d in "${path[@]}"; do
             [ -d "$d" ] || continue
             bins+=("$d")
@@ -211,11 +241,13 @@ jobs:
           # Each run gets a new, empty home: nothing one run leaves there (a
           # Python usercustomize, a shell rc) reaches the next (senior Q7)
           n=0
+          # CHECK_ENV pairs from main's record, checked by runtime-check.sh
+          set -f; read -ra check_env <<< "$CHECK_ENV"; set +f
           as_checker() { # <command> [folder to run in; default the PR]
             local rc=0 h
             n=$((n + 1)); h="/srv/checker-homes/$n"
             sudo install -d -o checker -g checker -m 700 "$h"
-            sudo -u checker env -i HOME="$h" PATH="$PATH" TEST_COMMAND="$TEST_COMMAND" \
+            sudo -u checker env -i HOME="$h" PATH="$PATH" TEST_COMMAND="$TEST_COMMAND" "${check_env[@]}" \
               timeout 600 bash -c "cd ${2:-/home/checker/pr} && $1" > "$R/out.txt" 2>&1 < /dev/null || rc=$?
             sudo pkill -KILL -u checker || true
             return $rc
@@ -223,7 +255,7 @@ jobs:
           { cat "$RUNNER_TEMP/runtime-line.txt"; echo; } > "$R/results.txt"
           # KIT-007: on the wrong runtime, or where PR code could swap a
           # program on PATH, a PASS proves nothing; run nothing
-          if grep -qE '^FAIL (RUNTIME|CHECKER)' "$R/results.txt"; then
+          if grep -qE '^FAIL (RUNTIME|CHECKER|TOOLS)' "$R/results.txt"; then
             echo "Locked checks and the full suite not run: see the FAIL line above." >> "$R/results.txt"
             cp "$R/results.txt" results.txt; cat results.txt; exit 1
           fi
@@ -286,6 +318,7 @@ jobs:
           if grep -qE '^FAIL' results.txt; then echo "A locked check or the full suite failed"; exit 1; fi
         env:
           TEST_COMMAND: ${{ vars.GUARD_TEST_COMMAND }}
+          CHECK_ENV: ${{ needs.runtime.outputs.check_env }}
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
