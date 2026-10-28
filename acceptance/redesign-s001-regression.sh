@@ -3,8 +3,8 @@
 # Run from the repo root as `bash acceptance/redesign-s001-regression.sh`. Sets up what it needs; exits 0 only when every case passes.
 # senior-lead-Sonnet5.5-agent, 2026-10-28
 set -euo pipefail
-cd "$(dirname "$0")/.."
 # Re-plan 2026-10-28: the venv goes in $HOME, never in the tree (the checker runs on a read-only copy).
+# Re-plan 2026-10-28 (2): no cd to the script's folder; the checker runs main's copy from the PR's root.
 venv="${CVWRITE_TEST_VENV:-$HOME/.cvwrite3-test-venv}"
 bash scripts/install.sh "$venv"
 grep -v '^-r' requirements-dev.txt | "$venv/bin/pip" install --only-binary :all: -r /dev/stdin
