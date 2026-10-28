@@ -3,6 +3,7 @@ AC-12, AC-15 to AC-18, AC-20, AC-21, AC-27 (the mark's shape), AC-44, AC-46 to A
 AC-70. Static rules are read from app/static/betterjobs.css; computed values come from headless Chrome on a gallery of
 the old markup (acceptance/fixtures/s001_gallery.html). Fails before the work: there is no betterjobs.css.
 AC-11 is retired by the dark-mode slice, as a re-plan of this check.
+Re-plan 2026-10-28 (senior-lead-Opus5.5-agent): AC-17 measures each focus ring against the parent's background.
 senior-lead-Sonnet5.5-agent, 2026-10-28"""
 import re
 import unittest
@@ -61,7 +62,8 @@ D.low = []; for (const e of doc.querySelectorAll('#main *')) { if (e.closest(':d
   const r = ratio(cs(e).color, bgOf(e)); if (r < 4.5) D.low.push([e.id || e.className || e.tagName, Math.round(r * 100) / 100]); }
 // focus rings
 D.focus = {}; for (const s of ['#b-btn','#b-primary','#f-text','#t-link','#sum','#c-box','#p-one']) { const e = q(s); e.focus(); const c = cs(e);
-  D.focus[s] = {style: c.outlineStyle, width: c.outlineWidth, offset: c.outlineOffset, color: c.outlineColor, border: c.borderTopColor, shadow: c.boxShadow, bg: bgOf(e), ratio: ratio(c.outlineColor, bgOf(e))}; }
+  D.focus[s] = {style: c.outlineStyle, width: c.outlineWidth, offset: c.outlineOffset, color: c.outlineColor, border: c.borderTopColor, shadow: c.boxShadow, bg: bgOf(e), ratio: ratio(c.outlineColor, bgOf(e)),
+    ring_bg: bgOf(e.parentElement), ring_ratio: ratio(c.outlineColor, bgOf(e.parentElement))}; }
 D.focus_input = {}; q('#drop-in').focus(); { const c = cs(q('#drop')); D.focus_input = {style: c.outlineStyle, width: c.outlineWidth, color: c.outlineColor}; }
 D.edge_ratio = ratio(cs(q('#f-text')).borderTopColor, bgOf(q('#f-text')));
 // swap main for ghost on a button: nothing may move
@@ -257,8 +259,10 @@ class Look(unittest.TestCase):
     def test_ac17_edges_and_rings_are_3_to_1(self):
         d = self.at(1280)
         self.assertGreaterEqual(d["edge_ratio"], 3)
+        # the ring sits 3px outside the element, so it is measured against the parent's opaque background, not the
+        # element's own fill (re-plan 2026-10-28: an ink button gave ink on ink, 1:1)
         for sel, f in d["focus"].items():
-            self.assertGreaterEqual(f["ratio"], 3, sel)
+            self.assertGreaterEqual(f["ring_ratio"], 3, (sel, f["ring_bg"]))
 
     def test_ac18_the_ground_fills_the_window(self):
         for w in WIDTHS:
