@@ -1,0 +1,81 @@
+<!doctype html>
+<!-- Redesign S-001 acceptance fixture: the old components, in the old markup, with made-up text only.
+     Loaded with the real stylesheet by redesign_s001_check2.py. senior-lead-Sonnet5.5-agent, 2026-10-28 -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gallery</title><link rel="stylesheet" href="/static/betterjobs.css?v=gallery"></head>
+<body><div class="app"><main id="main" tabindex="-1"><section class="page">
+<p class="eyebrow" id="t-eyebrow">Eyebrow label</p>
+<h1 class="title" id="t-h1">A page title that is long enough to wrap on a phone</h1>
+<p class="lede" id="t-lede">A lede sentence for the page.</p>
+
+<div class="card stack" id="card1">
+  <h2 id="t-h2">Heading two</h2>
+  <p id="t-p">Body text with <a href="#" id="t-link">a link</a> inside it.</p>
+  <p class="hint" id="t-hint">Hint text.</p>
+  <p class="meta" id="t-meta">Meta text.</p>
+  <p class="note" id="t-note">A short note in italics.</p>
+  <p><span class="kicker" id="t-kicker">Kicker</span> <span class="s-time" id="t-stime">1.2 s</span> <span class="pass" id="t-pass">PASS</span> <code id="t-code">code</code> <span class="opt" id="t-opt">optional</span> <span class="opt need" id="t-need">needed</span></p>
+</div>
+<div class="card" id="card2">Second slab.</div>
+
+<div style="width:240px" id="narrow"><div class="card stack"><button class="btn" id="b-long" type="button">Keep them for 3 months</button></div></div>
+<div class="card stack" id="buttons">
+  <div class="action-row" id="row">
+    <button class="btn btn-primary" id="b-primary" type="button">Main</button>
+    <button class="btn" id="b-btn" type="button">Other</button>
+    <button class="btn btn-ghost" id="b-ghost" type="button">Ghost</button>
+    <button class="btn btn-danger" id="b-danger" type="button">Delete</button>
+    <button class="btn btn-danger-ghost" id="b-dghost" type="button">Delete ghost</button>
+    <button class="btn btn-sm" id="b-sm" type="button">Small</button>
+    <button class="btn btn-primary" id="b-dis-primary" type="button" disabled>Disabled main</button>
+    <button class="btn" id="b-dis" type="button" disabled>Disabled</button>
+    <button class="btn btn-primary" id="b-swap" type="button">Choose</button>
+  </div>
+</div>
+
+<form class="card stack" id="form" onsubmit="return false">
+  <label class="field"><span>Text field <span class="opt">optional</span></span><input type="text" id="f-text" value="Some text" placeholder="Placeholder"></label>
+  <label class="field"><span>Required</span><input type="text" id="f-req" required></label>
+  <label class="field"><span>Select</span><select id="f-sel"><option>One</option><option>Two</option></select></label>
+  <label class="field"><span>Area</span><textarea id="f-area" rows="3" readonly>Read only text</textarea></label>
+  <label class="field"><span>Disabled</span><input type="text" id="f-dis" value="Off" disabled></label>
+  <label class="check" id="c1"><input type="checkbox" id="c-box"><span>A checkbox row with a label that can wrap onto a second line when the slab is narrow</span></label>
+  <label class="check"><input type="checkbox" id="c-on" checked><span>Checked</span></label>
+  <label class="check"><input type="radio" name="r" id="c-radio"><span>A radio</span></label>
+  <label class="drop" id="drop"><input type="file" id="drop-in"><span class="drop-t" id="drop-t">Choose a file</span><span class="drop-s" id="drop-s">.docx, .pdf, .md or .txt, up to 2 MB</span></label>
+  <label class="drop is-picked" id="drop-picked"><input type="file"><span class="drop-t" id="drop-picked-t">a-file-name-without-any-spaces-that-is-eighty-characters-long-for-the-drop-zone.docx</span><span class="drop-s">12 KB</span></label>
+  <label class="drop is-too-big" id="drop-big"><input type="file"><span class="drop-t">big.pdf</span><span class="drop-s" id="drop-big-s">9 MB is over the 2 MB limit</span></label>
+</form>
+
+<div class="alert alert-warn" id="a-warn" role="status">Warn note.</div>
+<div class="alert alert-bad" id="a-bad" role="alert">Error note.</div>
+<div class="alert alert-ok" id="a-ok" role="status">Ok note.</div>
+<div class="alert alert-info" id="a-info" role="status">Info note.</div>
+<div class="alert" id="a-bare">A bare alert.</div>
+<div class="alert alert-ok stack" id="a-multi" role="status"><p>Saved. Changes take effect at once, and this line is long enough to wrap onto more lines at 320.</p><ul><li>A list item</li></ul><div class="row"><a class="btn btn-primary btn-sm" href="#">Paste a job ad</a></div></div>
+<div class="banner" id="n-banner" role="status">A banner note.</div>
+<div class="banner banner-info cvbar" id="n-bar" role="status">Your CV is ready: <b>Title</b> <a href="#">Open it</a></div>
+
+<p><span class="badge badge-ok" id="g-ok">Passed</span> <span class="badge badge-wait" id="g-wait">Working</span> <span class="badge badge-bad" id="g-bad">Failed</span> <span class="badge badge-off" id="g-off">Cancelled</span> <span class="chip" id="g-chip">chip</span> <span class="chip chip-out" id="g-chipout">chip out</span></p>
+<ol class="steps" id="steps">
+  <li class="step" id="s-wait"><span class="dot" aria-hidden="true"></span><span class="s-name">Waiting</span></li>
+  <li class="step is-run" id="s-run"><span class="dot" aria-hidden="true"></span><span class="s-name">Working</span></li>
+  <li class="step is-done" id="s-done"><span class="dot" aria-hidden="true"></span><span class="s-name">Done</span></li>
+  <li class="step is-fail" id="s-fail"><span class="dot" aria-hidden="true"></span><span class="s-name">Failed</span></li>
+</ol>
+
+<div class="card" id="tcard"><table class="tbl" id="tbl"><thead><tr><th scope="col">Run</th><th scope="col">Date</th><th scope="col">Status</th><th scope="col">Cost</th></tr></thead>
+<tbody><tr><td>Sample role</td><td>28 Oct 2026</td><td>Passed</td><td id="t-num">1,234.50</td></tr><tr><td>Other role</td><td>27 Oct 2026</td><td>Failed</td><td>0.00</td></tr></tbody></table></div>
+
+<div class="packs" id="packs">
+  <button type="button" class="pack" id="p-one"><span class="pack-n">5 CVs</span><span class="pack-p">RM10</span><span class="pack-u">RM2.00 each</span></button>
+  <button type="button" class="pack pack-best" id="p-best"><span class="pack-tag" id="p-tag">Best value</span><span class="pack-n">20 CVs</span><span class="pack-p">RM30</span><span class="pack-u">RM1.50 each</span></button>
+  <button type="button" class="pack" id="p-dis" disabled><span class="pack-n">5 CVs</span><span class="pack-p">RM10</span><span class="pack-u">RM2.00 each</span></button>
+</div>
+
+<div class="card" id="imgcard"><img id="img" alt="A wide image" width="800" height="400" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400'%3E%3Crect width='800' height='400' fill='%23999'/%3E%3C/svg%3E">
+<img id="img-bad" alt="Alt text of an image that did not load" src="/fx/does-not-exist.png" width="300" height="300"><p id="after-img">Text below.</p></div>
+
+<div class="card"><details class="older" id="det"><summary id="sum">Earlier consents</summary><ul><li>v1.0 on 1 Oct 2026</li></ul></details></div>
+<textarea id="cvtext" rows="3">CV text box</textarea>
+</section></main></div></body></html>
