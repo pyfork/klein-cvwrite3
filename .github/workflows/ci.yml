@@ -33,10 +33,7 @@ jobs:
         run: python3 -c 'import sys; print(sys.version); assert sys.version_info[:2] == (3, 10)'
 
       - name: Install exactly as sk24 does
-        run: |
-          python3 -m venv .venv
-          .venv/bin/pip install --require-hashes --only-binary :all: -r requirements.lock
-          .venv/bin/pip check
+        run: bash scripts/install.sh .venv
 
       - name: Test-only packages (never on sk24)
         run: |

@@ -1,0 +1,6 @@
+RUNNER=ubuntu-22.04
+OS=ubuntu 22.04
+RUNTIME=python 3.10
+INSTALL=scripts/install.sh
+TOOLS=poppler-utils
+CHECK_ENV=CVWRITE_CHROME=/usr/bin/google-chrome

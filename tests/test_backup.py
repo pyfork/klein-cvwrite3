@@ -65,8 +65,11 @@ class Backup(AppCase):
         self.run_backup(store)
         self.assertEqual(self.run_backup(store), "skipped")      # the last good copy is minutes old
         with self.conn() as c:
-            c.execute("update backup_runs set finished_at = now() - interval '45 hours' where outcome = 'ok'")
-        self.assertEqual(self.run_backup(store), "ok")
+            c.execute("update backup_runs set finished_at = now() - interval '19 hours' where outcome = 'ok'")
+        self.assertEqual(self.run_backup(store), "skipped")      # a timer that fires a little early skips
+        with self.conn() as c:
+            c.execute("update backup_runs set finished_at = now() - interval '23 hours' where outcome = 'ok'")
+        self.assertEqual(self.run_backup(store), "ok")           # every night
 
     def test_upload_retries_then_succeeds(self):
         store = FakeStore(fail_puts=2)
