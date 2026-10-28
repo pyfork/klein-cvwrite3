@@ -212,7 +212,7 @@ class Generate(CVCase):
         md = self.get(f"/runs/{run_id}/cv.md", self.EMAIL)
         for r in (pdf, md, self.get(f"/runs/{run_id}", self.EMAIL)):  # never cached at Cloudflare's edge
             self.assertEqual(r.headers.get("cache-control"), "private, no-store")
-        self.assertNotIn("no-store", self.client.get("/static/calm.css").headers.get("cache-control", ""))
+        self.assertNotIn("no-store", self.client.get("/static/betterjobs.css").headers.get("cache-control", ""))
         md = md.text
         self.assertIn("# Nadia Hamzah", md)
         self.assertNotIn("{{", md)

@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}Better Jobs{% endblock %} · Better Jobs</title>
-<link rel="stylesheet" href="/static/calm.css?v={{ app_version }}">
+<link rel="stylesheet" href="/static/betterjobs.css?v={{ app_version }}">
 {% if refresh %}<meta http-equiv="refresh" content="2">{% endif %}
 </head>
-<body class="opt-calm{% if signed_out %} signed-out{% endif %}">
-<a class="skip" href="#main">Skip to content</a>
+<body{% if signed_out %} class="signed-out"{% endif %}>
 <div class="app">
+<a class="skip" href="#main">Skip to content</a>
 <header class="top">
-  <a class="brand" href="/" aria-label="Better Jobs home">Better <b>Jobs</b></a>
+  <a class="brand" href="/" aria-label="Better Jobs home">Better Jobs</a>
   {% if u %}
   <a class="bal" href="/credits" title="Your balance">
     <span class="bal-line"><span class="bal-n">{{ u.balance }}</span> <span class="bal-u">{{ 'credit' if u.balance == 1 else 'credits' }}</span>{% if u.in_use %} <span class="bal-use">· {{ u.in_use }} in use</span>{% endif %}</span>
@@ -22,13 +22,19 @@
   {# Profile and Generate are the two steps, in order (a tick once the profile is ready); Credits and Account are plain tabs. #}
   <nav class="nav" aria-label="Pages">
     {% if u %}
-    <a href="/profile"{% if u.ready %} class="done"{% endif %}{% if nav == 'profile' %} aria-current="page"{% endif %}><i>{{ '✓' if u.ready else '1' }}</i><span>Profile{% if u.ready %}<span class="sr"> (done)</span>{% endif %}</span></a>
-    <a href="/generate"{% if nav == 'generate' %} aria-current="page"{% endif %}><i>2</i><span>Generate</span></a>
-    <a href="/applications"{% if nav == 'applications' %} aria-current="page"{% endif %}><span>Applications</span></a>
-    <a href="/credits"{% if nav == 'credits' %} aria-current="page"{% endif %}><span>Credits</span></a>
-    <a href="/account"{% if nav == 'account' %} aria-current="page"{% endif %}><span>Account</span></a>
+    <div class="nav-steps">
+      <a href="/profile"{% if u.ready %} class="done"{% endif %}{% if nav == 'profile' %} aria-current="page"{% endif %}><i>{{ '✓' if u.ready else '1' }}</i><span>Profile{% if u.ready %}<span class="sr"> (done)</span>{% endif %}</span></a>
+      <a href="/generate"{% if nav == 'generate' %} aria-current="page"{% endif %}><i>2</i><span>Generate</span></a>
+    </div>
     {% endif %}
-    {% if (u and u.is_owner) or o %}<a href="/admin" class="nav-admin"{% if nav == 'admin' %} aria-current="page"{% endif %}><i>A</i><span>Admin</span></a>{% endif %}
+    <div class="nav-tabs">
+      {% if u %}
+      <a href="/applications"{% if nav == 'applications' %} aria-current="page"{% endif %}><span>Applications</span></a>
+      <a href="/credits"{% if nav == 'credits' %} aria-current="page"{% endif %}><span>Credits</span></a>
+      <a href="/account"{% if nav == 'account' %} aria-current="page"{% endif %}><span>Account</span></a>
+      {% endif %}
+      {% if (u and u.is_owner) or o %}<a href="/admin" class="nav-admin"{% if nav == 'admin' %} aria-current="page"{% endif %}><i>A</i><span>Admin</span></a>{% endif %}
+    </div>
   </nav>
   {% endif %}
 </header>

@@ -92,10 +92,10 @@ class FirstRun(AppCase):
         self.assertIn("<h2>Contact details</h2>", page)
 
     def test_the_stylesheet_url_changes_with_the_version(self):
-        """New classes and old cached CSS must never meet: Cloudflare and browsers keep /static/calm.css."""
+        """New classes and old cached CSS must never meet: Cloudflare and browsers keep /static/betterjobs.css."""
         from app.main import APP_VERSION
-        self.assertIn(f'href="/static/calm.css?v={APP_VERSION}"', self.get("/profile", self.EMAIL).text)
-        self.assertEqual(self.client.get(f"/static/calm.css?v={APP_VERSION}").status_code, 200)
+        self.assertIn(f'href="/static/betterjobs.css?v={APP_VERSION}"', self.get("/profile", self.EMAIL).text)
+        self.assertEqual(self.client.get(f"/static/betterjobs.css?v={APP_VERSION}").status_code, 200)
 
     def test_sign_in_no_longer_says_invite_only(self):
         self.assertNotIn("Invite only", self.client.get("/signin").text)
