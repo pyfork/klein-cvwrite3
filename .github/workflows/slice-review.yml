@@ -252,6 +252,17 @@ jobs:
             sudo pkill -KILL -u checker || true
             return $rc
           }
+          # kit-keeper-Opus5.5-agent, 2026-10-28: keep each output's head and
+          # tail. A check that installs packages first put only install lines
+          # in a head-only cut and lost the failure at the end (cvwrite3 #60)
+          # clip-begin
+          clip() { # <file>: first 1000 and last 3000 bytes, indented
+            local size; size=$(wc -c < "$1")
+            if [ "$size" -le 4000 ]; then cat "$1"
+            else head -c 1000 "$1"; printf '\n… %s bytes cut …\n' "$((size - 4000))"; tail -c 3000 "$1"; fi \
+              | sed 's/^/    /'
+          }
+          # clip-end
           { cat "$RUNNER_TEMP/runtime-line.txt"; echo; } > "$R/results.txt"
           # KIT-007: on the wrong runtime, or where PR code could swap a
           # program on PATH, a PASS proves nothing; run nothing
@@ -267,7 +278,7 @@ jobs:
             # their fingerprint (guard 3), run by their wrapper script
             case "$c" in *.sh) ;; *) echo "LOCKED FILE (not run): $c" >> "$R/results.txt"; echo >> "$R/results.txt"; continue ;; esac
             if as_checker "bash /srv/kit-trusted/$c"; then r=PASS; else r=FAIL; fi
-            { echo "$r $c"; head -c 2000 "$R/out.txt" | sed 's/^/    /'; echo; echo; } >> "$R/results.txt"
+            { echo "$r $c"; clip "$R/out.txt"; echo; echo; } >> "$R/results.txt"
           done
           # kit-keeper-Opus5.5-agent, 2026-10-27 (KIT-008): the build gate in
           # code. Each check the PR newly locks runs once on main's code: one
@@ -287,7 +298,7 @@ jobs:
                 if [ "$tag" = REGRESSION ]; then r="FAIL REGRESSION ON MAIN: $c ends its LOCKED line with REGRESSION but fails on main's code"
                 else r="BEFORE FAIL $c (fails on main's code, as a new check should)"; fi
               fi
-              { echo "$r"; head -c 1000 "$R/out.txt" | sed 's/^/    /'; echo; } >> "$R/results.txt"
+              { echo "$r"; clip "$R/out.txt"; echo; } >> "$R/results.txt"
             done < "$RUNNER_TEMP/new-checks.txt"
             # One-PR slice: the same checks on the PR's code, from a
             # root-owned copy, so they hold before they are main's
@@ -296,7 +307,7 @@ jobs:
               while read -r c tag; do
                 case "$c" in *.sh) ;; *) continue ;; esac
                 if as_checker "bash /srv/kit-new/$c"; then r=PASS; else r=FAIL; fi
-                { echo "$r $c (new)"; head -c 2000 "$R/out.txt" | sed 's/^/    /'; echo; echo; } >> "$R/results.txt"
+                { echo "$r $c (new)"; clip "$R/out.txt"; echo; echo; } >> "$R/results.txt"
               done < "$RUNNER_TEMP/new-checks.txt"
             fi
           fi
@@ -306,9 +317,9 @@ jobs:
           if [ -z "$TEST_COMMAND" ]; then
             echo "NOT CONFIGURED: set the GUARD_TEST_COMMAND repository variable" >> "$R/results.txt"
           elif as_checker 'bash -c "$TEST_COMMAND"'; then
-            { echo "PASS: $TEST_COMMAND"; tail -c 3000 "$R/out.txt" | sed 's/^/    /'; } >> "$R/results.txt"
+            { echo "PASS: $TEST_COMMAND"; clip "$R/out.txt"; } >> "$R/results.txt"
           else
-            { echo "FAIL: $TEST_COMMAND"; tail -c 3000 "$R/out.txt" | sed 's/^/    /'; } >> "$R/results.txt"
+            { echo "FAIL: $TEST_COMMAND"; clip "$R/out.txt"; } >> "$R/results.txt"
           fi
           cp "$R/results.txt" results.txt
           cat results.txt
