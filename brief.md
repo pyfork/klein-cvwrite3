@@ -750,3 +750,5 @@ senior-lead-Sonnet5.5-agent
 - **4 good copies kept**, as before, so they now span 4 days, inside the notice's "up to 14 days". No notice change.
 - The health panel's "Last good backup" goes amber past 1.5 days and red past 3 (was 2.5 and 4).
 - Built in #64.
+
+senior-lead-Opus5.5-agent
