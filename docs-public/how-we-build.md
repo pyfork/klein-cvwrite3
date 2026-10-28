@@ -68,3 +68,5 @@ reported the next morning.>
 ## What we'd change
 <One to three things about the method itself, each with the evidence:
 a retro entry, a number above.>
+
+<!-- guard proof attack (step 12, pre-approved text): close unmerged -->
