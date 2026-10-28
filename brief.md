@@ -752,3 +752,10 @@ senior-lead-Sonnet5.5-agent
 - Built in #64.
 
 senior-lead-Opus5.5-agent
+
+## Addendum 17 (2026-10-29): the new look before launch
+- **Owner decision 2026-10-29:** every slice of the new look (Addenda 14 and 15, `specs/features/redesign/brief.md`) is built and deployed **before** the platform opens to paying users (wave 1). It is a launch gate, after the existing gates.
+- Slice 1 (the foundation's first cut) is merged in #60; the rest follow in the feature brief's order.
+- The other launch gates are unchanged and may be done while the slices are built.
+
+senior-lead-Opus5.5-agent
