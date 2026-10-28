@@ -20,7 +20,14 @@
 #                              matched as precisely as written
 #   INSTALL=scripts/install.sh the one install or build command
 #   JDK=temurin                java only: the server's JDK distribution
+#   TOOLS=poppler-utils        optional: apt packages the locked checks call,
+#                              installed as root before the checker runs
+#   CHECK_ENV=CHROME=/usr/bin/google-chrome
+#                              optional: NAME=/absolute/program pairs passed
+#                              through env -i to every checker run; each
+#                              program must exist and checker can't write it
 set -uo pipefail
+set -f  # TOOLS and CHECK_ENV are split on spaces, never globbed
 mode="${1:-}"; file="${2:-}"
 
 problem() { echo "PROBLEM  $1"; exit 1; }
@@ -41,13 +48,14 @@ read_record() {
     printf '%s' "$line" | grep -qE '^[[:space:]]*$' && continue
     key="$(printf '%s' "$line" | sed -n 's/^[[:space:]]*\([A-Z_]*\)[[:space:]]*=.*/\1/p')"
     case "$key" in
-      RUNNER|OS|RUNTIME|INSTALL|JDK) ;;
-      '') problem "runtime record: line $n is not KEY=value (allowed keys: RUNNER, OS, RUNTIME, INSTALL, JDK)" ;;
-      *) problem "runtime record: line $n has key $key; only RUNNER, OS, RUNTIME, INSTALL and JDK are allowed (the file is public: no addresses, hosts or keys)" ;;
+      RUNNER|OS|RUNTIME|INSTALL|JDK|TOOLS|CHECK_ENV) ;;
+      '') problem "runtime record: line $n is not KEY=value (allowed keys: RUNNER, OS, RUNTIME, INSTALL, JDK, TOOLS, CHECK_ENV)" ;;
+      *) problem "runtime record: line $n has key $key; only RUNNER, OS, RUNTIME, INSTALL, JDK, TOOLS and CHECK_ENV are allowed (the file is public: no addresses, hosts or keys)" ;;
     esac
     [ "$(grep -cE "^[[:space:]]*$key[[:space:]]*=" "$file")" -eq 1 ] || problem "runtime record: $key is set more than once"
   done < "$file"
   runner="$(value RUNNER)"; os="$(value OS)"; runtime="$(value RUNTIME)"; install="$(value INSTALL)"; jdk="$(value JDK)"
+  tools="$(value TOOLS)"; check_env="$(value CHECK_ENV)"
   for k in RUNNER OS RUNTIME INSTALL; do
     [ -n "$(value "$k")" ] || problem "runtime record: $k is empty"
   done
@@ -64,6 +72,16 @@ read_record() {
     printf '%s' "$jdk" | grep -qE '^[a-z][a-z0-9-]*$' || problem "runtime record: JDK must be a distribution name, e.g. temurin"
     [ "$lang" = java ] || problem "runtime record: JDK is set, but RUNTIME is not java"
   fi
+  # TOOLS: apt package names only; CHECK_ENV: NAME=/absolute/path, no
+  # name the runner itself sets, so a record can't redirect HOME or PATH
+  for t in $tools; do
+    printf '%s' "$t" | grep -qE '^[a-z0-9][a-z0-9.+-]*$' || problem "runtime record: TOOLS must be apt package names separated by spaces, e.g. 'poppler-utils'"
+  done
+  for e in $check_env; do
+    printf '%s' "$e" | grep -qE '^[A-Z][A-Z0-9_]*=/[A-Za-z0-9._/+-]+$' || problem "runtime record: CHECK_ENV must be NAME=/absolute/path pairs separated by spaces, e.g. CHROME=/usr/bin/google-chrome"
+    case "/${e#*=}/" in */../*) problem "runtime record: CHECK_ENV paths must not contain .." ;; esac
+    case "${e%%=*}" in HOME|PATH|TEST_COMMAND|LD_*|BASH_ENV|ENV|SHELLOPTS|PS4|IFS) problem "runtime record: CHECK_ENV can't set ${e%%=*}" ;; esac
+  done
   if [ "$lang" = java ]; then [ -n "$jdk" ] || problem "runtime record: JDK is empty (java needs the server's distribution, e.g. temurin)"; fi
   # An ubuntu-NN.NN label must name the same release as OS
   case "$runner" in ubuntu-[0-9]*)
@@ -84,7 +102,7 @@ actual_version() { # the language's own version, digits only
 case "$mode" in
 record)
   read_record
-  printf 'runner=%s\nos=%s\nlang=%s\nversion=%s\ninstall=%s\njdk=%s\n' "$runner" "$os" "$lang" "$version" "$install" "$jdk" ;;
+  printf 'runner=%s\nos=%s\nlang=%s\nversion=%s\ninstall=%s\njdk=%s\ntools=%s\ncheck_env=%s\n' "$runner" "$os" "$lang" "$version" "$install" "$jdk" "$tools" "$check_env" ;;
 machine)
   read_record
   osr="${OS_RELEASE:-/etc/os-release}"
