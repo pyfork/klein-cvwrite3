@@ -2,8 +2,8 @@
 
     python -m app.backup            (systemd timer, every night at 02:30; does the work only when due)
 
-- Runs nightly, but backs up only when the last good copy is over 44 hours old: every 2 days normally,
-  and the very next night after a failure. The timer has Persistent=true for a box that was down.
+- Runs nightly, but backs up only when the last good copy is over 20 hours old: every night, and
+  again the next night after a failure. The timer has Persistent=true for a box that was down.
 - pg_dump (custom format) -> age encryption to the owner's public key (the private key stays offline
   with the owner) -> upload, with the tombstones file next to it.
 - Verified after upload (size and checksum); a copy that doesn't verify counts as failed.
@@ -25,7 +25,7 @@ from pathlib import Path
 from . import config, db
 
 KEEP = 4
-DUE_AFTER_H = 44
+DUE_AFTER_H = 20
 UPLOAD_WAITS_S = (60, 300, 900)
 PREFIX = "cvwrite3/"
 

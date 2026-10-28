@@ -1,4 +1,4 @@
-# The encrypted backup to cvwrite3's own Spaces bucket (does the work only when the last good copy is over 44 h old).
+# The encrypted backup to cvwrite3's own Spaces bucket (does the work only when the last good copy is over 20 h old).
 [Unit]
 Description=cvwrite3 backup
 After=postgresql.service network-online.target
