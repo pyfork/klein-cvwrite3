@@ -4,14 +4,14 @@
 # senior-lead-Sonnet5.5-agent, 2026-10-28
 set -euo pipefail
 cd "$(dirname "$0")/.."
-if [ ! -x .venv/bin/python ]; then
-  python3 -m venv .venv
-  .venv/bin/pip install --require-hashes --only-binary :all: -r requirements.lock
-  grep -v '^-r' requirements-dev.txt | .venv/bin/pip install --only-binary :all: -r /dev/stdin
-fi
+# Re-plan 2026-10-28: the venv goes in $HOME, never in the tree (the checker runs on a read-only copy).
+venv="${CVWRITE_TEST_VENV:-$HOME/.cvwrite3-test-venv}"
+bash scripts/install.sh "$venv"
+grep -v '^-r' requirements-dev.txt | "$venv/bin/pip" install --only-binary :all: -r /dev/stdin
 if [ -z "${CVWRITE_CHROME:-}" ]; then
   c="$(grep -E '^CVWRITE_CHROME=' env.example | cut -d= -f2-)"
   if [ -n "$c" ] && [ -x "$c" ]; then export CVWRITE_CHROME="$c"; fi
 fi
 export CVWRITE_REQUIRE_RENDER=1
-exec .venv/bin/python -m unittest discover -s acceptance -p 'redesign_s001_check2.py' -v
+export PYTHONDONTWRITEBYTECODE=1
+exec "$venv/bin/python" -m unittest discover -s acceptance -p 'redesign_s001_check2.py' -v
