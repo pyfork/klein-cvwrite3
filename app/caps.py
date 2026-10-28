@@ -1,3 +1,4 @@
+# Guard proof attack (step 12): risk-map path; close unmerged.
 """The caps checked before every generation and re-render (brief, Caps and spend; Addendum 1).
 
 - Per user: 20 a day (Malaysia time), paid ones included. A generation counts once it reached call A;
