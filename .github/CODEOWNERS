@@ -1,5 +1,82 @@
-# guard-builder-Opus5.5-agent
-# Owner approval is required for every change (enforced by the protect-main
-# ruleset). Agent sessions run as the agent login and can't approve their
-# own PRs.
-* @pyfork
+# guard-builder-Opus5.5-agent, 2026-10-28 (KIT-014)
+# The owner owns the risk map's paths. A PR touching one waits for the
+# owner's approval (the protect-main ruleset: 0 approvals, code-owner review
+# on). A PR touching none merges itself once every required check is green.
+# The agent login can't approve its own PR.
+#
+# Two states, checked by verify-install.sh codeowners:
+# - No docs-public/guard-data/risk-map.txt on main yet: the one line
+#   "* @pyfork" below. Every slice is risky, every PR waits.
+# - A map on main: the "*" line goes, replaced by one line per map line,
+#   same order: "/<glob> @pyfork" (docs/claude-pkg/TEMPLATE-RISK-MAP.md).
+#   Changed in the same PR that adds or edits the map. Kit seed: .github/**,
+#   githooks/**, docs-public/guard-data/{risk-map.txt,expected-protection.json,
+#   runtime.txt} (one line each), specs/features/*/brief.md.
+# cvwrite3: generated line for line from docs-public/guard-data/risk-map.txt (owner-approved 2026-10-28).
+/app/credits.py @pyfork
+/app/orders.py @pyfork
+/app/routes_pay.py @pyfork
+/app/costs.py @pyfork
+/app/caps.py @pyfork
+/app/pause.py @pyfork
+/app/db.py @pyfork
+/app/backup.py @pyfork
+/migrations/** @pyfork
+/config/** @pyfork
+/app/templates/order.html @pyfork
+/app/templates/credits.html @pyfork
+/app/templates/_packs.html @pyfork
+/app/auth.py @pyfork
+/app/signin.py @pyfork
+/app/access.py @pyfork
+/app/devlogin.py @pyfork
+/app/account.py @pyfork
+/app/routes_account.py @pyfork
+/app/routes_ops.py @pyfork
+/app/mailer.py @pyfork
+/app/upload.py @pyfork
+/app/profile.py @pyfork
+/app/routes_cv.py @pyfork
+/app/routes_apps.py @pyfork
+/app/ic.py @pyfork
+/app/templates/signin.html @pyfork
+/app/templates/signin_code.html @pyfork
+/app/templates/admin.html @pyfork
+/notices/** @pyfork
+/app/notices.py @pyfork
+/app/i18n.py @pyfork
+/app/content/** @pyfork
+/app/markdown.py @pyfork
+/app/templates/consent.html @pyfork
+/app/templates/notice.html @pyfork
+/app/templates/terms.html @pyfork
+/app/templates/deleted.html @pyfork
+/deploy/** @pyfork
+/scripts/install.sh @pyfork
+/env.example @pyfork
+/requirements.txt @pyfork
+/requirements.lock @pyfork
+/.github/** @pyfork
+/githooks/** @pyfork
+/scripts/lock.py @pyfork
+/docs-public/guard-data/risk-map.txt @pyfork
+/docs-public/guard-data/expected-protection.json @pyfork
+/docs-public/guard-data/runtime.txt @pyfork
+/brief.md @pyfork
+/specs/features/*/brief.md @pyfork
+/app/pipeline.py @pyfork
+/app/worker.py @pyfork
+/app/claude.py @pyfork
+/app/prompts.py @pyfork
+/app/adread.py @pyfork
+/app/cvtext.py @pyfork
+/app/rendering.py @pyfork
+/prompts/** @pyfork
+/render/** @pyfork
+/checks/** @pyfork
+/fonts/** @pyfork
+/app/main.py @pyfork
+/app/config.py @pyfork
+/app/templates/base.html @pyfork
+/app/health.py @pyfork
+/app/uptime.py @pyfork

@@ -1,0 +1,4 @@
+RUNNER=ubuntu-22.04
+OS=ubuntu 22.04
+RUNTIME=python 3.10
+INSTALL=scripts/install.sh

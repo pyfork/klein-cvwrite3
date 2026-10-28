@@ -1,0 +1,76 @@
+# docs-public/guard-data/risk-map.txt
+# Money: payments, credits, ledger, stored data
+DATA    app/credits.py
+DATA    app/orders.py
+DATA    app/routes_pay.py
+DATA    app/costs.py
+DATA    app/caps.py
+DATA    app/pause.py
+DATA    app/db.py
+DATA    app/backup.py
+DATA    migrations/**
+DATA    config/**
+DATA    app/templates/order.html
+DATA    app/templates/credits.html
+DATA    app/templates/_packs.html
+# Sign-in, accounts, admin
+ACCESS  app/auth.py
+ACCESS  app/signin.py
+ACCESS  app/access.py
+ACCESS  app/devlogin.py
+ACCESS  app/account.py
+ACCESS  app/routes_account.py
+ACCESS  app/routes_ops.py
+ACCESS  app/mailer.py
+ACCESS  app/upload.py
+ACCESS  app/profile.py
+ACCESS  app/routes_cv.py
+ACCESS  app/routes_apps.py
+ACCESS  app/ic.py
+ACCESS  app/templates/signin.html
+ACCESS  app/templates/signin_code.html
+ACCESS  app/templates/admin.html
+# Legal text: PDPA notice, consent, Terms
+SHARED  notices/**
+SHARED  app/notices.py
+SHARED  app/i18n.py
+SHARED  app/content/**
+SHARED  app/markdown.py
+SHARED  app/templates/consent.html
+SHARED  app/templates/notice.html
+SHARED  app/templates/terms.html
+SHARED  app/templates/deleted.html
+# Deploy and the install script
+SHARED  deploy/**
+SHARED  scripts/install.sh
+SHARED  env.example
+SHARED  requirements.txt
+SHARED  requirements.lock
+# Guards
+SHARED  .github/**
+SHARED  githooks/**
+SHARED  scripts/lock.py
+SHARED  docs-public/guard-data/risk-map.txt
+SHARED  docs-public/guard-data/expected-protection.json
+SHARED  docs-public/guard-data/runtime.txt
+# The brief and the feature briefs (the owner's words)
+SHARED  brief.md
+SHARED  specs/features/*/brief.md
+# Signature features: CV generation and the render pipeline
+SHARED  app/pipeline.py
+SHARED  app/worker.py
+SHARED  app/claude.py
+SHARED  app/prompts.py
+SHARED  app/adread.py
+SHARED  app/cvtext.py
+SHARED  app/rendering.py
+SHARED  prompts/**
+SHARED  render/**
+SHARED  checks/**
+SHARED  fonts/**
+# Shared code
+SHARED  app/main.py
+SHARED  app/config.py
+SHARED  app/templates/base.html
+SHARED  app/health.py
+SHARED  app/uptime.py
