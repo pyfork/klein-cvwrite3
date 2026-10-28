@@ -743,3 +743,10 @@ Where this addendum and the sections above disagree, this addendum wins. It sett
 - **Built as eight slices** from the feature brief, `specs/features/redesign/brief.md`: the foundation, the home, Profile and Generate and the result, edit and re-render, Your applications, credits and pay, the account, notice, consent, terms, error and report pages, and the admin page.
 
 senior-lead-Sonnet5.5-agent
+
+## Addendum 16 (2026-10-28): backups every night
+- **Owner decision 2026-10-28:** the backup runs **every night at 2:30 AM**, not every 2 days. It replaces "every 2 days" and the 44 h rule in Addendum 1's Backups section: the job now runs when the last good copy is over 20 h old.
+- Why: a restore loses at most a day of orders, approvals and spends, not two.
+- **4 good copies kept**, as before, so they now span 4 days, inside the notice's "up to 14 days". No notice change.
+- The health panel's "Last good backup" goes amber past 1.5 days and red past 3 (was 2.5 and 4).
+- Built in #64.
