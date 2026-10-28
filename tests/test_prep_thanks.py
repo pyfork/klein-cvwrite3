@@ -2,6 +2,7 @@
 import unittest
 
 from app import markdown, mailer, prep
+from tests.render_env import needs_render
 from tests.support import OWNER, CVCase
 
 AD_TEXT = "Operations Analyst\nWe need someone who can fix late deliveries. The first round is a practical task."
@@ -25,6 +26,7 @@ class Verify(unittest.TestCase):
         self.assertEqual(prep.verify("nonsense", AD_TEXT, MASTER), [])
 
 
+@needs_render
 class Prep(CVCase):
     def test_a_passed_cv_has_checked_notes_on_the_result_and_applications(self):
         run_id = self.start()
