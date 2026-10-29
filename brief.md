@@ -759,3 +759,10 @@ senior-lead-Opus5.5-agent
 - The other launch gates are unchanged and may be done while the slices are built.
 
 senior-lead-Opus5.5-agent
+
+## Addendum 18 (2026-10-29): the target design and its ledger
+- **Owner decision 2026-10-29:** the accepted collage homepage v2 is the target for the new look. Every change against it is recorded in `README-brief-amended.md`, beside this file: real departures, each with its fix or improvement and the owner's answer, and gaps v2 doesn't show, filled under the responsive rules.
+- Addendum 14's coral list gains one use: **the brand mark is coral**, as in v2 (ledger, AC-27).
+- Approved departures, on the ground only, for contrast: muted text `#566275` (v2's `#6A7586` stays on white slabs); the focus ring ink (coral stays on slabs, ink on coral buttons). See the ledger, AC-9 and AC-44.
+
+senior-lead-Opus5.5-agent
