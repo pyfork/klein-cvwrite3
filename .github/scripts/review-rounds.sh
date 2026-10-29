@@ -27,19 +27,25 @@ seal)
 # Every sealed record in the app's reviews, oldest first. Any record whose
 # seal doesn't match: tampered, and the PR goes to the owner.
 state)
+  # Each line is "<review submitted_at> <marker comment>"; the time is
+  # GitHub's, outside the seal, and only says since when the judge reads
+  # the PR's comments: since the FAIL that opened the current findings
+  # (PROOF-23)
   recs="[]"; tampered=false
   while IFS= read -r line; do
     [ -n "$line" ] || continue
-    read -r _ _ body mac _ <<< "$line"
+    read -r at _ _ body mac _ <<< "$line"
     if [ "$(hmac "$body")" = "$mac" ] && rec="$(printf '%s' "$body" | base64 --decode 2>/dev/null | jq -c . 2>/dev/null)"; then
-      recs="$(jq -c --argjson r "$rec" '. + [$r]' <<< "$recs")"
+      recs="$(jq -c --argjson r "$rec" --arg at "$at" '. + [$r + {at: $at}]' <<< "$recs")"
     else tampered=true; fi
-  done < <(jq -r '.[] | .body // ""' "$2" | grep -oE "<!-- $marker [^ ]* [^ ]* -->" || true)
+  done < <(jq -r --arg m "$marker" '.[] | (.submitted_at // "-") as $t | (.body // "") | scan("<!-- \($m) [^ ]* [^ ]* -->") | "\($t) \(.)"' "$2" || true)
   jq -n --argjson r "$recs" --argjson t "$tampered" '{
       tampered: $t,
       judged: ([$r[] | select(.kind == "judged")] | length),
       open: (($r | last // {}).open // []),
       sha: (($r | last // {}).sha // ""),
+      since: (([range(0; $r | length) | select(($r[.].open // []) | length == 0)] | last // -1) as $i
+        | ($r[$i + 1].at // "")),
       with_owner: (($r | last // {}).with_owner // false)
     }' ;;
 
@@ -68,13 +74,24 @@ filter)
   done < <(jq -c '.findings // [] | .[]' "$a")
   # Fails closed: a FAIL that lists no finding at all still blocks, and so
   # does a FAIL whose cited rules all failed the check (PROOF-21: a real
-  # FAIL became a PASS that way). Only a FAIL made of uncited notes passes
+  # FAIL became a PASS that way), and so does a FAIL made only of uncited
+  # notes (PROOF-23: an injection FAIL cited no rule and passed). Flaky
+  # findings drop only when the re-run did not FAIL too: two FAILs whose
+  # cites don't match are not a PASS (PROOF-23: the re-run cited nothing,
+  # so every finding of the first run looked unrepeated)
+  verdictb=-; [ "$b" != - ] && verdictb="$(jq -r '.verdict // "FAIL"' "$b")"
   if [ "$verdict" = FAIL ] && [ "$(jq '.findings // [] | length' "$a")" -eq 0 ]; then
     out="$(jq -c '.blocking += [{key: "reviewer#no findings", rule_file: "", rule_section: "", text: "The reviewer said FAIL but listed no finding"}]' <<< "$out")"
   elif [ "$verdict" = FAIL ] && [ "$(jq '.blocking | length' <<< "$out")" -eq 0 ]; then
+    [ "$verdictb" = FAIL ] && out="$(jq -c '.blocking = ([.flaky[] | . + {key: "\(.rule_file)#\(.rule_section)"}] | unique_by(.key)) | .flaky = []' <<< "$out")"
     while IFS= read -r f; do
       out="$(jq -c --argjson f "$f" '.blocking += [$f + {key: "\($f.rule_file)#\($f.rule_section)", text: ("Cited rule not found as given: " + $f.text)}] | .notes -= [$f]' <<< "$out")"
     done < <(jq -c '.notes[] | select(.rule_file != "")' <<< "$out")
+    # The uncited ones as one finding with a fixed key, so the judge can
+    # rule on it and a later round's uncited FAIL isn't "new"
+    out="$(jq -c 'if (.blocking | length) == 0 and (.notes | length) > 0 then
+        .blocking += [{key: "reviewer#FAIL citing no rule", rule_file: "", rule_section: "", text: ("The reviewer said FAIL citing no rule: " + ([.notes[].text] | join(" | ")))}] | .notes = []
+      else . end' <<< "$out")"
   fi
   jq -c --arg v "$verdict" '. + {verdict: $v}' <<< "$out" ;;
 
@@ -101,8 +118,10 @@ decide)
       elif ($s.open | length) > 0 then
         ($s.judged + 1) as $round
         | [ $s.open[] | . as $o | select(([$j.rulings[] | select(.key == $o.key and .solved == true)] | length) == 0) ] as $unsolved
-        | [ $found[] | select(.key as $k | (keys($s.open) | index($k)) == null) ] as $new
-        | ($unsolved + $new) as $left
+        # A "reviewer#" finding (a FAIL citing no rule) is for the reviewer to
+        # call this round, whatever the judge said of the last one (PROOF-23)
+        | [ $found[] | select(.key as $k | ($k | startswith("reviewer#")) or (keys($s.open) | index($k)) == null) ] as $new
+        | ([ $unsolved[] | select(.key as $k | (keys($new) | index($k)) == null) ] + $new) as $left
         | if ($left | length) == 0 then
             {pass:true, owner:false, why:"Judge round \($round): every finding solved.", unsolved:[], record:{kind:"judged", round:$round, sha:$sha, open:[]}}
           elif $round >= 2 then
