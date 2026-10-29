@@ -34,7 +34,7 @@ done
 # change after the plan commit; and each new lock line is the plan
 # commit's file. With no risk map on main, every slice is risky: plans
 # change only in a plan PR, as before.
-plan_paths='^(specs/|plans/|acceptance/|docs-public/guard-data/locks/|docs-public/retro-log\.md$)'
+plan_paths='^(specs/|plans/|acceptance/|docs-public/guard-data/locks/|docs-public/retro-log\.md$|README-brief-amended\.md$)'
 g() { git -C "$pr" "$@"; }
 sum_blob() { if command -v sha256sum >/dev/null; then g show "$1" | sha256sum | awk '{print $1}'; else g show "$1" | shasum -a 256 | awk '{print $1}'; fi; }
 

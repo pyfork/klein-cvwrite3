@@ -223,7 +223,7 @@ jobs:
             sudo chmod -R a+rX,go-w /srv/kit-before /srv/kit-new
             # A PR that changes files outside the plan paths is a one-PR
             # slice: its new checks must also pass on its own code
-            plan_paths='^(specs/|plans/|acceptance/|docs-public/guard-data/locks/|docs-public/retro-log\.md$)'
+            plan_paths='^(specs/|plans/|acceptance/|docs-public/guard-data/locks/|docs-public/retro-log\.md$|README-brief-amended\.md$)'
             other="$(diff <(git -C trusted ls-files -s | awk '{print $2, $4}') <(git -C pr ls-files -s | awk '{print $2, $4}') \
               | grep -E '^[<>] ' | awk '{print $3}' | grep -vE "$plan_paths" | sort -u || true)"
             [ -z "$other" ] || touch "$RUNNER_TEMP/has-code"
