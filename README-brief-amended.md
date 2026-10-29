@@ -1,12 +1,24 @@
-<!-- senior-lead-Opus5.5-agent, 2026-10-29. The deviation ledger: every departure from a target design, approved or not, with its reasoning. Beside brief.md; rides in the slice-plan PR that writes the rule. -->
-# Brief amended: deviations from the target
+<!-- senior-lead-Opus5.5-agent, 2026-10-29. The ledger beside brief.md: every change against the target design and its basis. Rides in the slice-plan PR that writes the rule. -->
+# Brief amended: changes against the target
 
-Target for the redesign feature: the accepted collage homepage v2 (Addendum 14). The default is the target. One row per deviation; its reasoning is a fix (the problem the target causes, for whom) or an improvement (the gain), or says the target is silent. "Asked" means the owner has not answered yet; a rule that differs from the target with no approved row is a defect.
+Target for the redesign feature: the accepted collage homepage v2 (Addendum 14). The default is the target. Each change is in exactly one section:
 
-| date | feature, slice | rule | before (target) | after | reasoning | owner's answer, date |
+1. **Real departures:** v2 shows it and the rule differs. The reasoning is a fix (the problem v2 causes, for whom) or an improvement (the gain). The owner answers each; "asked" means not answered yet.
+2. **Gaps filled under the responsive rules:** v2 doesn't show it (it is the home only: no app page, no app nav). Not asked; the responsive rules govern it and the reviewer judges it.
+
+A rule that differs from v2 and is in neither section is a defect.
+
+## 1. Real departures
+
+| date | feature, slice | rule | before (target) | after | fix or improvement: reasoning | owner's answer, date |
 |---|---|---|---|---|---|---|
-| 2026-10-29 | redesign, S-001 | AC-27 brand mark | coral 26 px square, ink wordmark | ink mark (built) | No fix, no improvement: built ink only kept coral for "after" and the main button. Lean: **build the target** (coral), with a one-line exception in Addendum 14's coral list. | asked |
-| 2026-10-29 | redesign, S-001 | AC-9 muted text | `#6A7586` everywhere | `#6A7586` on white slabs (the target); `#566275` on the ground only | **Fix.** On the ground, v2's grey is 4.13:1, under the 4.5:1 text floor (AC-16, WCAG AA 1.4.3): hints and "optional" labels are hard to read for people with low vision or on a phone in sunlight. `#566275` is 5.47:1. On white slabs the target passes (4.67:1) and stays. Look change: lightness 49 to 41, ground only. | asked |
-| 2026-10-29 | redesign, S-001 | AC-44 focus ring | coral ring, 3 px | coral on slabs (the target); ink on the ground and on coral buttons | **Fix.** On the ground, coral is 2.73:1, under the 3:1 floor (AC-17, WCAG AA 1.4.11): a keyboard user can lose track of where they are. On a coral button a coral ring disappears. On white slabs coral passes (3.09:1) and stays. Seen by keyboard users only. | asked |
-| 2026-10-29 | redesign, S-001 | AC-19 content width | target silent: v2 shows only the home (`.wrap` up to 1240 px) | app pages: `main` up to 880 px; the home (S-005): 1240 px, the target | **Target silent, improvement.** v2 has no app page. A form at 1240 px gives text lines past the usual 60 to 80 characters (estimate, not measured), which are slower to read. The home keeps the target's width. | asked |
-| 2026-10-29 | redesign, S-001 | AC-23 nav at narrow widths | home section links hidden below 900 px | app tabs wrap to two lines below 840 px; the home (S-005) hides its section links, the target | **Fix, target silent for app pages.** v2's nav is the home's own section links. Hidden app tabs (Applications, Credits, Account) would leave a signed-in person on a phone with no way to reach them: v2 has no menu, and AC-71 puts nothing behind one. | asked |
+| 2026-10-29 | redesign, S-001 | AC-27 brand mark | coral 26 px square, ink wordmark | ink mark (built in S-001) | Neither: built ink only kept coral for "after" and the main button. Lean: **back to the target** (coral), with a one-line exception in Addendum 14's coral list. | asked |
+| 2026-10-29 | redesign, S-001 | AC-9 muted text | `#6A7586` everywhere | `#6A7586` on white slabs (the target); `#566275` on the ground only | **Fix.** On the ground `#F2F1ED`, v2's grey is 4.13:1, under the 4.5:1 text floor (AC-16, WCAG AA 1.4.3): hints and "optional" labels are hard to read with low vision or on a phone in sunlight. `#566275` is 5.47:1. On white slabs v2 passes (4.67:1) and stays. Look change: lightness 49 to 41, on the ground only. | asked |
+| 2026-10-29 | redesign, S-001 | AC-44 focus ring | coral ring, 3 px | coral on slabs (the target); ink on the ground and on coral buttons | **Fix.** On the ground, coral is 2.73:1, under the 3:1 floor (AC-17, WCAG AA 1.4.11): a keyboard user can lose track of focus. A coral ring on a coral button disappears. On white slabs coral passes (3.09:1) and stays. Seen by keyboard users only. | asked |
+
+## 2. Gaps filled under the responsive rules
+
+| date | feature, slice | rule | what the target doesn't show | what the rule does | responsive rule or check it follows |
+|---|---|---|---|---|---|
+| 2026-10-29 | redesign, S-001 | AC-19 content width | app pages (v2's `.wrap` up to 1240 px is the home) | app pages: `main` up to 880 px, centred; the home (S-005) keeps v2's 1240 px | Maximum: content stops growing at 1280 px; check 2: min and max widths, no fixed widths; check 6: priorities decided |
+| 2026-10-29 | redesign, S-001 | AC-23 nav at narrow widths | the app's tabs (v2's nav is the home's section links, hidden below 900 px) | app tabs and balance wrap to two lines below 840 px, nothing hidden; the home (S-005) hides its section links as v2 does | "When the layout changes": at the width the content stops fitting; check 6: nothing needed to understand the screen is hidden, navigation specified at each width |
