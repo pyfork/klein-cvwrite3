@@ -72,6 +72,5 @@ SHARED  fonts/**
 SHARED  app/main.py
 SHARED  app/config.py
 SHARED  app/templates/base.html
-SHARED  app/static/betterjobs.css
 SHARED  app/health.py
 SHARED  app/uptime.py

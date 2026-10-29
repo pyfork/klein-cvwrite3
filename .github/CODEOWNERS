@@ -78,6 +78,5 @@
 /app/main.py @pyfork
 /app/config.py @pyfork
 /app/templates/base.html @pyfork
-/app/static/betterjobs.css @pyfork
 /app/health.py @pyfork
 /app/uptime.py @pyfork
