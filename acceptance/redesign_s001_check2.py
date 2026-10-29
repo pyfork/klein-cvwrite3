@@ -2,8 +2,10 @@
 AC-12, AC-15 to AC-18, AC-20, AC-21, AC-27 (the mark's shape), AC-44, AC-46 to AC-67 and the no-viewport-height part of
 AC-70. Static rules are read from app/static/betterjobs.css; computed values come from headless Chrome on a gallery of
 the old markup (acceptance/fixtures/s001_gallery.html). Fails before the work: there is no betterjobs.css.
-AC-11 is retired by the dark-mode slice, as a re-plan of this check.
 Re-plan 2026-10-28 (senior-lead-Opus5.5-agent): AC-17 measures each focus ring against the parent's background.
+AC-11 is retired by the dark-mode slice, as a re-plan of this check.
+Re-plan 2026-10-29 (senior-lead-Opus5.5-agent, slice 2 plan): AC-9 muted is split by surface and AC-44's ring is coral on
+white slabs (the owner's approved rows in README-brief-amended.md).
 senior-lead-Sonnet5.5-agent, 2026-10-28"""
 import re
 import unittest
@@ -12,11 +14,11 @@ import redesign_s001_common as C
 
 INK, CORAL, GROUND, SLAB, QUIET = "rgb(19, 35, 58)", "rgb(255, 90, 71)", "rgb(242, 241, 237)", "rgb(255, 255, 255)", "rgb(247, 246, 242)"
 GREY, GREY_INK, TEAL, MARIGOLD = "rgb(214, 212, 206)", "rgb(90, 88, 94)", "rgb(38, 150, 138)", "rgb(243, 180, 60)"
-MUTED, ERROR, EDGE = "rgb(86, 98, 117)", "rgb(180, 35, 24)", "rgb(125, 135, 152)"
+MUTED, MUTED_SLAB, ERROR, EDGE = "rgb(86, 98, 117)", "rgb(106, 117, 134)", "rgb(180, 35, 24)", "rgb(125, 135, 152)"
 TINT = {"warn": "rgb(251, 231, 176)", "bad": "rgb(250, 221, 215)", "ok": "rgb(217, 238, 233)", "info": "rgb(220, 235, 247)"}
 EDGE_OF = {"warn": MARIGOLD, "bad": ERROR, "ok": TEAL, "info": "rgb(160, 205, 236)"}
 WIDTHS = [320, 390, 544, 768, 1280]
-TOKEN_HEX = """F2F1ED FFFFFF 13233A FF5A47 D6D4CE 5A585E 26968A F3B43C A0CDEC F7F6F2 566275 3A4960 C2382A B42318 7D8798
+TOKEN_HEX = """F2F1ED FFFFFF 13233A FF5A47 D6D4CE 5A585E 26968A F3B43C A0CDEC F7F6F2 566275 6A7586 3A4960 C2382A B42318 7D8798
 E6E5E0 FBE7B0 FADDD7 D9EEE9 DCEBF7""".split()
 
 GALLERY_JS = r"""
@@ -280,8 +282,11 @@ class Look(unittest.TestCase):
             self.assertEqual(round(self.at(w)["extra"]["card_gap"]), 20, w)
 
     def test_ac44_focus_ring(self):
+        # re-plan 2026-10-29: coral where the colour behind the ring is a white slab, ink on the ground, on a quiet
+        # slab and on a coral button
         for sel, f in self.at(1280)["focus"].items():
-            self.assertEqual((f["style"], f["width"], f["offset"], f["color"]), ("solid", "3px", "3px", INK), sel)
+            want = CORAL if f["ring_bg"] == SLAB and f["bg"] != CORAL else INK
+            self.assertEqual((f["style"], f["width"], f["offset"], f["color"]), ("solid", "3px", "3px", want), sel)
         f = self.at(1280)["focus"]["#f-text"]
         self.assertEqual(f["border"], INK)
         self.assertIn("rgba(19, 35, 58, 0.18)", f["shadow"])
@@ -378,7 +383,7 @@ class Look(unittest.TestCase):
     def test_ac62_ac63_tables(self):
         for w in (768, 1280):
             ex = self.at(w)["extra"]
-            self.assertEqual((ex["th"]["font-size"], ex["th"]["color"]), ("14px", MUTED))
+            self.assertEqual((ex["th"]["font-size"], ex["th"]["color"]), ("14px", MUTED_SLAB))
             self.assertEqual(ex["td1"]["font-size"], "16px")
             self.assertTrue("1px" in (ex["td1"]["border-bottom-width"], ex["tr"]["border-bottom-width"]), "no 1 px divider between rows")
             self.assertGreaterEqual(int(ex["td1"]["font-weight"]), 700)
