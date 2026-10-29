@@ -51,6 +51,7 @@ ul,ol{padding-left:1.3em}
 a{color:inherit;text-decoration:underline;text-underline-offset:.18em}
 :where(a,summary):focus-visible{border-radius:6px}
 :focus-visible{outline:3px solid var(--ring);outline-offset:3px}
+/* surfaces: a new white-slab or quiet-slab class must join these lists, or it gets the ground's muted text and ring (AC-9, AC-44) */
 .card,.nav{--muted:var(--muted-slab);--ring:var(--coral)}
 .bal,.pack{--muted:var(--muted-slab)}
 :is(blockquote,.drop,.removed,.cv-head,.reports li,.ref,.opt) *,.opt{--muted:var(--muted-ground);--ring:var(--ink)}
