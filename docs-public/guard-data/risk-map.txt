@@ -56,6 +56,8 @@ SHARED  docs-public/guard-data/runtime.txt
 # The brief and the feature briefs (the owner's words)
 SHARED  brief.md
 SHARED  specs/features/*/brief.md
+# The target-design ledger (owner answers; kit KIT-017)
+SHARED  README-brief-amended.md
 # Signature features: CV generation and the render pipeline
 SHARED  app/pipeline.py
 SHARED  app/worker.py
