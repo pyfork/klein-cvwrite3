@@ -11,7 +11,7 @@ guard_paths='^(\.github/|docs-public/|plans/|CODEOWNERS)'
 # kit-keeper-Opus5.5-agent, 2026-10-13 (KIT-002 OQ-4): a bypass merge that
 # changed only these paths is a plan approval (feature, slice-plan, re-plan
 # or closing retro PR), listed on its own line with its files
-plan_paths='^(plans/|specs/|acceptance/|docs-public/retro-log\.md$|docs-public/guard-data/locks/)'
+plan_paths='^(plans/|specs/|acceptance/|docs-public/retro-log\.md$|README-brief-amended\.md$|docs-public/guard-data/locks/)'
 out="$(mktemp)"
 section() { printf '\n### %s\n\n' "$1" >> "$out"; }
 found=0
