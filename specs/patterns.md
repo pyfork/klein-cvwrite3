@@ -39,7 +39,7 @@ USED BY: every page
 EXCEPTIONS: none
 
 PATTERN: Focus ring
-RULE:    Every link, button, input, select, textarea, summary, checkbox and radio shows a ring on keyboard focus (`:focus-visible`): a 3 px solid outline 3 px outside its edge, following the element's own radius (6 px on square elements): coral where a white slab is behind it, ink on the ground, on the quiet slab and on a coral button. A field also takes a 2 px ink edge and a 4 px halo (`--halo`, ink at 18%).
+RULE:    Every link, button, input, select, textarea, summary, checkbox and radio shows a ring on keyboard focus (`:focus-visible`): a 3 px solid outline 3 px outside its edge, following the element's own radius (6 px on square elements): coral where a white slab is behind it, ink on the ground, on the quiet slab and on a coral button; in dark, coral on the ground and slabs, ink on a coral button (S-003 AC-81). A field also takes a 2 px ink edge and a 4 px halo (`--halo`, ink at 18%).
          `outline: none` is never used without this replacement.
          `main` takes programmatic focus from the skip link and shows no ring: it is not a control.
 WHY:     The target's ring is coral. Coral passes 3:1 on a white slab (3.09:1) but not on the ground (2.73:1) or the quiet slab (2.85:1), and vanishes on a coral button; ink there is 14:1 (re-plan 2026-10-29, README-brief-amended.md).
