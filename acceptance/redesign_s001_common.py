@@ -6,6 +6,8 @@ Locked with the checks. Three tools:
   - a local server plus headless Chrome that loads those pages in iframes of exact widths and returns what a
     script measured (sizes, computed styles), so the layout rules are measured and not guessed.
 senior-lead-Sonnet5.5-agent, 2026-10-28
+Re-plan 2026-10-29 (senior-lead-Opus5.5-agent, slice 2 adds dark mode): Chrome is told the device is light, tokens()
+reads the light block only (not the dark one inside @media), and the new look accepts `color-scheme: light dark`.
 """
 import http.server
 import json
@@ -121,9 +123,11 @@ def decls(body):
 
 
 def tokens(css):
-    """{--name: value} from every :root rule."""
+    """{--name: value} from every :root rule outside @media (prefers-color-scheme) (the light tokens)."""
     found = {}
     for chain, sel, body in rules(css):
+        if any("prefers-color-scheme" in a for a in chain):
+            continue
         if body is not None and re.fullmatch(r":root(\s*,\s*:host)?", sel):
             for prop, val in decls(body):
                 if prop.startswith("--"):
@@ -333,6 +337,7 @@ def measure(site, paths, widths, js, height=900):
     site.add(name, HARNESS % {"widths": json.dumps(list(widths)), "height": height, "urls": json.dumps(paths), "js": js})
     with tempfile.TemporaryDirectory() as tmp:
         cmd = [CHROME, "--headless=new", "--disable-gpu", "--no-first-run", f"--user-data-dir={tmp}/profile",
+               "--blink-settings=preferredColorScheme=1",  # a light device, whatever this machine is set to (slice 2)
                "--virtual-time-budget=30000", "--dump-dom", site.url(f"/p/{name}.html")]
         try:
             done = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
@@ -357,7 +362,7 @@ def require_chrome():
 # JS shared by the browser checks: "is the new stylesheet applied?" Resolved by one token it must define.
 NEW_LOOK_JS = """
 const bodyBg = win.getComputedStyle(doc.body).backgroundColor;
-const looked = win.getComputedStyle(doc.documentElement).getPropertyValue('color-scheme').trim() === 'light'
+const looked = win.getComputedStyle(doc.documentElement).getPropertyValue('color-scheme').trim().split(/\s+/).includes('light')
   && bodyBg === 'rgb(242, 241, 237)';
 """
 

@@ -8,8 +8,8 @@ RULE:    Body text is Schibsted Grotesk 17 px on 1.55, ink `#13233A`.
          Labels are 14 px or more, never smaller, because they hold a word or a number, never a sentence: eyebrow, kicker, badge, chip, opt, step time, pass mark, the "in use" count, the balance's second line, the footer version.
          Inputs, selects and textareas are 16 px or more, so a phone does not zoom when one gets focus.
          Headings: h1 (`.title`) is 28 px at 320 rising evenly to 40 px at 768 and staying there; h2 is 22 px. A heading wraps and may break inside a very long word; it never truncates.
-         Text colours: ink; secondary ink `#3A4960`; muted `#566275` for hints, meta and labels; coral-for-text `#C2382A`. Never coral `#FF5A47` as a text colour, and nothing paler than muted.
-WHY:     Responsive check 2: text never shrinks to fit. 14 px labels stay readable on a phone. 16 px inputs stop the phone zoom. Coral `#FF5A47` is 2.7:1 on the ground and 3.1:1 on white, and the collage's muted `#6A7586` is 4.1:1 on the ground: both fail 4.5:1.
+         Text colours: ink; secondary ink `#3A4960`; muted for hints, meta and labels: `#6A7586` on a white slab (the target), `#566275` on the ground and the quiet slab; coral-for-text `#C2382A`. Never coral `#FF5A47` as a text colour, and nothing paler than muted.
+WHY:     Responsive check 2: text never shrinks to fit. 14 px labels stay readable on a phone. 16 px inputs stop the phone zoom. Coral `#FF5A47` is 2.7:1 on the ground and 3.1:1 on white, and the collage's muted `#6A7586` is 4.1:1 on the ground and 4.3:1 on the quiet slab (both fail 4.5:1) but 4.67:1 on white, where it stays (re-plan 2026-10-29).
 USED BY: every page
 EXCEPTIONS: Headings are the one text that scales with width (28 to 40 px), so a long single word still fits at 320. Nothing else scales.
 
@@ -39,10 +39,10 @@ USED BY: every page
 EXCEPTIONS: none
 
 PATTERN: Focus ring
-RULE:    Every link, button, input, select, textarea, summary, checkbox and radio shows a ring on keyboard focus (`:focus-visible`): a 3 px solid ink outline 3 px outside its edge, following the element's own radius (6 px on square elements). A field also takes a 2 px ink edge and a 4 px halo (`--halo`, ink at 18%).
-         The ring is never coral, and `outline: none` is never used without this replacement.
+RULE:    Every link, button, input, select, textarea, summary, checkbox and radio shows a ring on keyboard focus (`:focus-visible`): a 3 px solid outline 3 px outside its edge, following the element's own radius (6 px on square elements): coral where a white slab is behind it, ink on the ground, on the quiet slab and on a coral button; in dark, coral on the ground and slabs, ink on a coral button (S-002 AC-81). A field also takes a 2 px ink edge and a 4 px halo (`--halo`, ink at 18%).
+         `outline: none` is never used without this replacement.
          `main` takes programmatic focus from the skip link and shows no ring: it is not a control.
-WHY:     Ink on the ground is 14:1; coral is 2.7:1, under the 3:1 a focus ring needs. Addendum 14 keeps coral for "after" and the main button.
+WHY:     The target's ring is coral. Coral passes 3:1 on a white slab (3.09:1) but not on the ground (2.73:1) or the quiet slab (2.85:1), and vanishes on a coral button; ink there is 14:1 (re-plan 2026-10-29, README-brief-amended.md).
 USED BY: every page
 EXCEPTIONS: none
 

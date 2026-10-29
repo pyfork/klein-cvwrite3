@@ -2,8 +2,10 @@
 AC-12, AC-15 to AC-18, AC-20, AC-21, AC-27 (the mark's shape), AC-44, AC-46 to AC-67 and the no-viewport-height part of
 AC-70. Static rules are read from app/static/betterjobs.css; computed values come from headless Chrome on a gallery of
 the old markup (acceptance/fixtures/s001_gallery.html). Fails before the work: there is no betterjobs.css.
-AC-11 is retired by the dark-mode slice, as a re-plan of this check.
 Re-plan 2026-10-28 (senior-lead-Opus5.5-agent): AC-17 measures each focus ring against the parent's background.
+Re-plan 2026-10-29 (senior-lead-Opus5.5-agent, slice 2 plan): AC-11 retired (dark mode, S-002 AC-72 to AC-75); the new
+look accepts `color-scheme: light dark`; AC-9 muted is split by surface and AC-44's ring is coral on white slabs (the
+owner's approved rows in README-brief-amended.md).
 senior-lead-Sonnet5.5-agent, 2026-10-28"""
 import re
 import unittest
@@ -12,11 +14,11 @@ import redesign_s001_common as C
 
 INK, CORAL, GROUND, SLAB, QUIET = "rgb(19, 35, 58)", "rgb(255, 90, 71)", "rgb(242, 241, 237)", "rgb(255, 255, 255)", "rgb(247, 246, 242)"
 GREY, GREY_INK, TEAL, MARIGOLD = "rgb(214, 212, 206)", "rgb(90, 88, 94)", "rgb(38, 150, 138)", "rgb(243, 180, 60)"
-MUTED, ERROR, EDGE = "rgb(86, 98, 117)", "rgb(180, 35, 24)", "rgb(125, 135, 152)"
+MUTED, MUTED_SLAB, ERROR, EDGE = "rgb(86, 98, 117)", "rgb(106, 117, 134)", "rgb(180, 35, 24)", "rgb(125, 135, 152)"
 TINT = {"warn": "rgb(251, 231, 176)", "bad": "rgb(250, 221, 215)", "ok": "rgb(217, 238, 233)", "info": "rgb(220, 235, 247)"}
 EDGE_OF = {"warn": MARIGOLD, "bad": ERROR, "ok": TEAL, "info": "rgb(160, 205, 236)"}
 WIDTHS = [320, 390, 544, 768, 1280]
-TOKEN_HEX = """F2F1ED FFFFFF 13233A FF5A47 D6D4CE 5A585E 26968A F3B43C A0CDEC F7F6F2 566275 3A4960 C2382A B42318 7D8798
+TOKEN_HEX = """F2F1ED FFFFFF 13233A FF5A47 D6D4CE 5A585E 26968A F3B43C A0CDEC F7F6F2 566275 6A7586 3A4960 C2382A B42318 7D8798
 E6E5E0 FBE7B0 FADDD7 D9EEE9 DCEBF7""".split()
 
 GALLERY_JS = r"""
@@ -34,7 +36,7 @@ const info = s => { const e = q(s); if (!e) return {missing: s}; const c = cs(e)
   const o = {w: r.width, h: r.height, x: r.x, y: r.y, sw: e.scrollWidth, cw: e.clientWidth, sh: e.scrollHeight, ch: e.clientHeight};
   for (const p of P) o[p] = c.getPropertyValue(p); return o; };
 const pseudo = (s, which) => { const e = q(s); if (!e) return {}; const c = cs(e, which); return {content: c.content, bg: c.backgroundImage, mask: c.webkitMaskImage || c.maskImage || '', w: c.width, h: c.height, bgc: c.backgroundColor, bw: c.borderTopWidth, bc: c.borderTopColor, radius: c.borderTopLeftRadius, an: c.animationName}; };
-const D = {looked: cs(doc.documentElement).colorScheme === 'light' && cs(doc.body).backgroundColor === 'rgb(242, 241, 237)'};
+const D = {looked: cs(doc.documentElement).colorScheme.split(' ').includes('light') && cs(doc.body).backgroundColor === 'rgb(242, 241, 237)'};
 D.html_bg = cs(doc.documentElement).backgroundColor; D.body_bg = cs(doc.body).backgroundColor;
 const ids = ['t-eyebrow','t-h1','t-lede','t-h2','t-p','t-link','t-hint','t-meta','t-note','t-kicker','t-stime','t-pass','t-code','t-opt','t-need','card1','card2','tcard',
   'b-primary','b-btn','b-ghost','b-danger','b-dghost','b-sm','b-dis-primary','b-dis','b-swap','b-long','row','f-text','f-req','f-sel','f-area','f-dis','c1','c-box','c-on','c-radio',
@@ -77,10 +79,6 @@ def px(v):
     return float(str(v).replace("px", "")) if str(v).replace("px", "").replace(".", "").replace("-", "").isdigit() else float("nan")
 
 
-def root_decls(css):
-    return dict((p, v) for ch, sel, b in C.rules(css) if b is not None and re.fullmatch(r":root(\s*,\s*:host)?", sel) for p, v in C.decls(b))
-
-
 def declared(css, selector_re):
     """Declarations of every non-root style rule whose selector matches selector_re -> [(chain, selector, prop, value)]."""
     out = []
@@ -101,7 +99,7 @@ class Look(unittest.TestCase):
 
     def at(self, w):
         d = self.data[w]
-        self.assertTrue(d["looked"], "the new stylesheet is not applied (the ground is not #F2F1ED / color-scheme is not light)")
+        self.assertTrue(d["looked"], "the new stylesheet is not applied (the ground is not #F2F1ED / color-scheme has no light)")
         return d
 
     def el(self, w, sel):
@@ -129,11 +127,6 @@ class Look(unittest.TestCase):
                 if re.search(r"#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(", C.without_urls(v)):
                     bad.append((sel, p))
         self.assertEqual(bad, [])
-
-    def test_ac11_light_only_for_now(self):
-        self.assertTrue(self.css, "no stylesheet")
-        self.assertEqual(root_decls(self.css).get("color-scheme"), "light")
-        self.assertNotIn("prefers-color-scheme", self.bare)
 
     def test_ac12_font_stacks_end_in_a_system_fallback(self):
         self.assertTrue(self.css, "no stylesheet")
@@ -280,8 +273,11 @@ class Look(unittest.TestCase):
             self.assertEqual(round(self.at(w)["extra"]["card_gap"]), 20, w)
 
     def test_ac44_focus_ring(self):
+        # re-plan 2026-10-29: coral where the colour behind the ring is a white slab, ink on the ground, on a quiet
+        # slab and on a coral button
         for sel, f in self.at(1280)["focus"].items():
-            self.assertEqual((f["style"], f["width"], f["offset"], f["color"]), ("solid", "3px", "3px", INK), sel)
+            want = CORAL if f["ring_bg"] == SLAB and f["bg"] != CORAL else INK
+            self.assertEqual((f["style"], f["width"], f["offset"], f["color"]), ("solid", "3px", "3px", want), sel)
         f = self.at(1280)["focus"]["#f-text"]
         self.assertEqual(f["border"], INK)
         self.assertIn("rgba(19, 35, 58, 0.18)", f["shadow"])
@@ -378,7 +374,7 @@ class Look(unittest.TestCase):
     def test_ac62_ac63_tables(self):
         for w in (768, 1280):
             ex = self.at(w)["extra"]
-            self.assertEqual((ex["th"]["font-size"], ex["th"]["color"]), ("14px", MUTED))
+            self.assertEqual((ex["th"]["font-size"], ex["th"]["color"]), ("14px", MUTED_SLAB))
             self.assertEqual(ex["td1"]["font-size"], "16px")
             self.assertTrue("1px" in (ex["td1"]["border-bottom-width"], ex["tr"]["border-bottom-width"]), "no 1 px divider between rows")
             self.assertGreaterEqual(int(ex["td1"]["font-weight"]), 700)
