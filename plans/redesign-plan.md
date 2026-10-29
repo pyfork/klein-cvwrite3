@@ -7,9 +7,11 @@
 
 ## Owed
 - Rename `calm.css` in the Screens line of `docs-public/project-rules.md`: the owner's own PR, since only the owner changes that file; it can ride with the "one small script" edit that must land before the first slice that adds a script (from slice 1; closed by that PR).
-- Dark mode retires AC-11 ("light on every device") and its case in CHECK 2, as a re-plan of this slice's check with the reason (from slice 1; closed by slice 2).
+- Dark mode retires AC-11 ("light on every device") and its case in CHECK 2, as a re-plan of this slice's check with the reason (from slice 1; closed by slice 2: this plan PR).
 - A label on every cell of a stacked table (AC-63), plain sections in place of tap-less `.card` slabs, and one main button per screen on admin, request, run, profile, generate and order: each is the designer's named gap, and each is closed by the slice that rewrites that page (from slice 1).
-- The six screen checks' screenshots, and the AC-69 cases the script does not render (the IC-number alert in English and Malay, the consent page in Malay, the longest order reference, the admin cost table with seven columns, a 254-character email in the sign-in field): attached to the build PR (from slice 1).
+- The six screen checks' screenshots, and the AC-69 cases the script does not render (the IC-number alert in English and Malay, the consent page in Malay, the longest order reference, the admin cost table with seven columns, a 254-character email in the sign-in field): attached to the build PR (from slice 1; closed: 69 screenshots attached to #60 before its merge).
+- The fonts' weight: three unsubsetted TTFs, 524,216 bytes uncompressed; measure transfer per page and decide woff2 and subsetting (tech review of #60, row 3; from slice 1; closed by the home slice, slice 5, or the owner's waiver).
+- The AC-4 class reader takes the Jinja string `'ok'` in `run.html` for a class name, so `.meter span` and `.meter .ok/.warn/.bad` are dead rules: fix the reader, then drop the rules (tech review of #60, row 4; from slice 1; closed by slice 3 or the owner's waiver, two-slice rule).
 
 ## Slice 1
 - **Slice brief:** specs/features/redesign/S-001.md
