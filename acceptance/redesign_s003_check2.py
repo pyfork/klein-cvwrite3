@@ -9,7 +9,7 @@ import redesign_s003_common as D
 
 GROUND, SLAB, SLAB2, INK = "rgb(12, 22, 38)", "rgb(20, 34, 58)", "rgb(25, 41, 67)", "rgb(242, 238, 230)"
 MUTED, CORAL, ON_ACCENT, ERROR, EDGE = "rgb(149, 162, 181)", "rgb(255, 90, 71)", "rgb(19, 35, 58)", "rgb(255, 138, 128)", "rgb(107, 122, 144)"
-TINT = {"a-warn": "rgb(58, 49, 32)", "a-bad": "rgb(62, 35, 41)", "a-ok": "rgb(22, 51, 47)", "a-info": "rgb(24, 47, 72)"}
+TINT = {"#a-warn": "rgb(58, 49, 32)", "#a-bad": "rgb(62, 35, 41)", "#a-ok": "rgb(22, 51, 47)", "#a-info": "rgb(24, 47, 72)"}
 WIDTHS = [320, 1280]
 RINGED = ["#b-btn", "#b-primary", "#f-text", "#t-link", "#sum", "#c-box", "#p-one"]
 
