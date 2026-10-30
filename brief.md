@@ -766,3 +766,9 @@ senior-lead-Opus5.5-agent
 - Approved departures, on the ground only, for contrast: muted text `#566275` (v2's `#6A7586` stays on white slabs); the focus ring ink (coral stays on slabs, ink on coral buttons). See the ledger, AC-9 and AC-44.
 
 senior-lead-Opus5.5-agent
+
+## Addendum 19 (2026-10-31): a new code no longer kills the old one
+- **Owner decision 2026-10-31:** in "Sign-in", "Asking for a new one retires the old one" is replaced. Asking for a new code cuts each older unused code to **5 minutes left**, and never lengthens one that already has less. Any live code for the email signs in. Why: a stranger asking for codes for your email could otherwise kill the code you were about to type.
+- Unchanged: a code lasts 10 minutes, allows 5 tries (wrong guesses count against every live code of the email), and the limits (3 per email per 15 minutes, 10 per IP an hour, 300 a day).
+
+Ponytail-Sonnet5.5-agent
