@@ -10,6 +10,7 @@
 
 ## redesign, slice 2 (2026-10-29)
 - **Watched:** none new (a colour leaves no trace in the request log); slice 1's 404 signal → not deployed yet (`flow-numbers.sh`: no deploy run on `d7c6ec0`).
+- **Assumption:** not tested in production yet (not deployed). In the build, a colour-only change to the shared stylesheet left every page working: the reviewer's run on #100 at `f7f3be6` passed slice 1's CHECK 1 to 3, REGRESSION and the full suite (296 tests).
 - **Flow:** lead time 8.3 h to merge, not deployed; longest wait tech review and fixes, draft (agents, owner), 5.8 h; reviewer runs 0 after ready (1 is a first-time PASS). Pasted from `bash docs/claude-pkg/flow-numbers.sh 99 100`.
 - **Bugs traced:** none found since the merge (not deployed).
 - **Went wrong:** (1) #100 merged on a `slice-review` FAIL at `f7f3be6`: one blocking finding, the screen checks' screenshots were not attached; the images existed locally because `gh` cannot upload images; count 1 (slice 1's FAIL round 1 also lacked screenshots: count 2, the same root). (2) The reviewer's suite run showed 10 skipped where the PR stated 1; count 1.
