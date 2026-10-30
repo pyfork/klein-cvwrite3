@@ -71,13 +71,19 @@ class Code(AppCase):
             self.assertIn("didn't work", r.text)
         self.assertEqual(self.enter(right).status_code, 400)   # the 6th try fails even when right
 
-    def test_new_code_retires_the_old(self):
+    def test_new_code_cuts_the_old_to_5_minutes_and_never_lengthens(self):
         self.ask()
         old = self.last_code()
         self.ask()
-        if old != self.last_code():
-            self.assertEqual(self.enter(old).status_code, 400)
-        self.assertEqual(self.enter(self.last_code()).status_code, 303)
+        with self.conn() as c:
+            first = c.execute("select expires_at - now() left from login_codes order by id limit 1").fetchone()["left"]
+            self.assertLessEqual(first.total_seconds(), signin.OLD_CODE_MIN * 60)
+            c.execute("update login_codes set expires_at = now() + interval '2 minutes' where id = (select min(id) from login_codes)")
+        self.ask()
+        with self.conn() as c:
+            kept = c.execute("select expires_at - now() left from login_codes order by id limit 1").fetchone()["left"]
+            self.assertLessEqual(kept.total_seconds(), 120)   # already under 5 min: not lengthened
+        self.assertEqual(self.enter(old).status_code, 303)    # the old code still signs in
 
     def test_expired_code(self):
         self.ask()
