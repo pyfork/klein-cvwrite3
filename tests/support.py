@@ -1,6 +1,7 @@
 """Shared test setup: a throwaway Postgres, one fresh database per test, a client, sessions made directly.
 
 All emails here are made up.
+Used by every test module; nothing here touches a real service.
 """
 import atexit
 import shutil
