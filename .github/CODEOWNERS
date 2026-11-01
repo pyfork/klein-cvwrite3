@@ -59,6 +59,7 @@
 /.github/** @pyfork
 /githooks/** @pyfork
 /scripts/lock.py @pyfork
+/scripts/test.sh @pyfork
 /docs-public/guard-data/risk-map.txt @pyfork
 /docs-public/guard-data/expected-protection.json @pyfork
 /docs-public/guard-data/runtime.txt @pyfork
