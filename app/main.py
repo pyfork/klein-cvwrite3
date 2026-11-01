@@ -15,10 +15,10 @@ from fastapi.templating import Jinja2Templates
 
 from . import access, auth, config, costs, credits, cvtext, db, health, i18n, mailer, notices, orders, pause, profile, routes_account, routes_apps, routes_cv, routes_ops, routes_pay, signin
 from .markdown import section, to_html
+from .version import APP_VERSION
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.15.3"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
