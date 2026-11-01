@@ -19,7 +19,11 @@ concurrency:
 permissions: {}
 
 jobs:
-  test-lock:
+  # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): not named test-lock.
+  # GitHub counted this job's own run as the required `test-lock` check too,
+  # so after the owner's approval turned the app's check green, the job's
+  # earlier red run still blocked the merge (tribble #165)
+  compare-locks:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     environment: reviewer
@@ -49,6 +53,7 @@ jobs:
             echo "conclusion=failure" >> "$GITHUB_OUTPUT"
           fi
           cat result.txt
+          echo "lane=$(bash .github/scripts/pr-lane.sh . pr-head)" >> "$GITHUB_OUTPUT"
 
       - name: Sign in as the reviewer app
         id: app
@@ -57,15 +62,31 @@ jobs:
           client-id: ${{ vars.REVIEWER_APP_CLIENT_ID }}
           private-key: ${{ secrets.REVIEWER_APP_PRIVATE_KEY }}
           permission-checks: write
+          permission-pull-requests: read
 
+      # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): a plan PR, or one of
+      # owner-owned files only, is red until the owner approves its head
+      # commit; the approval, not a bypass, turns it green (owner-call.sh)
       - name: Publish the test-lock check
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
           GH_REPO: ${{ github.repository }}
           SHA: ${{ github.event.pull_request.head.sha }}
+          PR: ${{ github.event.pull_request.number }}
+          OWNER: ${{ vars.GUARD_OWNER_LOGIN }}
+          LANE: ${{ steps.lock.outputs.lane }}
           CONCLUSION: ${{ steps.lock.outputs.conclusion || 'failure' }}
         run: |
           title="test-lock: PASS"; [ "$CONCLUSION" = "success" ] || title="test-lock: BLOCKED"
+          if [ "$CONCLUSION" != success ] && { [ "$LANE" = PLAN ] || [ "$LANE" = OWNED ]; }; then
+            gh api "repos/$GH_REPO/pulls/$PR/reviews" --paginate | jq -s 'add // []' > reviews.json
+            if bash .github/scripts/owner-call.sh reviews.json "$OWNER" "$SHA" "$LANE"; then
+              CONCLUSION=success; title="test-lock: PASS (owner approved ${SHA:0:7})"
+              printf '\nThe owner approved commit %s of this PR (lane %s), so the lines above are approved. A new push needs a new approval.\n' "${SHA:0:7}" "$LANE" >> result.txt
+            else
+              printf '\nLane %s: it turns green when the owner approves commit %s.\n' "$LANE" "${SHA:0:7}" >> result.txt
+            fi
+          fi
           jq -n --arg sha "$SHA" --arg c "$CONCLUSION" --arg t "$title" --rawfile s result.txt \
             '{name:"test-lock", head_sha:$sha, status:"completed", conclusion:$c, output:{title:$t, summary:$s}}' \
             | gh api -X POST "repos/$GH_REPO/check-runs" --input - --jq '.html_url'

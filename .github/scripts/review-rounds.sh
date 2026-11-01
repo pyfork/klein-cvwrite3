@@ -111,6 +111,10 @@ decide)
         {pass:false, owner:false, why:"The test command failed (a test or a scripted project rule is red; see the locked-checks results). Fix it on the branch: not a judge round.", unsolved:$s.open, record:null}
       elif $f.verdict == "BLOCKED" then
         {pass:false, owner:false, why:"The reviewer was BLOCKED (missing inputs). Not a fix round.", unsolved:$s.open, record:null}
+      # KIT-019 (proof P5): a PR that is not a slice is for the Lead to close
+      # or plan, so it never goes to the owner, whatever the round
+      elif any($found[]; (.rule_file | endswith("slice-pr-reviewer.md")) and (.rule_section | test("not a slice"; "i"))) then
+        {pass:false, owner:false, why:"Not a slice: the Lead closes this PR or plans the slice first. Not a call for the owner.", unsolved:$found, record:null}
       elif $s.with_owner then
         {pass:false, owner:true, why:"Two judge rounds left findings unsolved. The owner decides.", unsolved:$s.open, record:null}
       elif ($s.open | length) > 0 and $s.sha == $sha then
