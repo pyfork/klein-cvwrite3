@@ -6,7 +6,7 @@
 Anyone who signs in to Better Jobs with the emailed 6-digit code, and the owner, who must be able to trust that only the email's owner gets in.
 
 ## The problem
-Three flaws in `app/signin.py`, which is ACCESS in the risk map. All three work with only a victim's email address, which is not secret:
+Three flaws in `app/signin.py`, which is ACCESS in the [risk map](../../../docs-public/guard-data/risk-map.txt) (all classes in [Limits it must respect](#limits-it-must-respect)). All three work with only a victim's email address, which is not secret:
 1. **A stranger kills your code.** Asking for a new code retires the old one. Addendum 19 of `brief.md` (merged 2026-10-30) settles the new rule; the code does not follow it yet.
 2. **A stranger burns your tries.** They type wrong codes on your email until your live code has used its 5 tries. They can repeat this on every new code, so you cannot sign in.
 3. **A stranger blocks your asks.** Three asks for your email in 15 minutes and your own ask is refused.
@@ -36,7 +36,20 @@ Checked by tests that run on a throwaway database:
 ## Limits it must respect
 - `brief.md` Addendum 5 (emailed code, codes and tokens stored hashed, no email in a log, every email gets a code) and Addendum 19. This feature replaces Addendum 5's "3 codes per email per 15 minutes"; the owner writes that addendum first.
 - `specs/adr/project-rules.md`: Postgres, plain SQL, no new dependency.
-- `app/signin.py` is ACCESS in `docs-public/guard-data/risk-map.txt`: every slice is risky, needs a TECH REVIEW and a tested undo on a copy that is not live, and the owner merges after the explain-back.
+- `app/signin.py` is ACCESS in the [risk map](../../../docs-public/guard-data/risk-map.txt): every slice is risky, needs a TECH REVIEW and a tested undo on a copy that is not live, and the owner merges after the explain-back. The map has three classes, set out below with the groups the file lists under each. The last column says what this feature touches.
+
+| Class | Group in the risk map | What it covers | This feature touches |
+|---|---|---|---|
+| DATA | Money: payments, credits, ledger, stored data | `app/credits.py`, `orders.py`, `routes_pay.py`, `costs.py`, `caps.py`, `pause.py`, `db.py`, `backup.py`, `migrations/**`, `config/**`, the order and credits templates | `migrations/**` only if the link needs a column (Open question 1) |
+| ACCESS | Sign-in, accounts, admin | `app/auth.py`, `signin.py`, `access.py`, `devlogin.py`, `account.py`, `routes_account.py`, `routes_ops.py`, `mailer.py`, `upload.py`, `profile.py`, `routes_cv.py`, `routes_apps.py`, `ic.py`, the sign-in and admin templates | `app/signin.py`, `app/mailer.py` (the email text), `app/templates/signin.html`, `signin_code.html` |
+| SHARED | Legal text: PDPA notice, consent, Terms | `notices/**`, `app/notices.py`, `i18n.py`, `content/**`, `markdown.py`, the consent, notice, terms and deleted templates | `notices/**` only if the notice needs a line (Open question 4) |
+| SHARED | Deploy and the install script | `deploy/**`, `scripts/install.sh`, `env.example`, `requirements.txt`, `requirements.lock` | none: no new dependency |
+| SHARED | Guards | `.github/**`, `githooks/**`, `scripts/lock.py`, the risk map, `expected-protection.json`, `runtime.txt` | the risk map, if the new link page file matches no line and is added to it |
+| SHARED | The brief and the feature briefs | `brief.md`, `specs/features/*/brief.md` | this brief, and the owner's new addendum in `brief.md` |
+| SHARED | Signature features: CV generation and the render pipeline | `app/pipeline.py`, `worker.py`, `claude.py`, `prompts.py`, `adread.py`, `cvtext.py`, `rendering.py`, `prompts/**`, `render/**`, `checks/**`, `fonts/**` | none |
+| SHARED | Shared code | `app/main.py`, `config.py`, `templates/base.html`, `static/betterjobs.css`, `health.py`, `uptime.py` | `app/main.py` (the routes), possibly `base.html` for the new pages |
+
+  So slices 2 and 3 are SHARED as well as ACCESS, because they change routes in `app/main.py`.
 - The link and "try again later" pages are screens: the designer takes the slice that adds them. Plain English, reading level A2 to B1 (copy rules).
 - The link page is `private, no-store` (Addendum 6) and sends no referrer. The sign-in email stays plain text. Link domain matches the From domain.
 - No new table or column if the link can be derived from the code row, the email and the app secret (Open question 1).
@@ -46,10 +59,10 @@ Checked by tests that run on a throwaway database:
 The open PR for the code half, `sign-in-old-codes` (#105), is a starting point for slice 1, not an approved plan. None else.
 
 ## Rough slice list
-Not riskiest first: slice 1 is the finished code of #105 and the others count rows it defines. Slice 2 comes before 3 so the escape exists before anything is suspended.
-1. **A new code cuts older codes to 5 minutes** (ACCESS): any live code signs in, wrong guesses count against every live code.
-2. **The link and its page** (ACCESS, screens): the link in every email, the "Send my OTP" page and its code box, the email wording. Subject to today's ask cap until slice 3.
-3. **The ask caps and the suspension** (ACCESS): 5 web and 10 in all per rolling hour, the main page suspended from the 5th ask, one plain message, a lock on the email so two fast asks cannot pass the cap.
+Names only; each slice's class and assumption are in Risky slices below. Not riskiest first: slice 1 is the finished code of #105 and the others count rows it defines. Slice 2 comes before 3 so the escape exists before anything is suspended.
+1. A new code cuts older codes to 5 minutes
+2. The link and its page
+3. The ask caps and the suspension
 
 ## Open questions
 1. Can the link be derived from the code row, the email and the app secret, with nothing stored? If not, there is a column and the slice is DATA as well as ACCESS. Slice 2's plan answers it with a test.
@@ -104,8 +117,8 @@ Browser to server on both sign-in routes and the new link page: the email and ty
 | Slice | Class (DATA, ACCESS or SHARED) | The assumption it tests | What changes if it is wrong |
 |---|---|---|---|
 | 1. A new code cuts older codes | ACCESS | Any live code signing in adds no guesses | If wrong, slice 3's caps are the only bound |
-| 2. The link and its page | ACCESS (DATA if a column is needed) | The link can be derived and stays out of logs and referrers | If wrong, add a column and a log scrub; or drop the link |
-| 3. The ask caps and the suspension | ACCESS | The one row count is enough, and a lock stops the race | If wrong, a stranger gets a 6th web ask; add a lock or a unique key |
+| 2. The link and its page (screens: the designer takes it) | ACCESS and SHARED (`app/main.py`); DATA too if a column is needed | The link can be derived and stays out of logs and referrers | If wrong, add a column and a log scrub; or drop the link |
+| 3. The ask caps and the suspension | ACCESS and SHARED (`app/main.py`) | The one row count is enough, and a lock stops the race | If wrong, a stranger gets a 6th web ask; add a lock or a unique key |
 
 ### Shared standards still missing
 A signed-out page that changes state needs its own protection against forged requests. The link page's token in the URL serves; slice 2's plan confirms.
