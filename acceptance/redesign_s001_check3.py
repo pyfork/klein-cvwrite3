@@ -1,7 +1,10 @@
 """CHECK 3 of redesign S-001: the shell and the old pages at every width, measured in headless Chrome on the real pages
 (stand-in data). Covers AC-19, AC-22 to AC-45, AC-64, AC-68 to AC-71 and the font-failure part of AC-14. Fails before
 the work: the header, balance, banners and footer do not lay out as AC-22 to AC-42 say, and there is no new stylesheet.
-senior-lead-Sonnet5.5-agent, 2026-10-28"""
+senior-lead-Sonnet5.5-agent, 2026-10-28
+Re-plan 2026-10-29 (senior-lead-Opus5.5-agent, slice 2 plan): the brand mark is coral (AC-27); muted text on a white slab
+is #6A7586 (AC-9); a focus ring is coral where a white slab is behind it, ink elsewhere and on coral (AC-44). The owner's
+approved rows in README-brief-amended.md."""
 import re
 import unittest
 
@@ -9,6 +12,7 @@ import redesign_s001_common as C
 from support import CVCase
 
 INK, SLAB, GROUND, MARIGOLD, MUTED = "rgb(19, 35, 58)", "rgb(255, 255, 255)", "rgb(242, 241, 237)", "rgb(243, 180, 60)", "rgb(86, 98, 117)"
+CORAL, MUTED_SLAB = "rgb(255, 90, 71)", "rgb(106, 117, 134)"
 ERRORS = ("rgb(180, 35, 24)", "rgb(255, 90, 71)", "rgb(194, 56, 42)")
 HDR = [320, 390, 479, 480, 600, 839, 840, 1024, 1280]
 ALL = sorted(set([320, 360, 390, 768, 1024, 1280, 1440] + list(range(320, 1441, 40)) + HDR))
@@ -19,6 +23,7 @@ SECTION = {"profile": "/profile", "generate_notready": "/generate", "credits": "
 LIB = r"""
 const q = s => doc.querySelector(s), qa = s => [...doc.querySelectorAll(s)];
 const cs = (e, p) => win.getComputedStyle(e, p || null);
+const bgOf = e => { for (let n = e; n; n = n.parentElement) { const m = (cs(n).backgroundColor.match(/[\d.]+/g) || []).map(Number); if ((m[3] === undefined ? 1 : m[3]) > 0.5) return cs(n).backgroundColor; } return cs(doc.documentElement).backgroundColor; };
 const KEYS = ['font-size','font-weight','font-family','color','background-color','border-top-color','border-top-width','border-top-left-radius','text-decoration-line',
   'opacity','order','position','text-overflow','pointer-events','display','overflow-x','overflow-y','margin-left','outline-style','outline-width','outline-offset','outline-color','box-shadow','clip-path','transform','background-image'];
 const R = (e, deep) => { if (!e) return null; const r = e.getBoundingClientRect(), c = cs(e), o = {x: r.x, y: r.y + win.scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + win.scrollY,
@@ -72,7 +77,7 @@ out.firstFocusable = first ? {t: first.textContent.trim().slice(0, 30), href: fi
 if (skip) { skip.focus(); out.skipAfter = R(skip); out.skipFocused = doc.activeElement === skip; }
 if (main) { main.focus(); out.mainRing = {style: cs(main).outlineStyle, width: cs(main).outlineWidth}; }
 out.rings = {}; for (const [k, e] of Object.entries({brand, nav: navLinks[0], foot: footLinks[0], field: q('main input[type=text], main input[type=email], main textarea'), btn: q('main .btn'), sum: q('main summary'), box: q('main .check input')})) {
-  if (!e) continue; e.focus(); const c = cs(e); out.rings[k] = {style: c.outlineStyle, width: c.outlineWidth, offset: c.outlineOffset, color: c.outlineColor}; }
+  if (!e) continue; e.focus(); const c = cs(e); out.rings[k] = {style: c.outlineStyle, width: c.outlineWidth, offset: c.outlineOffset, color: c.outlineColor, fill: bgOf(e), under: bgOf(e.parentElement)}; }
 out.scroll = {sh: doc.documentElement.scrollHeight, ch: doc.documentElement.clientHeight}; win.scrollTo(0, 400); out.headerAfterScroll = header ? header.getBoundingClientRect().top : null;
 return out;
 """
@@ -329,10 +334,10 @@ class Shell(CVCase):
                 ok = False
                 for m in marks:
                     mt = re.match(r"matrix\(([-\d.]+), ([-\d.]+),", m["tf"] or "")
-                    if m["w"] == "24px" and m["h"] == "24px" and m["bg"] == INK and mt and abs(float(mt.group(1)) - 0.9945) < 0.002 and abs(float(mt.group(2)) + 0.1045) < 0.002:
+                    if m["w"] == "24px" and m["h"] == "24px" and m["bg"] == CORAL and mt and abs(float(mt.group(1)) - 0.9945) < 0.002 and abs(float(mt.group(2)) + 0.1045) < 0.002:
                         ok = True
                 if not ok:
-                    bad.append(f"{name}@{w}: no 24 px ink scrap mark tilted -6 degrees")
+                    bad.append(f"{name}@{w}: no 24 px coral scrap mark tilted -6 degrees")
         self.collect("AC-27", bad)
 
     def test_ac28_signed_out_pages_show_the_brand_alone(self):
@@ -397,7 +402,7 @@ class Shell(CVCase):
                 if r["balLines"] < 2 or not re.search(r"earliest expire|buy more", b["t"]):
                     bad.append(f"{name}@{w}: {r['balLines']} lines: {b['t']!r}")
                 second = [k for k in r["balKids"] if re.search(r"earliest expire|buy more", k["t"]) and len(k["t"]) < 40]
-                if not second or not second[-1]["vis"] or second[-1]["fs"] != "14px" or second[-1]["color"] != MUTED:
+                if not second or not second[-1]["vis"] or second[-1]["fs"] != "14px" or second[-1]["color"] != MUTED_SLAB:
                     bad.append(f"{name}@{w}: second line {second[-1:] }")
                 if b["background-color"] != SLAB or any(k["color"] in ERRORS for k in r["balKids"]):
                     bad.append(f"{name}@{w}: balance colours change ({b['background-color']})")
@@ -481,7 +486,8 @@ class Shell(CVCase):
                 if r["mainRing"]["style"] != "none" and r["mainRing"]["width"] != "0px":
                     bad.append(f"{name}@{w}: main shows a ring")
                 for k, ring in r["rings"].items():
-                    if (ring["style"], ring["width"], ring["offset"], ring["color"]) != ("solid", "3px", "3px", INK):
+                    want = CORAL if ring["under"] == SLAB and ring["fill"] != CORAL else INK
+                    if (ring["style"], ring["width"], ring["offset"], ring["color"]) != ("solid", "3px", "3px", want):
                         bad.append(f"{name}@{w}: focus ring on {k} is {ring}")
         self.collect("AC-43 and AC-44", bad)
 

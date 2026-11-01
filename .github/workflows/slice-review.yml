@@ -223,7 +223,7 @@ jobs:
             sudo chmod -R a+rX,go-w /srv/kit-before /srv/kit-new
             # A PR that changes files outside the plan paths is a one-PR
             # slice: its new checks must also pass on its own code
-            plan_paths='^(specs/|plans/|acceptance/|docs-public/guard-data/locks/|docs-public/retro-log\.md$)'
+            plan_paths='^(specs/|plans/|acceptance/|docs-public/guard-data/locks/|docs-public/retro-log\.md$|README-brief-amended\.md$)'
             other="$(diff <(git -C trusted ls-files -s | awk '{print $2, $4}') <(git -C pr ls-files -s | awk '{print $2, $4}') \
               | grep -E '^[<>] ' | awk '{print $3}' | grep -vE "$plan_paths" | sort -u || true)"
             [ -z "$other" ] || touch "$RUNNER_TEMP/has-code"
@@ -350,8 +350,9 @@ jobs:
       contents: read
       pull-requests: read
     outputs:
-      result: ${{ steps.claude.outputs.structured_output }}
+      result: ${{ steps.claude.outputs.structured_output || steps.decide.outputs.result }}
       decision: ${{ steps.decide.outputs.decision }}
+      lane: ${{ steps.lane.outputs.lane }}
     steps:
       # Fail closed: drafts and PRs from anyone else are never reviewed, and
       # never spend the token
@@ -416,6 +417,15 @@ jobs:
           path: pr-head
           fetch-depth: 0
           persist-credentials: false
+
+      # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): a chore (test cases
+      # that only gain lines, CHANGELOG.md, nothing in the risk map) gets no
+      # model review: a green suite passes it. A script decides the lane
+      - name: Which lane
+        id: lane
+        run: |
+          lane="$(bash .github/scripts/pr-lane.sh . pr-head)"
+          echo "$lane"; echo "lane=$lane" >> "$GITHUB_OUTPUT"
 
       # The reviewer still sees these files through git diff
       - name: Remove Claude config the PR could have planted
@@ -493,6 +503,7 @@ jobs:
 
       - name: Run the reviewer
         id: claude
+        if: steps.lane.outputs.lane != 'CHORE'
         uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -637,7 +648,7 @@ jobs:
       # now, and the owner's and agent's comments and images since the FAIL
       - name: Judge the fix
         id: judge
-        if: steps.state.outputs.judge == 'yes'
+        if: steps.state.outputs.judge == 'yes' && steps.lane.outputs.lane != 'CHORE'
         uses: anthropics/claude-code-action@925afb53776cf1a2b738c6bdbed37b4d4000ef13 # v1.0.262
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -693,7 +704,15 @@ jobs:
           A: ${{ steps.claude.outputs.structured_output }}
           B: ${{ steps.claude2.outputs.structured_output }}
           J: ${{ steps.judge.outputs.structured_output }}
+          LANE: ${{ steps.lane.outputs.lane }}
         run: |
+          if [ "$LANE" = CHORE ]; then
+            if grep -q '^PASS: ' review-checks/results.txt 2>/dev/null; then v=PASS; why="Chore lane: test cases that only gain lines and CHANGELOG.md, nothing in the risk map, and the test command passed. No model review (KIT-019)."
+            else v=FAIL; why="Chore lane: the test command did not pass (see the locked-checks results). Fix it on the branch."; fi
+            echo "result=$(jq -nc --arg v "$v" --arg w "$why" '{verdict:$v, report:$w, findings:[]}')" >> "$GITHUB_OUTPUT"
+            echo "decision=$(jq -nc --arg v "$v" --arg w "$why" '{pass:($v == "PASS"), owner:false, why:$w, unsolved:[], record:null}')" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           printf '%s' "$A" > judge-input/a.json
           b=-; [ -z "$B" ] || { printf '%s' "$B" > judge-input/b.json; b=judge-input/b.json; }
           j=-; [ -z "$J" ] || { printf '%s' "$J" > judge-input/j.json; j=judge-input/j.json; }
@@ -733,6 +752,11 @@ jobs:
           permission-pull-requests: write
           permission-issues: write
 
+      # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): on a plan PR, one of
+      # owner-owned files only (OWNED), or one the loop sent to the owner
+      # (needs-owner), the owner's approval of the
+      # head commit stands in for the verdict (owner-call.sh). A push after
+      # it needs a new approval. owner-approval.yml re-posts on the approval
       - name: Publish the slice-review check and review
         env:
           GH_TOKEN: ${{ steps.app.outputs.token }}
@@ -743,6 +767,7 @@ jobs:
           REVIEW_STATUS: ${{ needs.review.result }}
           RESULT: ${{ needs.review.outputs.result }}
           DECISION: ${{ needs.review.outputs.decision }}
+          LANE: ${{ needs.review.outputs.lane }}
           REVIEW_STATE_KEY: ${{ secrets.REVIEWER_APP_PRIVATE_KEY }}
         run: |
           verdict="$(printf '%s' "$RESULT" | jq -r '.verdict // empty' 2>/dev/null || true)"
@@ -756,6 +781,13 @@ jobs:
           fi
           pass="$(printf '%s' "$DECISION" | jq -r .pass)"
           owner="$(printf '%s' "$DECISION" | jq -r .owner)"
+          if [ "$pass" != true ]; then
+            gh api "repos/$GH_REPO/pulls/$PR/reviews" --paginate | jq -s 'add // []' > reviews.json
+            gh api "repos/$GH_REPO/issues/$PR/labels" --jq '.[].name' > labels.txt
+            if bash .github/scripts/owner-call.sh reviews.json "$OWNER" "$SHA" "${LANE:-OTHER}" labels.txt; then
+              pass=true; owner=false; why="The owner approved commit ${SHA:0:7}: their approval stands in for the verdict below (KIT-019). $why"
+            fi
+          fi
           shown=FAIL; conclusion=failure; [ "$pass" = true ] && { shown=PASS; conclusion=success; }
           {
             echo "## slice-review: $shown"; echo; echo "Commit: \`${SHA:0:7}\` · reviewer said $verdict · $why"; echo

@@ -11,7 +11,7 @@ guard_paths='^(\.github/|docs-public/|plans/|CODEOWNERS)'
 # kit-keeper-Opus5.5-agent, 2026-10-13 (KIT-002 OQ-4): a bypass merge that
 # changed only these paths is a plan approval (feature, slice-plan, re-plan
 # or closing retro PR), listed on its own line with its files
-plan_paths='^(plans/|specs/|acceptance/|docs-public/retro-log\.md$|docs-public/guard-data/locks/)'
+plan_paths='^(plans/|specs/|acceptance/|docs-public/retro-log\.md$|README-brief-amended\.md$|docs-public/guard-data/locks/)'
 out="$(mktemp)"
 section() { printf '\n### %s\n\n' "$1" >> "$out"; }
 found=0
@@ -93,7 +93,7 @@ elif [ "$scan" -ne 0 ]; then
 fi
 
 # 2. Anything merged without a PASS (AC-14), and guard files changed (AC-18)
-nopass=""; approvals=""; guardchg=""; oneprs=""
+nopass=""; approvals=""; guardchg=""; oneprs=""; owned=""
 for pr in $(gh api "repos/$repo/pulls?state=closed&sort=updated&direction=desc&per_page=50" \
     --jq ".[] | select(.merged_at != null and .merged_at >= \"$since\") | .number"); do
   sha="$(gh api "repos/$repo/pulls/$pr" --jq .head.sha)"
@@ -113,6 +113,11 @@ for pr in $(gh api "repos/$repo/pulls?state=closed&sort=updated&direction=desc&p
     continue
   fi
   [ -z "$missing" ] || nopass="$nopass- #$pr $title (no PASS from:$missing)"$'\n'
+  # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): a PASS the owner's
+  # approval gave, listed so each one is seen
+  n="$(gh api "repos/$repo/commits/$sha/check-runs?check_name=slice-review" \
+    --jq "[.check_runs[] | select(.app.id == $app and .conclusion == \"success\" and (.output.title // \"\" | test(\"owner approved\")))] | length")"
+  [ "$n" = 0 ] || owned="$owned- #$pr $title"$'\n'
   # kit-keeper-Opus5.5-agent, 2026-10-27 (KIT-008): a PR that passed and
   # changed both plans and code is a one-PR slice. Listed on its own, its
   # plan files left out of "Guard files changed", so a project where no
@@ -134,7 +139,36 @@ if [ -n "$direct" ]; then found=1; section "⚠️ Changes that reached main wit
 if [ -n "$nopass" ]; then found=1; section "Merged without a PASS"; echo "These were merged although the reviewer or the test lock did not pass. Usually an owner bypass (guard, setup, proof or re-plan PRs). Check each one was meant." >> "$out"; echo >> "$out"; printf '%s' "$nopass" >> "$out"; fi
 if [ -n "$guardchg" ]; then found=1; section "Guard files changed"; printf '%s' "$guardchg" >> "$out"; fi
 if [ -n "$oneprs" ]; then found=1; section "One-PR slices merged (routine: plan and code in one PR, checked by the test lock)"; echo "Each passed the reviewer and the test lock. If no slice is ever risky, check the risk map still covers the data, sign-in and shared code." >> "$out"; echo >> "$out"; printf '%s' "$oneprs" >> "$out"; fi
-if [ -n "$approvals" ]; then found=1; section "Plans you approved (bypass merges that changed only plan files)"; echo "Expected: each feature, slice plan, re-plan and closing retro is approved this way. Check each is one you meant." >> "$out"; echo >> "$out"; printf '%s' "$approvals" >> "$out"; fi
+if [ -n "$owned" ]; then found=1; section "Merged on your approval (KIT-019)"; echo "Plan, guard, brief and needs-owner PRs your Approve turned green. Check each is one you meant." >> "$out"; echo >> "$out"; printf '%s' "$owned" >> "$out"; fi
+if [ -n "$approvals" ]; then found=1; section "Plans bypass-merged (only plan files changed)"; echo "Since KIT-019 a plan is approved with an ordinary Approve; a bypass is break-glass. Check each is one you meant." >> "$out"; echo >> "$out"; printf '%s' "$approvals" >> "$out"; fi
+
+# kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): on Mondays (or
+# WEEKLY=1), how often the owner was needed in the last 7 days, against the
+# target (a share of PRs: the pace varies), and one PR that merged itself
+# for the Lead's weekly read
+# shortcut: reads the last 100 closed PRs; past 100 merges a week, add --paginate
+owner="${GUARD_OWNER_LOGIN:-}"
+if [ -n "$owner" ] && { [ "$(date -u +%u)" = 1 ] || [ "${WEEKLY:-}" = 1 ]; }; then
+  week="$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-7d +%Y-%m-%dT%H:%M:%SZ)"
+  merged=0; touched=""; selfs=""
+  for pr in $(gh api "repos/$repo/pulls?state=closed&sort=updated&direction=desc&per_page=100" \
+      --jq ".[] | select(.merged_at != null and .merged_at >= \"$week\") | .number"); do
+    merged=$((merged + 1))
+    by="$(gh api "repos/$repo/pulls/$pr" --jq '.merged_by.login // ""')"
+    appr="$(gh api "repos/$repo/pulls/$pr/reviews" --paginate --jq "[.[] | select((.user.login | ascii_downcase) == (\"$owner\" | ascii_downcase) and .state == \"APPROVED\")] | length" | awk '{s += $1} END {print s + 0}')"
+    if [ "$(printf '%s' "$by" | tr '[:upper:]' '[:lower:]')" = "$(printf '%s' "$owner" | tr '[:upper:]' '[:lower:]')" ] || [ "$appr" != 0 ]; then
+      touched="$touched #$pr"
+    else selfs="$selfs $pr"; fi
+  done
+  need="$(printf '%s' "$touched" | wc -w | tr -d ' ')"
+  found=1; section "This week: how often you were needed (KIT-019)"
+  echo "- $merged PRs merged; $((merged - need)) merged themselves; $need needed you${touched:+ ($touched )}." >> "$out"
+  share=0; [ "$merged" -eq 0 ] || share=$((need * 100 / merged))
+  over=""; [ "$share" -lt 25 ] || over=" **Over the target.**"
+  echo "- You were needed on $share% of PRs. Target: under 25%, each one data, sign-in, legal text, deploy, guards, the brief or a plan.$over Two weeks over it: revisit the risk map and the second approver (KIT-019, section 8)." >> "$out"
+  # shellcheck disable=SC2086
+  [ -z "$selfs" ] || echo "- Sample for the Lead's weekly read: #$(printf '%s\n' $selfs | shuf -n 1 2>/dev/null || printf '%s\n' $selfs | head -1)" >> "$out"
+fi
 
 # Open guard-breach issues from the tripwire
 breach="$(gh api "repos/$repo/issues?labels=guard-breach&state=open&per_page=50" --jq '.[] | "- #\(.number) \(.title)"')"
