@@ -38,6 +38,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           SINCE: ${{ inputs.since }}
           REVIEWER_APP_ID: ${{ vars.REVIEWER_APP_ID }}
+          GUARD_OWNER_LOGIN: ${{ vars.GUARD_OWNER_LOGIN }}
         run: bash .github/scripts/daily-sweep.sh > report.md && cat report.md
 
       - name: Post it as today's issue
