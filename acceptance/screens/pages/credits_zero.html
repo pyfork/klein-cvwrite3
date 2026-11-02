@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Credits · Better Jobs</title>
+<link rel="stylesheet" href="betterjobs.css">
+
+</head>
+<body>
+<div class="app">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="/" aria-label="Better Jobs home">Better Jobs</a>
+  
+  <a class="bal" href="/credits" title="Your balance">
+    <span class="bal-line"><span class="bal-n">0</span> <span class="bal-u">credits</span></span>
+    <span class="bal-exp">buy more</span>
+  </a>
+  
+  
+  
+  <nav class="nav" aria-label="Pages">
+    
+    <div class="nav-steps">
+      <a href="/profile"><i>1</i><span>Profile</span></a>
+      <a href="/generate"><i>2</i><span>Generate</span></a>
+    </div>
+    
+    <div class="nav-tabs">
+      
+      <a href="/applications"><span>Applications</span></a>
+      <a href="/credits" aria-current="page"><span>Credits</span></a>
+      <a href="/account"><span>Account</span></a>
+      
+      
+    </div>
+  </nav>
+  
+</header>
+
+
+<main id="main" tabindex="-1">
+<section class="page">
+
+<p class="eyebrow">Credits</p>
+<h1 class="title">You&#39;re out of credits</h1>
+<p class="lede">One credit is one CV that passes its check. We never use a credit for a CV that fails.</p>
+<p class="balance-big"><span class="bal-n">0</span> <span class="bal-u">credits</span>
+  </p>
+
+
+<div class="packs">
+  <form method="post" action="/credits/buy"><input type="hidden" name="csrf" value="901bfdc80f6300f0e793f5304f3d6f40127faa59"><input type="hidden" name="pack" value="5">
+    <button type="submit" class="pack">
+      <span class="pack-n">5 CVs</span><span class="pack-p">RM10</span><span class="pack-u">RM2.00 each</span>
+    </button></form>
+  <form method="post" action="/credits/buy"><input type="hidden" name="csrf" value="901bfdc80f6300f0e793f5304f3d6f40127faa59"><input type="hidden" name="pack" value="20">
+    <button type="submit" class="pack pack-best">
+      <span class="pack-tag">Best value</span>
+      <span class="pack-n">20 CVs</span><span class="pack-p">RM30</span><span class="pack-u">RM1.50 each</span>
+    </button></form>
+</div>
+<p class="hint">You pay by DuitNow QR. Credits last 12 months from the day we add them, and unused paid credits can be refunded.</p>
+
+
+<div class="card stack">
+  <h2>Where your credits came from</h2>
+  <table class="tbl">
+    <thead><tr><th scope="col">Added</th><th scope="col">What</th><th scope="col">Left</th><th scope="col">Expires</th></tr></thead>
+    <tbody>
+    
+      <tr><td>1 Jan 2026</td><td>Free credits</td>
+        <td>0 of 2</td>
+        <td>1 Jan 2027</td></tr>
+    
+    </tbody>
+  </table>
+  <p class="hint">We always use your oldest credits first.</p>
+</div>
+
+
+<div class="card stack">
+  <h2>CVs that used a credit</h2>
+  <ul><li><a href="/runs/3">Your CV</a>, 1 Jan 2026</li><li><a href="/runs/2">Your CV</a>, 1 Jan 2026</li></ul>
+</div>
+
+
+</section>
+</main>
+<footer class="foot">
+  <a href="/report?page=/credits">Report a problem</a><a href="/reports">Your reports</a>
+  <a href="/privacy">Privacy notice</a>
+  <a href="/terms">Terms</a>
+  <form method="post" action="/signout" class="foot-form"><input type="hidden" name="csrf" value="901bfdc80f6300f0e793f5304f3d6f40127faa59"><button type="submit">Sign out</button></form>
+  <span>v0.15.4</span>
+</footer>
+</div>
+</body>
+</html>

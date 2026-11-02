@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin · Better Jobs</title>
+<link rel="stylesheet" href="betterjobs.css">
+
+</head>
+<body>
+<div class="app">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="/" aria-label="Better Jobs home">Better Jobs</a>
+  
+  
+  
+  <nav class="nav" aria-label="Pages">
+    
+    <div class="nav-tabs">
+      
+      <a href="/admin" class="nav-admin" aria-current="page"><i>A</i><span>Admin</span></a>
+    </div>
+  </nav>
+  
+</header>
+
+
+<main id="main" tabindex="-1">
+<section class="page">
+
+<div class="admin stack">
+<p class="eyebrow">Owner only</p>
+<h1 class="title">Admin</h1>
+
+<div class="card stack">
+  <div class="row between">
+    <h2>Generating: running</h2>
+    <span class="badge badge-ok">OK</span>
+  </div>
+  <dl class="facts">
+    <div><dt>Held jobs</dt><dd>0</dd></div>
+    <div><dt>Last test render</dt><dd>none yet</dd></div>
+    <div><dt>Last errors</dt><dd>none</dd></div>
+  </dl>
+  <div class="row">
+    <form method="post" action="/admin/test-render"><input type="hidden" name="csrf" value="e0e46d9ec9e2b412343f77e863521eb7aab81847"><button class="btn btn-ghost">Test render</button></form>
+    
+    <form method="post" action="/admin/pause"><input type="hidden" name="csrf" value="e0e46d9ec9e2b412343f77e863521eb7aab81847"><button class="btn btn-ghost">Pause generating</button></form>
+    
+  </div>
+</div>
+
+<div class="card stack" id="health">
+  <div class="row between"><h2>Health</h2><span class="badge badge-bad">No checks yet</span></div>
+  
+  
+  
+  
+  <dl class="facts">
+    <div><dt>Last check</dt><dd>none yet (the timer comes with the deploy)</dd></div>
+    <div><dt>Last good backup</dt><dd><span class="badge badge-bad">none yet</span></dd></div>
+    <div><dt>Uptime</dt><dd>24 h: 0.0% · 7 days: 0.0% · 30 days: 0.0%</dd></div>
+    <div><dt>Claude spend this month</dt><dd>$0.00 of the $50 stop (warning at $20)</dd></div>
+    <div><dt>Queue</dt><dd>1</dd></div>
+    <div><dt>Errors, 24 h</dt><dd>0</dd></div>
+    <div><dt>Claude API errors, 24 h</dt><dd>none</dd></div>
+    <div><dt>Failed CVs, 24 h</dt><dd>–</dd></div>
+    <div><dt>Incidents, 7 days</dt><dd>none</dd></div>
+  </dl>
+  
+</div>
+<div class="card stack" id="reports">
+  <h2>Problem reports</h2>
+  <p class="meta">No open reports.</p>
+</div>
+
+<div class="card stack" id="funnel">
+  <h2>Funnel</h2>
+  <table class="tbl funnel"><thead><tr><th scope="col">Measure</th><th scope="col">Now</th><th scope="col">Target</th></tr></thead><tbody>
+    <tr><td>Access requests</td><td>1</td><td></td></tr>
+    <tr><td>Approved users</td><td>1</td><td></td></tr>
+    <tr><td>Used both free CVs</td><td>0 (0%)</td><td><span class="badge badge-off">60%</span></td></tr>
+    <tr><td>Bought, of those</td><td>0</td><td><span class="badge badge-off">20%</span></td></tr>
+    <tr><td>Bought again, of buyers</td><td>0</td><td><span class="badge badge-off">25%</span></td></tr>
+    <tr><td>“I've paid” to approved, median</td><td>–</td><td><span class="badge badge-off">under 12 h</span></td></tr>
+    <tr><td>Claude cost per CV</td><td>$0.000</td><td><span class="badge badge-off">under RM1.20</span></td></tr>
+    <tr><td>Revenue against Claude spend</td><td>RM0.00 / $0.00</td><td></td></tr>
+    <tr><td>Packs bought</td><td>none yet</td><td></td></tr>
+    <tr><td>Re-renders per CV</td><td>0.0</td><td></td></tr>
+    <tr><td>CVs edited</td><td>–</td><td></td></tr>
+  </tbody></table>
+  <h3 class="kicker">Latest CVs: cost and credits</h3>
+  <p class="meta">None yet.</p>
+  <p class="hint">The latest 20. <a href="/admin/costs.csv">Download all as CSV</a> (numbers only, no CV or ad text).</p>
+  <h3 class="kicker">“Not good” reasons (0)</h3>
+  <p class="meta">None yet.</p>
+</div>
+<div class="card stack" id="orders">
+  <h2>Orders</h2>
+  <p class="hint">Find the reference and the exact amount in the bank app first. Approve only when the money is there. “I've paid” is never proof.</p>
+  <p class="meta">No orders yet.</p>
+</div>
+<div class="card stack" id="credits">
+  <h2>Credits and refunds</h2>
+  <p class="hint">Refund only after you've paid it back from the bank, to the account that paid. Unused paid credits are refunded at their pack's price, newest pack first.</p>
+  
+  <table class="tbl">
+    <thead><tr><th scope="col">Who</th><th scope="col">Balance</th><th scope="col">Refundable</th><th scope="col"><span class="sr">Record a refund</span></th></tr></thead>
+    <tbody>
+    
+      <tr><td>nadia@example.com</td><td>2</td><td>–</td>
+        <td class="acts"></td></tr>
+    
+    </tbody>
+  </table>
+  
+</div>
+<div class="card stack">
+  <form class="row between" method="post" action="/admin/wave2">
+    <input type="hidden" name="csrf" value="e0e46d9ec9e2b412343f77e863521eb7aab81847">
+    <input type="hidden" name="on" value="yes">
+    <div><b>Open sign-ups: let people in automatically</b><p class="hint">Stops at 30 users in total; after that, people join the waitlist. 1 now.</p></div>
+    <button type="submit" class="btn btn-ghost" aria-pressed="false">Off: turn on</button>
+  </form>
+</div>
+<div class="card stack" id="waitlist">
+  <h2>Waitlist</h2>
+  <p>0 waiting; 0 asked for an email when there's room.</p>
+  
+  
+</div>
+<div class="card stack">
+  <h2>Access requests</h2>
+  
+  <p class="meta">No requests waiting.</p>
+  
+</div>
+</div>
+
+</section>
+</main>
+<footer class="foot">
+  
+  <a href="/privacy">Privacy notice</a>
+  <a href="/terms">Terms</a>
+  <form method="post" action="/signout" class="foot-form"><input type="hidden" name="csrf" value="e0e46d9ec9e2b412343f77e863521eb7aab81847"><button type="submit">Sign out</button></form>
+  <span>v0.15.4</span>
+</footer>
+</div>
+</body>
+</html>

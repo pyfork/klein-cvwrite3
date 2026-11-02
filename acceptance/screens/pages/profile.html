@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your master CV · Better Jobs</title>
+<link rel="stylesheet" href="betterjobs.css">
+
+</head>
+<body>
+<div class="app">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="/" aria-label="Better Jobs home">Better Jobs</a>
+  
+  <a class="bal" href="/credits" title="Your balance">
+    <span class="bal-line"><span class="bal-n">2</span> <span class="bal-u">credits</span> <span class="bal-use">· 1 in use</span></span>
+    <span class="bal-exp">earliest expire 1 Jan 2027</span>
+  </a>
+  
+  
+  
+  <nav class="nav" aria-label="Pages">
+    
+    <div class="nav-steps">
+      <a href="/profile" class="done" aria-current="page"><i>✓</i><span>Profile<span class="sr"> (done)</span></span></a>
+      <a href="/generate"><i>2</i><span>Generate</span></a>
+    </div>
+    
+    <div class="nav-tabs">
+      
+      <a href="/applications"><span>Applications</span></a>
+      <a href="/credits"><span>Credits</span></a>
+      <a href="/account"><span>Account</span></a>
+      
+      
+    </div>
+  </nav>
+  
+</header>
+
+<div class="banner banner-info cvbar" role="status">A CV is being written: <b>Operations Analyst (Last-Mile Delivery)</b> <a href="/runs/1">Open it</a></div>
+<main id="main" tabindex="-1">
+<section class="page">
+
+<p class="eyebrow">Profile</p>
+<h1 class="title">Your master CV</h1>
+<p class="lede">One file with everything you've done. We write each new CV from it.</p>
+
+
+
+<div class="alert alert-warn"><p>Don't include your IC number, religion or health details. A CV doesn't need them.</p>
+  <p lang="ms">Jangan masukkan nombor IC, maklumat agama atau maklumat kesihatan anda. CV tidak memerlukannya.</p></div>
+
+<form class="card stack" method="post" action="/profile/upload" enctype="multipart/form-data">
+  <input type="hidden" name="csrf" value="0c0061f975fc781cd8d17dcdcafc007d85591d78">
+  <h2>Upload</h2>
+  <label class="drop">
+    <input type="file" name="file" accept=".docx,.pdf,.md,.txt" required aria-describedby="drop-s">
+    <span class="drop-t">Choose a file</span>
+    <span class="drop-s" id="drop-s" aria-live="polite">.docx, .pdf, .md or .txt, up to 2 MB</span>
+  </label>
+  <button type="submit" class="btn btn-ghost">Read this file</button>
+</form>
+<script src="../../../app/static/upload.js" defer></script>
+
+<form class="stack" method="post" action="/profile">
+  <input type="hidden" name="csrf" value="0c0061f975fc781cd8d17dcdcafc007d85591d78">
+  <input type="hidden" name="master_name" value="master.md">
+  <div class="card stack">
+    <h2>Check what we read</h2>
+    
+    <p class="hint">We'll work from this text. Fix anything that's missing or garbled. Text in tables and text boxes is the usual problem.</p>
+    <textarea name="master_text" rows="14" spellcheck="false" placeholder="Your CV text appears here after you upload it."># Test Person
+Shah Alam · test@example.com · +60 12-000 0000
+
+## PROFILE
+A made-up operations analyst, for tests only. Six years in last-mile delivery and e-commerce logistics.
+
+## EXPERIENCE
+Operations Analyst, Example Logistics, Shah Alam (2021 – now)
+- Built a daily SQL exception report that flags late runs by hub and postcode.
+- Led route optimisation for 140 riders across 3 hubs; missed slots fell from 18% to 7%.
+- Ran the weekly on-time review with hub managers and finance.
+
+Logistics Executive, Example Shop, Petaling Jaya (2018 – 2021)
+- Wrote the monthly stakeholder reporting pack for the COO.
+- Set up returns with 4 courier partners; refunds went from 10 days to 5.
+
+## SKILLS
+SQL, Tableau, Excel, Python (basic), process mapping.</textarea>
+    
+    <p class="meta">113 words read.</p>
+    
+    <div class="removed" aria-live="polite">
+      <p><b>Before anything goes to the AI, we take these out:</b></p>
+      <ul><li><span class="removed-k">Email</span> test@example.com</li><li><span class="removed-k">Phone</span> +60 12-000 0000</li></ul>
+      
+      <p class="alert alert-warn">Your name in step 3, <b>Nadia Hamzah</b>, isn't in this text, so we can't take out the name the CV uses. Make them match, as your CV spells it.</p>
+      <p class="hint">Your city stays in, and so does anything else in the text. This list updates when you save.</p>
+    </div>
+    
+  </div>
+  <div class="card stack">
+    <h2>Contact details</h2>
+    <p class="hint">We add these to each CV after it's written. They're never sent to the AI.</p>
+    
+    <div class="contact-grid">
+      <label class="field"><span>Full name <span class="opt need">needed to write a CV</span></span><input type="text" name="name" value="Nadia Hamzah" maxlength="120" autocomplete="name"></label>
+      <label class="field"><span>Email</span><input type="email" name="email" value="nadia@example.com" maxlength="200" autocomplete="email"></label>
+      <label class="field"><span>Phone</span><input type="tel" name="phone" value="+60 12-345 6789" maxlength="60" autocomplete="tel"></label>
+      <label class="field"><span>City</span><input type="text" name="location" value="Shah Alam" maxlength="120"></label>
+      <label class="field"><span>Links <span class="opt">optional</span></span><input type="text" name="links" value="" maxlength="300" placeholder="linkedin.com/in/…"></label>
+    </div>
+  </div>
+  <div class="card stack">
+    <h2>Standing edits <span class="opt">optional</span></h2>
+    <p class="hint">Rules for every CV we write for you.</p>
+    <textarea name="standing_edits" rows="3" maxlength="2000" placeholder="For example: call me a supply chain analyst, never a logistics officer."></textarea>
+  </div>
+  <div class="row act"><button type="submit" class="btn btn-primary">Save profile</button></div>
+</form>
+
+</section>
+</main>
+<footer class="foot">
+  <a href="/report?page=/profile">Report a problem</a><a href="/reports">Your reports</a>
+  <a href="/privacy">Privacy notice</a>
+  <a href="/terms">Terms</a>
+  <form method="post" action="/signout" class="foot-form"><input type="hidden" name="csrf" value="0c0061f975fc781cd8d17dcdcafc007d85591d78"><button type="submit">Sign out</button></form>
+  <span>v0.15.4</span>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join the waitlist · Better Jobs</title>
+<link rel="stylesheet" href="betterjobs.css">
+
+</head>
+<body class="signed-out">
+<div class="app">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="/" aria-label="Better Jobs home">Better Jobs</a>
+  
+  
+</header>
+
+
+<main id="main" tabindex="-1">
+<section class="page">
+
+<p class="eyebrow">Full for now</p>
+<h1 class="title">Join the Better Jobs waitlist</h1>
+<p class="lede">You're signed in as <b>stranger@example.com</b>.</p>
+<form method="post" action="/signout" class="foot-form meta"><input type="hidden" name="csrf" value="784783205ca24603cacaf0b419b6fd82dac4720a">Not you? <button type="submit">Sign out</button></form>
+
+<form class="card stack" method="post" action="/request">
+  <input type="hidden" name="csrf" value="784783205ca24603cacaf0b419b6fd82dac4720a">
+  <p>Better Jobs writes a 2-page CV for each job ad you paste. It's full right now, but you can wait for a place.</p>
+  <label class="field"><span>How did you hear about us? <span class="opt">optional</span></span>
+    <input type="text" name="note" maxlength="200" placeholder="A friend, a post, a group…"></label>
+  <label class="check"><input type="checkbox" name="notify" value="yes"><span>Email me once when there's room</span></label>
+  <button type="submit" class="btn btn-primary">Join the waitlist</button>
+  <p class="hint">We keep your email, your note and your choice above only to let you in later: until you join, 30 days after we email you, or 12 months, whichever is first. <a href="/privacy">Privacy notice</a></p>
+</form>
+
+<p class="meta">Questions? Email privacy@puascari.com. <a href="/privacy">Privacy notice</a></p>
+
+</section>
+</main>
+<footer class="foot">
+  
+  <a href="/privacy">Privacy notice</a>
+  <a href="/terms">Terms</a>
+  
+  <span>v0.15.4</span>
+</footer>
+</div>
+</body>
+</html>
