@@ -263,7 +263,7 @@ A breach writes a `degraded_events` row: start, end, the step to blame, and the 
 - A review pause, and AI regeneration from feedback.
 - Prompt caching or a cheaper model for the write step, until there is real cost data.
 
-## Chunks (riskiest first; each one is a branch and a PR the owner merges)
+## Chunks (riskiest first; each one is a branch and a PR; who merges it: Addendum 20)
 0. **Repo and brief:** this file.
 1. **Runs on Linux:**
    - Chromium and poppler on sk24 (owner's OK);
@@ -772,3 +772,12 @@ senior-lead-Opus5.5-agent
 - Unchanged: a code lasts 10 minutes, allows 5 tries (wrong guesses count against every live code of the email), and the limits (3 per email per 15 minutes, 10 per IP an hour, 300 a day).
 
 Ponytail-Sonnet5.5-agent
+
+## Addendum 20 (2026-11-02): routine PRs merge themselves
+- **Owner decision 2026-11-02:** a routine PR merges itself once every required check is green (`test`, `push-guard`, `slice-review`, `test-lock`). The agent turns on auto-merge; the owner does not merge it.
+- A PR that touches any path in `docs-public/guard-data/risk-map.txt` (money, sign-in, legal text, deploy, guards, this brief, shared code such as `base.html` and `betterjobs.css`) waits for the owner, as before. `CODEOWNERS` lists the same paths.
+- A routine slice is one PR, plan and build together. A risky slice keeps its slice-plan PR and build PR, both merged by the owner.
+- The `protect main` ruleset asks for 0 approvals with code-owner review on, and the repository allows auto-merge.
+- Product features are unchanged. This replaces "a PR the owner merges" in the Chunks heading.
+
+senior-lead-Opus5.5-agent
