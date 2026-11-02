@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New CV · Better Jobs</title>
+<link rel="stylesheet" href="betterjobs.css">
+
+</head>
+<body>
+<div class="app">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="/" aria-label="Better Jobs home">Better Jobs</a>
+  
+  <a class="bal" href="/credits" title="Your balance">
+    <span class="bal-line"><span class="bal-n">2</span> <span class="bal-u">credits</span> <span class="bal-use">· 1 in use</span></span>
+    <span class="bal-exp">earliest expire 1 Jan 2027</span>
+  </a>
+  
+  
+  
+  <nav class="nav" aria-label="Pages">
+    
+    <div class="nav-steps">
+      <a href="/profile" class="done"><i>✓</i><span>Profile<span class="sr"> (done)</span></span></a>
+      <a href="/generate" aria-current="page"><i>2</i><span>Generate</span></a>
+    </div>
+    
+    <div class="nav-tabs">
+      
+      <a href="/applications"><span>Applications</span></a>
+      <a href="/credits"><span>Credits</span></a>
+      <a href="/account"><span>Account</span></a>
+      
+      
+    </div>
+  </nav>
+  
+</header>
+
+<div class="banner banner-info cvbar" role="status">A CV is being written: <b>Operations Analyst (Last-Mile Delivery)</b> <a href="/runs/1">Open it</a></div>
+<main id="main" tabindex="-1">
+<section class="page">
+
+<p class="eyebrow">Generate</p>
+<h1 class="title">New CV for a job ad</h1>
+<p class="lede">Paste the whole ad. You'll get a 2-page CV in about a minute.</p>
+
+
+
+<form class="card stack" method="post" action="/generate">
+  <input type="hidden" name="csrf" value="0c0061f975fc781cd8d17dcdcafc007d85591d78">
+  
+  <label class="field"><span>The job ad</span>
+    <textarea name="ad" rows="12" maxlength="30000" placeholder="Paste the ad here, from the job title to the closing date."></textarea></label>
+  
+  <button type="submit" class="btn btn-primary">Generate · 1 credit</button>
+  <p class="hint">We only use a credit when the CV passes its check. You have 2 credits (1 in use right now); the earliest expire on 1 Jan 2027.</p>
+</form>
+
+
+<div class="card stack">
+  <h2>Your recent CVs</h2>
+  <table class="tbl">
+    <thead><tr><th scope="col">Job</th><th scope="col">Started</th><th scope="col">Status</th></tr></thead>
+    <tbody>
+    
+      <tr><td><a href="/runs/1">Operations Analyst (Last-Mile Delivery)</a></td><td>01 Jan, 09:00</td>
+        <td><span class="badge badge-wait">Working</span></td></tr>
+    
+    </tbody>
+  </table>
+  <p class="hint"><a href="/applications">See all your applications</a></p>
+</div>
+
+
+</section>
+</main>
+<footer class="foot">
+  <a href="/report?page=/generate">Report a problem</a><a href="/reports">Your reports</a>
+  <a href="/privacy">Privacy notice</a>
+  <a href="/terms">Terms</a>
+  <form method="post" action="/signout" class="foot-form"><input type="hidden" name="csrf" value="0c0061f975fc781cd8d17dcdcafc007d85591d78"><button type="submit">Sign out</button></form>
+  <span>v0.15.4</span>
+</footer>
+</div>
+</body>
+</html>

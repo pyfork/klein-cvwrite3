@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your account · Better Jobs</title>
+<link rel="stylesheet" href="betterjobs.css">
+
+</head>
+<body>
+<div class="app">
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <a class="brand" href="/" aria-label="Better Jobs home">Better Jobs</a>
+  
+  <a class="bal" href="/credits" title="Your balance">
+    <span class="bal-line"><span class="bal-n">2</span> <span class="bal-u">credits</span> <span class="bal-use">· 1 in use</span></span>
+    <span class="bal-exp">earliest expire 1 Jan 2027</span>
+  </a>
+  
+  
+  
+  <nav class="nav" aria-label="Pages">
+    
+    <div class="nav-steps">
+      <a href="/profile" class="done"><i>✓</i><span>Profile<span class="sr"> (done)</span></span></a>
+      <a href="/generate"><i>2</i><span>Generate</span></a>
+    </div>
+    
+    <div class="nav-tabs">
+      
+      <a href="/applications"><span>Applications</span></a>
+      <a href="/credits"><span>Credits</span></a>
+      <a href="/account" aria-current="page"><span>Account</span></a>
+      
+      
+    </div>
+  </nav>
+  
+</header>
+
+<div class="banner banner-info cvbar" role="status">A CV is being written: <b>Operations Analyst (Last-Mile Delivery)</b> <a href="/runs/1">Open it</a></div>
+<main id="main" tabindex="-1">
+<section class="page">
+
+<p class="eyebrow">Account</p>
+<h1 class="title">Your account</h1>
+<p class="lede">Signed in as <b>nadia@example.com</b>.</p>
+
+<div class="card stack">
+  <h2>Privacy consent</h2>
+  
+  <p>You agreed to <b>Privacy notice v2.0</b> on <b>1 Jan 2026</b> (English). <a href="/privacy/v2.0">View v2.0</a></p>
+  <p class="meta">You didn&#39;t tick the sensitive-data line.</p>
+  
+  
+  
+</div>
+
+<div class="card stack">
+  <h2>Your data</h2>
+  <div class="action-row">
+    <div><b>Download my data</b><p class="hint">A zip of your profile, master CV, CVs (MD, TXT and PDF), credits and orders, consent records and problem reports.</p></div>
+    <a class="btn btn-ghost" href="/account/download">Download</a>
+  </div>
+  <div class="action-row">
+    <div><b>Correct my data</b><p class="hint">Change your master CV, contact details or standing edits. Changes take effect at once.</p></div>
+    <a class="btn btn-ghost" href="/profile">Go to Profile</a>
+  </div>
+  <div class="action-row">
+    <div><b>Your problem reports</b><p class="hint">0 sent. For any other request, email privacy@puascari.com. We reply within 21 days.</p></div>
+    <a class="btn btn-ghost" href="/reports">See reports</a>
+  </div>
+</div>
+
+<div class="card stack danger-zone" id="delete">
+  <h2>Delete my account</h2>
+  <p>This also withdraws your consent. It can't be undone.</p>
+  <div class="two">
+    <div class="stack"><h3 class="kicker">Deleted now</h3>
+      <ul><li>Your profile, master CV and contact details</li><li>Every CV, ad and edit, and the PDFs</li><li>Your problem reports</li></ul></div>
+    <div class="stack"><h3 class="kicker">Kept, with no CV content</h3>
+      <ul><li>Orders and credit records, for accounting, under a random tag instead of your name</li><li>Your consent record (email, version, date) for 12 months. It's proof you agreed, and it stops repeat free credits.</li><li>Backups clear within 14 days</li></ul></div>
+  </div>
+  <form class="stack" method="post" action="/account/delete">
+    <input type="hidden" name="csrf" value="0c0061f975fc781cd8d17dcdcafc007d85591d78">
+    
+    <label class="field"><span>Type DELETE to confirm</span><input type="text" name="confirm" autocomplete="off" spellcheck="false" required pattern="DELETE"></label>
+    <button type="submit" class="btn btn-danger">Delete my account</button>
+  </form>
+</div>
+
+</section>
+</main>
+<footer class="foot">
+  <a href="/report?page=/account">Report a problem</a><a href="/reports">Your reports</a>
+  <a href="/privacy">Privacy notice</a>
+  <a href="/terms">Terms</a>
+  <form method="post" action="/signout" class="foot-form"><input type="hidden" name="csrf" value="0c0061f975fc781cd8d17dcdcafc007d85591d78"><button type="submit">Sign out</button></form>
+  <span>v0.15.4</span>
+</footer>
+</div>
+</body>
+</html>

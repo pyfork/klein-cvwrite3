@@ -1,0 +1,25 @@
+# KIT-020: one stand-in page per line: <name> <file>. Written by make_pages.py; a name is a page template's
+# name or <template>_<state>.
+account acceptance/screens/pages/account.html
+ad acceptance/screens/pages/ad.html
+admin acceptance/screens/pages/admin.html
+applications acceptance/screens/pages/applications.html
+consent acceptance/screens/pages/consent.html
+credits acceptance/screens/pages/credits.html
+credits_zero acceptance/screens/pages/credits_zero.html
+deleted acceptance/screens/pages/deleted.html
+generate acceptance/screens/pages/generate.html
+generate_notready acceptance/screens/pages/generate_notready.html
+order acceptance/screens/pages/order.html
+owner_profile acceptance/screens/pages/owner_profile.html
+privacy acceptance/screens/pages/privacy.html
+privacy_changes acceptance/screens/pages/privacy_changes.html
+profile acceptance/screens/pages/profile.html
+profile_heavy acceptance/screens/pages/profile_heavy.html
+profile_paused acceptance/screens/pages/profile_paused.html
+report acceptance/screens/pages/report.html
+reports acceptance/screens/pages/reports.html
+request acceptance/screens/pages/request.html
+run acceptance/screens/pages/run.html
+signin acceptance/screens/pages/signin.html
+terms acceptance/screens/pages/terms.html

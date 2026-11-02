@@ -63,6 +63,7 @@
 /docs-public/guard-data/risk-map.txt @pyfork
 /docs-public/guard-data/expected-protection.json @pyfork
 /docs-public/guard-data/runtime.txt @pyfork
+/acceptance/screens/** @pyfork
 /brief.md @pyfork
 /specs/features/*/brief.md @pyfork
 /app/pipeline.py @pyfork
