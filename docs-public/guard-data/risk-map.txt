@@ -55,6 +55,7 @@ SHARED  docs-public/guard-data/risk-map.txt
 SHARED  docs-public/guard-data/expected-protection.json
 SHARED  docs-public/guard-data/runtime.txt
 SHARED  acceptance/screens/**
+SHARED  tests/test_scripts_allowlist.py
 # The brief and the feature briefs (the owner's words)
 SHARED  brief.md
 SHARED  specs/features/*/brief.md
