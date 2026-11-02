@@ -49,6 +49,10 @@
         {
           "context": "test-lock",
           "integration_id": 5101376
+        },
+        {
+          "context": "screens",
+          "integration_id": 15368
         }
       ]
     }
