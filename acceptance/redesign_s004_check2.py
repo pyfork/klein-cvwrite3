@@ -5,6 +5,7 @@ The test exposes a module-level dict `ALLOWED`: script path under app/static -> 
 for fails; a stale entry (the file is gone, or the listed page does not load it) fails; an entry with no `without` text fails.
 Fails before the work: the test does not exist.
 senior-lead-Sonnet5.5-agent, 2026-11-03"""
+import ast
 import copy
 import importlib.util
 import io
@@ -70,6 +71,31 @@ class ListIsExact(unittest.TestCase):
         for js, entry in allowed.items():
             self.assertTrue(entry["pages"], f"{js} lists no page")
             self.assertTrue(entry["without"].strip(), f"{js} has no 'without' text")
+
+    def test_ac87_control_the_patched_run_passes_unchanged(self):
+        code, out = S.run_in_copy(patch="pass")
+        self.assertEqual(code, 0, out)
+        self.assertGreaterEqual(S.tests_run(out), 1, "the run found no test:\n" + out)
+
+    def test_ac87_an_entry_with_no_pages_fails_the_test(self):
+        # extra.js exists and is listed, so only the missing pages can fail it
+        code, out = S.run_in_copy(S.add_file("app/static/extra.js", "x"),
+                                  patch='mod.ALLOWED["extra.js"] = {"pages": set(), "without": "Nothing changes without it."}')
+        self.assertNotEqual(code, 0, "an entry with no pages passed:\n" + out)
+        self.assertIn("extra.js", out)
+
+    def test_ac88_only_the_standard_library(self):
+        if not S.TEST.is_file():
+            raise AssertionError("tests/test_scripts_allowlist.py does not exist yet")
+        tree = ast.parse(S.TEST.read_text(encoding="utf-8"))
+        found = set()
+        for n in ast.walk(tree):
+            if isinstance(n, ast.Import):
+                found |= {a.name.split(".")[0] for a in n.names}
+            elif isinstance(n, ast.ImportFrom):
+                found.add("." if n.level else n.module.split(".")[0])
+        self.assertTrue(found, "the test imports nothing")
+        self.assertEqual(found - set(sys.stdlib_module_names), set(), "imports outside the standard library")
 
     def test_ac87_an_empty_without_text_fails_the_test(self):
         mod = load_module()

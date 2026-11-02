@@ -17,9 +17,21 @@ ROOT = Path(__file__).resolve().parent.parent
 TEST = ROOT / "tests" / "test_scripts_allowlist.py"
 
 
-def run_in_copy(mutate=lambda root: None):
-    """Copy app/templates, app/static and the test into a temp folder, apply mutate(root), run the test there.
-    Returns (exit code, output)."""
+# Runs the copied test's own cases in one process after `patch` (python source) has changed the module, e.g. its ALLOWED dict.
+PATCHED = """
+import importlib.util, sys, unittest
+spec = importlib.util.spec_from_file_location("allowlist_under_check", "tests/test_scripts_allowlist.py")
+mod = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(mod)
+%s
+result = unittest.TextTestRunner(stream=sys.stdout).run(unittest.defaultTestLoader.loadTestsFromModule(mod))
+sys.exit(0 if result.wasSuccessful() else 1)
+"""
+
+
+def run_in_copy(mutate=lambda root: None, patch=None):
+    """Copy app/templates, app/static and the test into a temp folder, apply mutate(root), run the test there
+    (as the suite runs it, or with `patch` applied to the loaded module). Returns (exit code, output)."""
     if not TEST.is_file():
         raise AssertionError("tests/test_scripts_allowlist.py does not exist yet")
     with tempfile.TemporaryDirectory() as tmp:
@@ -29,8 +41,9 @@ def run_in_copy(mutate=lambda root: None):
         (root / "tests").mkdir()
         shutil.copy(TEST, root / "tests" / TEST.name)
         mutate(root)
+        cmd = [sys.executable, "-c", PATCHED % patch] if patch else [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", TEST.name]
         done = subprocess.run(
-            [sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", TEST.name],
+            cmd,
             cwd=root, capture_output=True, text=True, timeout=120,
             env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )
