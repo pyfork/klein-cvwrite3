@@ -62,10 +62,12 @@ rules)
   done
   printf '%s' "$rules" | jq -e 'any(.[]; .type == "pull_request" and .parameters.require_code_owner_review and .parameters.required_approving_review_count == 0)' > /dev/null \
     && ok "rule on main: pull request, 0 approvals, code-owner review" || bad "rule on main: pull request with 0 approvals and code-owner review is missing (KIT-014: the owner reviews only the risk map's paths)"
-  # KIT-019: the owner's approval turns checks green, so it must be of the
-  # last push: a push after it is unapproved, and the owner sees it again
-  printf '%s' "$rules" | jq -e 'any(.[]; .type == "pull_request" and .parameters.require_last_push_approval and .parameters.dismiss_stale_reviews_on_push)' > /dev/null \
-    && ok "rule on main: approval of the last push, stale approvals dismissed" || bad "rule on main: 'Require approval of the most recent reviewable push' and 'Dismiss stale pull request approvals when new commits are pushed' must both be on (KIT-019)"
+  # KIT-019: the owner's approval turns checks green, so a push after it must
+  # dismiss it (owner-call.sh also counts only an approval of the head commit).
+  # Last-push approval stays off: GitHub applies it even at 0 approvals, and the
+  # agent login pushes every PR, so it held every routine PR (cvwrite3 #128)
+  printf '%s' "$rules" | jq -e 'any(.[]; .type == "pull_request" and .parameters.dismiss_stale_reviews_on_push and (.parameters.require_last_push_approval | not))' > /dev/null \
+    && ok "rule on main: stale approvals dismissed, last-push approval off" || bad "rule on main: 'Dismiss stale pull request approvals when new commits are pushed' must be on and 'Require approval of the most recent reviewable push' off (KIT-019; on, it holds every routine PR)"
   # KIT-014: routine PRs merge themselves, so repo auto-merge must be on
   [ "$(gh api "repos/$repo" 2>/dev/null | jq -r '.allow_auto_merge')" = "true" ] && ok "repository: auto-merge allowed" || bad "repository: 'Allow auto-merge' is off (Settings, General, Pull Requests)"
   printf '%s' "$rules" | jq -e 'any(.[]; .type == "required_status_checks" and .parameters.strict_required_status_checks_policy)' > /dev/null \
