@@ -1,6 +1,7 @@
 """Sign-in by a 6-digit code sent to the user's email (chunk 7j; replaces Cloudflare Access).
 
-A code lasts 10 minutes and allows 5 tries; asking for a new one retires the old one. Codes and session
+A code lasts 10 minutes and allows 5 tries; asking for a new one cuts the old ones down to 5 minutes left
+(never longer than they had), so a stranger asking can't kill your code. Codes and session
 tokens are stored only as HMACs under the app's secret key. A session lasts 30 days from its last use.
 Any email can get a code: the whitelist (app.access) decides what a signed-in email can do.
 """
@@ -10,6 +11,7 @@ import re
 import secrets
 
 CODE_TTL_MIN = 10
+OLD_CODE_MIN = 5   # what an older unused code keeps when a newer one is asked for
 MAX_TRIES = 5
 PER_EMAIL = 3      # codes per email per 15 minutes
 PER_IP = 10        # codes per IP per hour
@@ -42,7 +44,8 @@ def send_code(conn, settings, mailer, email, ip):
         if n["e"] >= PER_EMAIL or n["i"] >= PER_IP or n["d"] >= PER_DAY:
             raise TooMany()
         code = f"{secrets.randbelow(10 ** 6):06d}"
-        conn.execute("update login_codes set used_at = now() where email_hash = %s and used_at is null", (eh,))
+        conn.execute("update login_codes set expires_at = least(expires_at, now() + make_interval(mins => %s)) "
+                     "where email_hash = %s and used_at is null", (OLD_CODE_MIN, eh))
         conn.execute("insert into login_codes (email_hash, ip_hash, code_hash, expires_at) "
                      "values (%s, %s, %s, now() + make_interval(mins => %s))",
                      (eh, ih, _mac(settings, "code", f"{email}:{code}"), CODE_TTL_MIN))
@@ -50,20 +53,21 @@ def send_code(conn, settings, mailer, email, ip):
 
 
 def check_code(conn, settings, email, code):
-    """True once for the right code; every try counts, and the 6th try fails even when right."""
+    """True once for the right code; every try counts, and the 6th try fails even when right.
+    Any live code of this email can match, so a newer request doesn't kill an older code."""
     code = re.sub(r"\D", "", code or "")
     with conn.transaction():
-        row = conn.execute("select id, code_hash, attempts from login_codes where email_hash = %s and used_at is null "
-                           "and expires_at > now() order by id desc limit 1 for update",
-                           (_mac(settings, "email", email),)).fetchone()
-        if not row:
+        rows = conn.execute("select id, code_hash, attempts from login_codes where email_hash = %s and used_at is null "
+                            "and expires_at > now() order by id desc for update", (_mac(settings, "email", email),)).fetchall()
+        rows = [r for r in rows if r["attempts"] < MAX_TRIES]
+        if not rows:
             return False
-        if row["attempts"] >= MAX_TRIES:
-            return False
-        ok = len(code) == 6 and hmac.compare_digest(row["code_hash"], _mac(settings, "code", f"{email}:{code}"))
-        conn.execute("update login_codes set attempts = attempts + 1, used_at = case when %s then now() end where id = %s",
-                     (ok, row["id"]))
-    return ok
+        want = _mac(settings, "code", f"{email}:{code}")
+        hit = next((r for r in rows if len(code) == 6 and hmac.compare_digest(r["code_hash"], want)), None)
+        conn.execute("update login_codes set attempts = attempts + 1 where id = any(%s)", ([r["id"] for r in rows],))
+        if hit:
+            conn.execute("update login_codes set used_at = now() where id = %s", (hit["id"],))
+    return hit is not None
 
 
 def start_session(conn, settings, email):
