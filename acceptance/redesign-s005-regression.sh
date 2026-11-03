@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Locked check, redesign S-005. REGRESSION A and B: the packages stay dev-only (AC-92), other types unchanged (AC-90); pass before
+# Run from the repo root as `bash acceptance/redesign-s005-regression.sh`. Sets up what it needs; exits 0 only when every case passes.
+# senior-lead-Opus5.5-agent, 2026-11-03
+set -euo pipefail
+venv="${CVWRITE_TEST_VENV:-$HOME/.cvwrite3-test-venv}"
+bash scripts/install.sh "$venv"
+grep -v '^-r' requirements-dev.txt | "$venv/bin/pip" install --only-binary :all: -r /dev/stdin
+export PYTHONDONTWRITEBYTECODE=1
+exec "$venv/bin/python" -m unittest discover -s acceptance -p 'redesign_s005_regression.py' -v
