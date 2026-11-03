@@ -4,6 +4,7 @@ Run (dev): see scripts/dev.py. Prod: uvicorn "app.main:create_app" --factory, be
 """
 import json
 import logging
+import mimetypes
 import time
 import uuid
 from pathlib import Path
@@ -47,6 +48,8 @@ def create_app(settings=None, mail=None):
         log.propagate = False
     templates = Jinja2Templates(directory=str(HERE / "templates"))
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+    # Python 3.10's built-in types lack .webp; without this the art goes out as octet-stream.
+    mimetypes.add_type("image/webp", ".webp")
     app.mount("/static", StaticFiles(directory=str(HERE / "static")), name="static")
     app.mount("/fonts", StaticFiles(directory=str(ROOT / "fonts")), name="fonts")
     app.state.settings = settings
