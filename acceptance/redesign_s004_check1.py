@@ -1,5 +1,7 @@
 """CHECK 1 of redesign S-004: a script the allow-list does not allow fails the suite and is named, and the one allowed
-form passes. Covers AC-84 and AC-85.
+form passes. Covers AC-84 and AC-85 (and AC-86's page-is-its-path rule).
+Re-planned 2026-11-03 (tech review of #121, rows 1 to 3): templates in folders, `fonts/`, `.xhtml`/`.xht` files, a
+repeated attribute and handlers with no space before them each have a case.
 
 Each case changes a throwaway copy of app/templates and app/static, runs tests/test_scripts_allowlist.py there, and
 expects it to fail and to name the file. The first case is the control: the unchanged copy passes, so a test that
@@ -93,6 +95,44 @@ class UnlistedScripts(unittest.TestCase):
 
     def test_ac85_a_javascript_address(self):
         self.fails(S.add_to_template("account.html", '<a href="javascript:alert(1)">x</a>'), "account.html")
+
+    # --- re-plan 2026-11-03: template folders (AC-85, AC-86), fonts/ and .xhtml/.xht (AC-84), repeated attribute and
+    # handler spacing (AC-85)
+    def test_ac85_an_inline_script_in_a_template_folder(self):
+        self.fails(S.add_file("app/templates/sub/x.html", "<script>alert(1)</script>"), "sub/x.html")
+
+    def test_ac85_a_script_not_on_the_list_in_a_template_folder(self):
+        self.fails(S.add_file("app/templates/sub/y.html", SRC % "other.js"), "sub/y.html", "other.js")
+
+    def test_ac86_a_listed_page_name_means_that_path_only(self):
+        # profile.html is listed for upload.js; sub/profile.html is another page
+        self.fails(S.add_file("app/templates/sub/profile.html", SRC % "upload.js"), "sub/profile.html")
+
+    def test_ac85_a_template_folder_without_scripts_passes(self):
+        self.passes(S.add_file("app/templates/sub/ok.html", "<p>hello</p>"))
+
+    def test_ac84_an_xhtml_file_that_holds_a_script(self):
+        self.fails(S.add_file("app/static/page.xhtml", "<html><script>alert(1)</script></html>"), "page.xhtml")
+
+    def test_ac84_an_xht_file_that_holds_a_script(self):
+        self.fails(S.add_file("app/static/page.xht", "<html><script>alert(1)</script></html>"), "page.xht")
+
+    def test_ac84_a_js_file_in_fonts_even_with_a_listed_name(self):
+        # upload.js is on the list for app/static; fonts/ may hold no script at all
+        self.fails(S.add_file("fonts/upload.js", "alert(1)"), "fonts/upload.js")
+
+    def test_ac84_an_html_file_in_fonts_that_holds_a_script(self):
+        self.fails(S.add_file("fonts/evil.html", "<script>alert(1)</script>"), "fonts/evil.html")
+
+    def test_ac85_a_repeated_src_attribute(self):
+        # the second src is the allowed one; a browser uses the first
+        self.fails(S.add_to_template("profile.html", '<script src="https://cdn.example.com/x.js" src="/static/upload.js" defer></script>'), "profile.html")
+
+    def test_ac85_an_inline_handler_with_no_space_before_it(self):
+        self.fails(S.add_to_template("account.html", '<img src="a"onerror=alert(1)>'), "account.html")
+
+    def test_ac85_an_inline_handler_after_a_slash(self):
+        self.fails(S.add_to_template("account.html", "<svg/onload=alert(1)>"), "account.html")
 
 
 if __name__ == "__main__":
