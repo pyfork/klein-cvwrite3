@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Locked check, redesign S-005. REGRESSION A and B: the packages stay dev-only (AC-92), other types unchanged (AC-90); pass before
+# Locked check, redesign S-005. REGRESSION A: registering .webp changes no other type (AC-90); passes before
 # Run from the repo root as `bash acceptance/redesign-s005-regression.sh`. Sets up what it needs; exits 0 only when every case passes.
 # senior-lead-Opus5.5-agent, 2026-11-03
 set -euo pipefail

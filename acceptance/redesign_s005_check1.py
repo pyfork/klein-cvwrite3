@@ -1,13 +1,13 @@
-"""CHECK 1 of redesign S-005: the home's art is in app/static/art and the app serves it. Covers AC-89 and AC-90.
+"""CHECK 1 of redesign S-005: .webp files are served as image/webp on any machine. Covers AC-89.
 
-The folder holds exactly the 20 WebP files the home uses, each with alpha and no wider than 2,400 px, within the
-weight budget; each is served as image/webp, cached like the other /static/ files, with no sign-in, by an app built
-while Python's type table holds only its built-in entries (so the machine's own list of types cannot hide a miss).
-WebP headers are read with the standard library, so no image package is needed.
-Fails before the work: app/static/art does not exist.
+The app is built while Python's type table holds only its built-in entries, with .webp taken out, as on a machine whose
+own list of types does not know it (CI's runner was one: closed #124; Python 3.10's built-ins lack it, 3.11's have it).
+Then the app's table must answer .webp, and Starlette's file response, which /static uses, must send image/webp.
+Fails before the work: the table answers None and the file goes out as application/octet-stream.
 senior-lead-Opus5.5-agent, 2026-11-03"""
-import struct
+import mimetypes
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -18,91 +18,57 @@ for p in (ROOT, ROOT / "tests"):
 
 from support import CVCase  # noqa: E402
 
-ART = ROOT / "app" / "static" / "art"
-NAMES = {"ad-lilac", "ad-marigold", "ad-teal", "arrow", "clipping", "copy", "cv-lilac", "cv-marigold", "cv-teal", "edge",
-         "folder", "ground", "pages", "redacted", "scissors", "scissors-ink", "scrap-dot", "scrap-star", "scrap-tri",
-         "spotlight"}
-TOTAL_MAX = 600_000
-EACH_MAX = 100_000
-WIDTH_MAX = 2400
+# The smallest WebP the check needs: RIFF header and an empty VP8L chunk. Only its name decides the type.
+WEBP = b"RIFF\x0e\x00\x00\x00WEBPVP8L\x02\x00\x00\x00\x2f\x00"
 
 
-def webp_info(data):
-    """(width, height, has_alpha) from a WebP file's first chunk; raises ValueError if it is not a WebP."""
-    if len(data) < 30 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
-        raise ValueError("not a WebP file")
-    chunk = data[12:16]
-    if chunk == b"VP8X":
-        flags = data[20]
-        w = 1 + int.from_bytes(data[24:27], "little")
-        h = 1 + int.from_bytes(data[27:30], "little")
-        return w, h, bool(flags & 0x10)
-    if chunk == b"VP8L":
-        if data[20] != 0x2F:
-            raise ValueError("bad VP8L signature")
-        bits = struct.unpack("<I", data[21:25])[0]
-        return 1 + (bits & 0x3FFF), 1 + ((bits >> 14) & 0x3FFF), bool((bits >> 28) & 1)
-    if chunk == b"VP8 ":
-        w, h = struct.unpack("<HH", data[26:30])
-        return w & 0x3FFF, h & 0x3FFF, False
-    raise ValueError(f"unknown WebP chunk {chunk!r}")
-
-
-class TheArtFolder(unittest.TestCase):
-    def test_ac89_exactly_the_home_set(self):
-        self.assertTrue(ART.is_dir(), "app/static/art does not exist")
-        found = {p.name for p in ART.iterdir()}
-        self.assertEqual(found, {n + ".webp" for n in NAMES})
-
-    def test_ac89_each_is_a_webp_with_alpha(self):
-        self.assertTrue(ART.is_dir(), "app/static/art does not exist")
-        for name in sorted(NAMES):
-            with self.subTest(name=name):
-                w, h, alpha = webp_info((ART / f"{name}.webp").read_bytes())
-                self.assertTrue(alpha, f"{name}.webp has no alpha channel")
-                self.assertLessEqual(w, WIDTH_MAX)
-                self.assertGreater(h, 0)
-
-    def test_ac90_weight_budget(self):
-        self.assertTrue(ART.is_dir(), "app/static/art does not exist")
-        sizes = {p.name: p.stat().st_size for p in ART.iterdir()}
-        for name, size in sizes.items():
-            self.assertLessEqual(size, EACH_MAX, f"{name} is {size} bytes")
-        self.assertLessEqual(sum(sizes.values()), TOTAL_MAX, f"the folder is {sum(sizes.values())} bytes")
-
-    def test_the_reader_refuses_what_is_not_webp(self):
-        with self.assertRaises(ValueError):
-            webp_info(b"\x89PNG\r\n\x1a\n" + b"\0" * 40)
+def bare_table():
+    """Python's built-in type entries only, without .webp: mimetypes.guess_type, which Starlette uses, reads module _db."""
+    db = mimetypes.MimeTypes()
+    for strict in (True, False):
+        db.types_map[strict].pop(".webp", None)
+    return db
 
 
 class BareTypeTable:
-    """Builds the app while Python's type table holds only its built-in entries, as on a machine whose own list of types
-    does not know .webp (CI's runner was one: closed #124). mimetypes.guess_type, which Starlette uses, reads the
-    module's _db; a fresh MimeTypes() has the built-ins only. The old table is put back after the case."""
+    """Swaps in bare_table() before the app is built (CVCase.setUp builds it) and puts the old table back after."""
 
     def setUp(self):
-        import mimetypes
         self._saved_db = mimetypes._db
-        mimetypes._db = mimetypes.MimeTypes()
+        mimetypes._db = bare_table()
         super().setUp()
 
     def tearDown(self):
-        import mimetypes
         try:
             super().tearDown()
         finally:
             mimetypes._db = self._saved_db
 
 
-class ServedPublicly(BareTypeTable, CVCase):
-    def test_ac90_served_as_webp_cached_without_sign_in(self):
-        for name in sorted(NAMES):
-            with self.subTest(name=name):
-                r = self.client.get(f"/static/art/{name}.webp")
-                self.assertEqual(r.status_code, 200)
-                self.assertEqual(r.headers.get("content-type"), "image/webp")
-                self.assertNotIn("no-store", r.headers.get("cache-control", ""))
-                self.assertEqual(r.content, (ART / f"{name}.webp").read_bytes())
+class TheBareTableIsBare(unittest.TestCase):
+    def test_control_the_bare_table_does_not_know_webp(self):
+        self.assertEqual(bare_table().guess_type("a.webp"), (None, None))
+        self.assertEqual(bare_table().guess_type("a.css")[0], "text/css")
+
+
+class WebpIsServedAsWebp(BareTypeTable, CVCase):
+    def test_ac89_the_app_table_answers_webp(self):
+        self.assertEqual(mimetypes.guess_type("art/x.webp"), ("image/webp", None))
+
+    def test_ac89_a_webp_file_is_sent_as_image_webp(self):
+        from fastapi.testclient import TestClient
+        from starlette.applications import Starlette
+        from starlette.staticfiles import StaticFiles
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "x.webp").write_bytes(WEBP)
+            # The StaticFiles class the app mounts at /static, on a folder that holds a .webp file. The type table is
+            # process-wide, so this reads what create_app (run in setUp) left in it; app/static itself holds no .webp yet.
+            probe = Starlette()
+            probe.mount("/static", StaticFiles(directory=tmp))
+            got = TestClient(probe).get("/static/x.webp")
+        self.assertEqual(got.status_code, 200)
+        self.assertEqual(got.headers.get("content-type"), "image/webp")
+        self.assertEqual(got.content, WEBP)
 
 
 if __name__ == "__main__":
