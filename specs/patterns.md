@@ -12,6 +12,7 @@ RULE:    Body text is Schibsted Grotesk 17 px on 1.55, ink `#13233A`.
 WHY:     Responsive check 2: text never shrinks to fit. 14 px labels stay readable on a phone. 16 px inputs stop the phone zoom. Coral `#FF5A47` is 2.7:1 on the ground and 3.1:1 on white, and the collage's muted `#6A7586` is 4.1:1 on the ground and 4.3:1 on the quiet slab (both fail 4.5:1) but 4.67:1 on white, where it stays (re-plan 2026-10-29).
 USED BY: every page
 EXCEPTIONS: Headings are the one text that scales with width (28 to 40 px), so a long single word still fits at 320. Nothing else scales.
+            The home (S-007): its headings are v2's (h1 AC-109, h2 and the closing heading AC-176); the hero's "every" is coral `#FF5A47` text, 3.09:1 on white, which passes as large text (3:1); coral is a text colour on the navy bands (5.12:1); the paper (the small ads, CV sheets, keyword pages, thumbnails and privacy card) keeps v2's sizes and scales with its picture, because it is a picture of an A4 page at reduced scale (AC-163, pending the owner's answer on ledger row D1).
 
 PATTERN: Slab
 RULE:    A slab is a white (`--slab`) block with a 24 px radius and one soft shadow (`--shadow`). It is flat: no gradient, no blur, no second shadow.
@@ -22,6 +23,7 @@ RULE:    A slab is a white (`--slab`) block with a 24 px radius and one soft sha
 WHY:     Addendum 14: rounded white slabs on the ground, cards only for things you can tap. The padding drops to 20 px below 560 because 28 px each side leaves too little for a form at 320.
 USED BY: every page (`.card`, `.notice`, `.pack`, `.drop`)
 EXCEPTIONS: In S-001 every old `.card` is a slab, including blocks nobody taps, because the old markup stays. Each page slice replaces those with plain sections where Addendum 14 says "cards only for things you can tap".
+            The home (S-007) keeps v2's slabs: 32 px radius, 16 px apart, padding `clamp(40px, 6vw, 88px)` by `clamp(20px, 5vw, 72px)`, cards 20 px (AC-101); its sections are slabs as v2 draws them.
 
 PATTERN: Button
 RULE:    A button is a pill (fully rounded), 16 px on weight 700, 48 px high at least (`.btn-sm`: 44 px), 44 px wide at least. Its label wraps onto a second line before it would overflow; the button grows in height and never overflows its slab.
@@ -69,7 +71,7 @@ RULE:    A transition lasts 300 ms at most, on transform, opacity or colour only
          With reduced motion, every transition and transform is off and a state changes at once. The state still shows.
 WHY:     Addendum 14: restrained and slow, no loops, no endless pulses, reduced motion shows the final state. Calm's pulsing step dot goes.
 USED BY: every page
-EXCEPTIONS: none
+EXCEPTIONS: The home (S-007): its demonstrations are slow on purpose, as v2 times them (0.3 to 3 s, each named in AC-112 to AC-168), and follow pattern Play once.
 
 PATTERN: Field
 RULE:    The label sits above the field, 16 px on weight 700. The field is 48 px high at least, 16 px text, a 16 px radius and a 2 px edge in `#7D8798` (3.6:1 on a slab, 3.2:1 on the ground). The placeholder is muted. A textarea grows taller only; it never grows wider.
@@ -80,14 +82,14 @@ RULE:    The label sits above the field, 16 px on weight 700. The field is 48 px
          - The tags `.opt` (optional) and `.opt.need` (needed): a 14 px label pill; "needed" uses the warn tint.
          - The CV text box (`#cvtext`) is Geist Mono 16 px on 1.6.
 WHY:     The edge needs 3:1 to be seen (WCAG 1.4.11); the collage's rule colour is about 1.4:1. Addendum 10 makes the ad box read-only while generating is paused.
-USED BY: sign-in, profile, generate, edit, report, request, applications, admin
+USED BY: sign-in, profile, generate, edit, report, request, applications, admin, the home's re-render demo (S-007 AC-143)
 EXCEPTIONS: none
 
 PATTERN: Choice row
 RULE:    A checkbox or radio is 24 px, accent ink, and its label sits beside it and wraps. The whole row is the target: 44 px high at least, 8 px between rows. Checked shows an ink fill with a white tick (or dot). Disabled is 45% opacity.
          The ring goes around the box (Focus ring).
 WHY:     Calm's 18 px box in a 20 px row missed 44 px (check 4).
-USED BY: profile, applications, account, consent, request, run, admin
+USED BY: profile, applications, account, consent, request, run, admin, the home's keep box (S-007 AC-152)
 EXCEPTIONS: none
 
 PATTERN: Status note
@@ -121,7 +123,7 @@ RULE:    One `nav` (label "Pages") in a white rail (24 px radius, 8 px padding, 
          Step marker: a 24 px circle before the label, at every width. It shows the number, or a tick once the profile is ready (screen readers still hear "(done)"). It is outlined in ink; on the current item it flips to a white fill with an ink mark.
          Admin carries a 24 px marigold circle with an ink "A".
          No item is ever disabled, greyed or removed because a step is not done or the balance is 0. Generate is a normal link before the profile is ready; the page says what is missing (Addendum 10).
-         The header is not sticky.
+         The header is not sticky. (The signed-out home has its own sticky header, S-007 AC-104 to AC-106.)
 WHY:     Addendum 10: all labels show on a phone. Six 44 px items with 8 px gaps need about 700 px in one line; below 840 px the margin is too thin for the longest labels. Calm hid the step numbers below 560 and let the nav scroll sideways; both hid things (check 6). Not sticky because a two-line header would take a third of a 375 px landscape screen (check 5).
 USED BY: every signed-in page
 EXCEPTIONS: none
@@ -143,3 +145,15 @@ RULE:    From 561 px a table stays a table: header cells are 14 px muted labels,
 WHY:     Below 560 a header row stacked once above every row would repeat nothing useful; each page slice adds a label to every cell when it rewrites its markup (a gap left on purpose). Admin tables hold ids and numbers that cannot be stacked or wrapped without losing which column a value belongs to.
 USED BY: credits, generate, run, applications, admin
 EXCEPTIONS: the admin sideways scroll, named.
+
+PATTERN: Play once
+RULE:    A demonstration (the hero's switch, the compare slider, the keyword stickers) plays by itself at most once per page view, slowly, then waits for the person.
+         - It starts only when it is in view (the hero at load, the others when half in view), and only if the person has not touched it.
+         - After it, at most two slow rings (2.8 s each) show where to act, then nothing moves.
+         - The person's first touch stops it for good: timers end, rings and hints ("Try it", "Drag") never come back.
+         - Two demonstrations never play by themselves at the same time.
+         - Reduced motion: it never plays by itself, there are no rings, and every change happens at once; the control still works.
+         - Scripts off: the control is not shown and the picture shows its answer (the CVs cut to fit, the slider on "After", the stickers in place).
+WHY:     Addendum 14: a demonstration plays once, then waits; no loops, one moving thing per screen. Addendum 15: every page works with scripts off.
+USED BY: the home (S-007 AC-113, AC-129, AC-136); the result page's compare slider (slice 8)
+EXCEPTIONS: none
