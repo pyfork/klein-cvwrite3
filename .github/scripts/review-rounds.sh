@@ -102,7 +102,7 @@ decide)
   # KIT-014 (PROOF-21): the test command is where scripted project rules
   # run, so its FAIL fails the check by itself, with no model in between
   suite=false; [ -n "$res" ] && [ -f "$res" ] && grep -q '^FAIL: ' "$res" && suite=true
-  jq -n --argjson s "$(cat "$st")" --argjson f "$(cat "$fl")" --argjson j "$judge" --arg sha "$sha" --argjson suite "$suite" '
+  jq -n --argjson s "$(cat "$st")" --argjson f "$(cat "$fl")" --argjson j "$judge" --arg sha "$sha" --argjson suite "$suite" --arg lane "${LANE:-OTHER}" '
     def keys(x): [x[] | .key];
     ($f.blocking) as $found
     | if $s.tampered then
@@ -114,7 +114,10 @@ decide)
       # KIT-019 (proof P5): a PR that is not a slice is for the Lead to close
       # or plan, so it never goes to the owner, whatever the round
       elif any($found[]; (.rule_file | endswith("slice-pr-reviewer.md")) and (.rule_section | test("not a slice"; "i"))) then
-        {pass:false, owner:false, why:"Not a slice: the Lead closes this PR or plans the slice first. Not a call for the owner.", unsolved:$found, record:null}
+        # PLAN and OWNED: every file is owned by the owner, so their Approve decides (owner-call.sh)
+        (if ($lane == "PLAN" or $lane == "OWNED") then "Not a slice, but every file is owner-owned (lane \($lane)): the owner approves; no bypass."
+         else "Not a slice: the Lead closes this PR or plans the slice first. Not a call for the owner." end) as $why
+        | {pass:false, owner:false, why:$why, unsolved:$found, record:null}
       elif $s.with_owner then
         {pass:false, owner:true, why:"Two judge rounds left findings unsolved. The owner decides.", unsolved:$s.open, record:null}
       elif ($s.open | length) > 0 and $s.sha == $sha then

@@ -9,7 +9,9 @@
 # into a subfolder and never runs in a job that holds a secret. PR code
 # runs only for the owner or agent login, as a user that can't write results.
 # Secrets live in the `reviewer` environment, which only main can use.
-name: slice-review
+# The workflow is not named slice-review: GitHub shows each job as "<workflow> / <job>", and a red
+# "slice-review / locked-checks" was read as the required slice-review check, which this run posts itself.
+name: review-run
 
 on:
   pull_request_target:
@@ -790,7 +792,7 @@ jobs:
           fi
           shown=FAIL; conclusion=failure; [ "$pass" = true ] && { shown=PASS; conclusion=success; }
           {
-            echo "## slice-review: $shown"; echo; echo "Commit: \`${SHA:0:7}\` · reviewer said $verdict · $why"; echo
+            echo "## slice-review: $shown"; echo; echo "Lane: ${LANE:-OTHER} · Commit: \`${SHA:0:7}\` · reviewer said $verdict · $why"; echo
             printf '%s' "$DECISION" | jq -r '(.unsolved // [])[] | "- **Blocking:** \(.rule_file) \(.rule_section): \(.text)"'
             printf '%s' "$DECISION" | jq -r '(.rulings // [])[] | "- Judge: \(.key): \(if .solved then "solved" else "unsolved" end). \(.why)"'
             printf '%s' "$DECISION" | jq -r '(.notes // [])[] | "- Note (cites no rule, not blocking): \(.text)"'
