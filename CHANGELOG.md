@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-11-03 · redesign slice 6 (no app change): the home's cut-paper art, 20 WebP images in `app/static/art/`, and the seeded generator that makes them in `gen/` (dev-only). No page shows them yet.
 - 2026-11-03 · redesign slice 5 (no version change): `.webp` files are served as `image/webp` on any machine, ready for the home's art. Every other file type is unchanged.
 - 2026-11-03 · redesign slice 4 (no app change): a test now lists the scripts in `app/static`, `fonts/` and the templates; a script that is not on the list, or is loaded on a page it is not listed for, fails the test suite. Only `upload.js` on the profile page is listed.
 - 2026-10-30 · redesign slice 3 (app 0.15.4): dark mode. On a device set to dark, every page opens in the dark theme; it follows the device only, with no switch. Text on coral and marigold stays navy, the QR frame stays white so it scans, and the focus ring is coral on dark surfaces.
