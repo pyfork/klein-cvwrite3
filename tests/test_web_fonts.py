@@ -1,6 +1,7 @@
 """The web fonts stay whole: every character the app's own text uses that a web font's source has is kept in its woff2
 cut, and the cuts stay within the phone budget (redesign S-007, AC-180 and AC-181). Standard library only.
 Run: python3 -m unittest discover tests. senior-lead-Opus5.5-agent, 2026-11-04"""
+import hashlib
 import struct
 import unittest
 from pathlib import Path
@@ -10,6 +11,8 @@ FONTS = ROOT / "fonts"
 SOURCES = {"SchibstedGrotesk-Variable.woff2": "SchibstedGrotesk-Variable.ttf",
            "LibreCaslonText-Italic-Variable.woff2": "LibreCaslonText-Italic-Variable.ttf",
            "GeistMono-Variable.woff2": "GeistMono-Variable.ttf"}
+STAMP = FONTS / "web-subset.sha256"  # written by fonts/build_web.py with each cut
+STAMPED = ("web-subset.txt", *SOURCES)
 FILE_LIMIT, TOTAL_LIMIT = 60_000, 160_000
 TEXT = ("app/templates/**/*.html", "app/content/**/*", "app/i18n.py", "app/static/*.css", "app/static/*.js")
 
@@ -53,6 +56,18 @@ class WebFonts(unittest.TestCase):
             src = cmap(FONTS / ttf)
             dropped = [f"U+{cp:04X} in {used[cp]}" for cp in sorted(used) if cp in src and cp not in keep]
             self.assertEqual(dropped, [], f"{ttf} has these and fonts/web-subset.txt drops them: add them there, then rerun fonts/build_web.py")
+
+    def test_the_cuts_are_made_from_this_kept_set(self):
+        rerun = "rerun fonts/build_web.py and commit what it writes"
+        self.assertTrue(STAMP.is_file(), f"fonts/web-subset.sha256 is missing: {rerun}")
+        stamped = {}
+        for line in STAMP.read_text(encoding="utf-8").splitlines():
+            digest, _, name = line.partition("  ")
+            stamped[name] = digest
+        for name in STAMPED:
+            now = hashlib.sha256((FONTS / name).read_bytes()).hexdigest()
+            self.assertEqual(stamped.get(name), now, f"fonts/{name} does not match fonts/web-subset.sha256: {rerun}")
+        self.assertEqual(sorted(stamped), sorted(STAMPED), f"fonts/web-subset.sha256 names other files: {rerun}")
 
     def test_the_cuts_are_within_the_budget(self):
         sizes = {w: (FONTS / w).stat().st_size for w in SOURCES}

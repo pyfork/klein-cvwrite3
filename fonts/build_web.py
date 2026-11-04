@@ -9,6 +9,7 @@ Dev-time only (needs fontTools and Brotli, never on the server):
     python3 fonts/build_web.py
 senior-lead-Opus5.5-agent, 2026-11-04
 """
+import hashlib
 from pathlib import Path
 
 from fontTools import subset
@@ -42,6 +43,10 @@ def main():
         font.flavor = "woff2"
         font.save(out)
         print(f"{out.name}: {out.stat().st_size} bytes")
+    # The suite checks the kept set and the cuts against this stamp, so an edit without a new cut fails `test`.
+    stamped = ["web-subset.txt", *(src.replace(".ttf", ".woff2") for src in SOURCES)]
+    (HERE / "web-subset.sha256").write_text(
+        "".join(f"{hashlib.sha256((HERE / n).read_bytes()).hexdigest()}  {n}\n" for n in stamped), encoding="utf-8")
 
 
 if __name__ == "__main__":
