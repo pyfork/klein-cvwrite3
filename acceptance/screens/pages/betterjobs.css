@@ -14,9 +14,9 @@
    Fonts (Schibsted Grotesk, Libre Caslon Text, Geist Mono) are self-hosted from /fonts under the SIL Open Font License;
    each family's licence file sits beside it. Colour lives in the tokens below and nowhere else (the dark slice swaps them). */
 
-@font-face{font-family:"Schibsted Grotesk";src:url(../../../fonts/SchibstedGrotesk-Variable.ttf) format("truetype");font-weight:400 900;font-style:normal;font-display:swap}
-@font-face{font-family:"Libre Caslon Text";src:url(../../../fonts/LibreCaslonText-Italic-Variable.ttf) format("truetype");font-weight:400 700;font-style:italic;font-display:swap}
-@font-face{font-family:"Geist Mono";src:url(../../../fonts/GeistMono-Variable.ttf) format("truetype");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Schibsted Grotesk";src:url(../../../fonts/SchibstedGrotesk-Variable.woff2) format("woff2");font-weight:400 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Libre Caslon Text";src:url(../../../fonts/LibreCaslonText-Italic-Variable.woff2) format("woff2");font-weight:400 700;font-style:italic;font-display:swap}
+@font-face{font-family:"Geist Mono";src:url(../../../fonts/GeistMono-Variable.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 
 :root{
   color-scheme:light dark;

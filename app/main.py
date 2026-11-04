@@ -19,7 +19,7 @@ from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.15.4"
+APP_VERSION = "0.15.5"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -48,7 +48,8 @@ def create_app(settings=None, mail=None):
         log.propagate = False
     templates = Jinja2Templates(directory=str(HERE / "templates"))
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
-    # Python 3.10's built-in types lack .webp; without this the art goes out as octet-stream.
+    # Python 3.10's built-in types lack .woff2 and .webp; without these the fonts and the art go out as octet-stream.
+    mimetypes.add_type("font/woff2", ".woff2")
     mimetypes.add_type("image/webp", ".webp")
     app.mount("/static", StaticFiles(directory=str(HERE / "static")), name="static")
     app.mount("/fonts", StaticFiles(directory=str(ROOT / "fonts")), name="fonts")
