@@ -1,0 +1,14 @@
+# The characters the three web fonts keep (redesign S-007, AC-179): one U+XXXX or U+XXXX-YYYY per line.
+# Basic Latin, Latin-1 and Latin Extended-A, then the punctuation and arrows the app's text uses.
+U+0020-007E
+U+00A0-017F
+U+2013-2014
+U+2018-201A
+U+201C-201E
+U+2022
+U+2026
+U+2039-203A
+U+20AC
+U+2122
+U+2190
+U+2192
