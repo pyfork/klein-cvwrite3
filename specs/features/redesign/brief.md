@@ -47,19 +47,22 @@ Brief Addendums 14 and 15 (tokens, type, shape, motion, copy, and what is settle
 4. **Scripts allow-list:** a test lists the allowed scripts and fails on any other, so the first slice that adds a script cannot ship an unlisted one.
 5. **The WebP type** (SHARED): the app sends `.webp` files as `image/webp` on any machine (added 2026-11-03, split from the art slice).
 6. **The art and its generator:** the generator moved into the repo (dev-only) with its pinned requirements, and the WebP art the home uses. Torn-edge bands that need an image mask wait for this slice.
-7. **The signed-out home:** the v2 page.
-8. **Profile, Generate and the result:** the ad read, drag-to-compare before and after, the interview prep panel.
-9. **Edit and re-render:** "You are in control".
-10. **Your applications,** with the "before the interview" panel.
-11. **Credits and pay.**
-12. **Account, notice, consent, terms, deleted, error and report pages.**
-13. **Admin,** plainer.
+7. **The fonts, smaller** (SHARED): the three web fonts as woff2 files cut to the Latin letters, with a phone budget (added 2026-11-04).
+8. **The signed-out home:** the v2 page.
+9. **Profile, Generate and the result:** the ad read, drag-to-compare before and after, the interview prep panel.
+10. **Edit and re-render:** "You are in control".
+11. **Your applications,** with the "before the interview" panel.
+12. **Credits and pay.**
+13. **Account, notice, consent, terms, deleted, error and report pages.**
+14. **Admin,** plainer.
 
 Why this order: every page shares the foundation, so it is the riskiest and goes first. It still gives users something: every existing page gets the new shell at once. SHARED changes get their own slice.
 
 Changed in the plan for slice 1 (2026-10-28): the rough list had the foundation as one slice and Addendum 15 counts eight slices; it is now eleven (twelve since 2026-10-29: the light fixes became slice 2, split from dark mode so each slice has one outcome). One foundation slice fails the coherence guard (its sentence needs "and": the look, dark mode, the script rule, the art) and is over the 700-line limit by estimate: the art generator alone is 577 lines, and the new stylesheet restyles the 307 lines of `calm.css` and adds tokens, dark mode and the shell on top. The build measures; these are not results. Each part has one reason to exist and is checked on its own. Slices 2 to 4 are planned when reached.
 
 Changed in the plan for slice 5 (2026-11-03): the art slice was first built as a one-PR slice (closed #124), and in CI its files were served as `application/octet-stream`, because Python 3.10's built-in type table has no `.webp`. The fix is one line in the shared `app/main.py`, and a SHARED change gets a slice of its own, so the WebP type is now slice 5 and the art slice 6; the home and every later slice move up one, thirteen in all.
+
+Changed in the plan for slice 7 (2026-11-04): the fonts' weight, owed since slice 1, is its own SHARED slice before the home (owner, 2026-11-04), so the home, the first page strangers open on a phone, sets its phone budget on the new sizes; the home and every later slice move up one, fourteen in all. A move of `APP_VERSION` to its own file was planned in its place first and dropped the same day: a version bump changes the `screens` job's stand-in pages, which are on the risk map, wherever the version lives (the plan's Owed).
 
 ## Open questions
 None. Addendum 15 settles the open items of Addendum 14.
@@ -93,6 +96,7 @@ None. The home's motion plays once per page view in the browser and keeps no sta
 | Visitors to the public home | unknown; `/` is `no-store`, so every view reaches the app | no measurement yet | the app unit (one worker, `MemoryMax=250M`, Addendum 1) |
 | Home page weight | page about 93 KB plus about 30 KB of sample data; the whole art folder is 668 KB for 25 images, and the home uses a subset | the design spike's files, measured 2026-10-27 | phone data; the home slice's plan sets the budget |
 | Stylesheet | 21 KB today | `calm.css`, 21,023 bytes | slice 1's plan sets the budget |
+| Web fonts | 524,216 bytes today: three whole TrueType files on every page | `fonts/`, file sizes | slice 7's plan sets it: each woff2 at most 60,000 bytes, the three at most 160,000 |
 | Screens to check | 24 templates; each page at 7 widths (320, 360, 390, 768, 1024, 1280, 1440), light and dark | the templates and the responsive rules | review time, not run time |
 
 ### Trust boundaries crossed
@@ -119,13 +123,13 @@ None. The home's motion plays once per page view in the browser and keeps no sta
 | 5 The WebP type | SHARED | Registering `image/webp` in `create_app` changes no other type the pages use. | Every page's stylesheet or script could be sent with a wrong type, and pages would lose their look or the profile page its upload script. The undo is a revert, run on a non-live copy. |
 | 7 The signed-out home | ACCESS | `/` can show a public page without weakening any other redirect or exposing account data, and the soft sign-in check does not start a session. | A signed-out visitor sees the wrong page, or a signed-in one sees the home. The undo is a revert to the redirect. No `specs/threat-model.md` exists yet; the slice plan says so on its Threat model line. |
 
-Slice 11 holds the consent form, which gates every sign-in. It is not a class (who gets in does not change), but its tests run in full.
+Slice 13 holds the consent form, which gates every sign-in. It is not a class (who gets in does not change), but its tests run in full.
 
 ### Shared standards still missing
 - Dark mode: one token set for both themes (slice 3; slice 1 defines the light tokens so that dark only overrides them).
 - The scripts allow-list test (slice 4).
 - A test that renders every route once per theme (slice 3).
-- The no-script and reduced-motion convention: each motion has an end state that shows without scripts (set in slice 4, first used in slice 7).
+- The no-script and reduced-motion convention: each motion has an end state that shows without scripts (set in slice 4, first used in slice 8, the home).
 - Evidence for the six responsive checks: run on a local browser per slice, with screenshots attached to the PR. CI has no screenshot step.
 
 senior-lead-Sonnet5.5-agent
