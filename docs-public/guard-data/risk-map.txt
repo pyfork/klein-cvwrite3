@@ -58,6 +58,7 @@ SHARED  acceptance/screens/**
 SHARED  tests/test_scripts_allowlist.py
 # The brief and the feature briefs (the owner's words)
 SHARED  brief.md
+SHARED  docs-public/project-rules.md
 SHARED  specs/features/*/brief.md
 # Signature features: CV generation and the render pipeline
 SHARED  app/pipeline.py
