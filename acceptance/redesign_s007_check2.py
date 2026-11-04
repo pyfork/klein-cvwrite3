@@ -68,8 +68,10 @@ class TheSuiteTest(unittest.TestCase):
         self.assertEqual(sorted(names - set(sys.stdlib_module_names)), [])
 
     def test_ac181_a_dropped_character_fails_and_is_named(self):
-        for rel in ("app/templates/base.html", "app/content/terms.md", "app/i18n.py", "app/static/betterjobs.css"):
-            text = f"\n# {PLANTED}\n" if rel.endswith(".py") else f"\n/* {PLANTED} */\n" if rel.endswith(".css") else f"\n{PLANTED}\n"
+        for rel in ("app/templates/base.html", "app/content/terms.md", "app/i18n.py", "app/static/betterjobs.css",
+                    "app/static/upload.js"):
+            text = (f"\n# {PLANTED}\n" if rel.endswith(".py") else f"\n/* {PLANTED} */\n" if rel.endswith(".css")
+                    else f"\n// {PLANTED}\n" if rel.endswith(".js") else f"\n{PLANTED}\n")
             with self.subTest(file=rel):
                 self.assertFailsNaming(add_text(rel, text), "U+0218", rel)
 
