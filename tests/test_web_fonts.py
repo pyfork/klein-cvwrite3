@@ -52,7 +52,7 @@ class WebFonts(unittest.TestCase):
         for woff2, ttf in SOURCES.items():
             src = cmap(FONTS / ttf)
             dropped = [f"U+{cp:04X} in {used[cp]}" for cp in sorted(used) if cp in src and cp not in keep]
-            self.assertEqual(dropped, [], f"{ttf} has these and fonts/web-subset.txt drops them")
+            self.assertEqual(dropped, [], f"{ttf} has these and fonts/web-subset.txt drops them: add them there, then rerun fonts/build_web.py")
 
     def test_the_cuts_are_within_the_budget(self):
         sizes = {w: (FONTS / w).stat().st_size for w in SOURCES}
