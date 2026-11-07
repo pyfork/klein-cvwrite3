@@ -1,6 +1,6 @@
 """Locked check, redesign S-008. CHECK 1: the flag `CVWRITE_HOME` (AC-185, AC-186).
 
-AC-185: production refuses the setting on, and any value but on or off, naming it; dev takes on and off.
+AC-185: production refuses the setting on, and any value but on or off, naming it; dev takes on and off; blank is off.
 AC-186: with it on, a visitor whose request carries no session cookie gets 200 and an HTML page (`index.html`; in slice 8
 a placeholder, which slice 9 replaces with the top half), `private, no-store`, no cookie and no session row; a request
 with a session cookie, live or not, goes through today's checks.
@@ -27,7 +27,7 @@ def env(**kw):
 
 
 class TheSetting(unittest.TestCase):
-    """AC-185: production refuses CVWRITE_HOME=on and any value but on or off; dev takes on and off."""
+    """AC-185: production refuses CVWRITE_HOME=on and any value but on or off; dev takes on and off; blank is off."""
 
     def load(self, **kw):
         from app import config
@@ -44,12 +44,14 @@ class TheSetting(unittest.TestCase):
     def test_ac185_production_takes_off_and_unset(self):
         self.assertIs(self.load(CVWRITE_ENV="prod", CVWRITE_HOME="off").home, False)
         self.assertIs(self.load(CVWRITE_ENV="prod").home, False)
+        self.assertIs(self.load(CVWRITE_ENV="prod", CVWRITE_HOME="").home, False)   # a blank line in the env file is off
 
     def test_ac185_dev_takes_on_and_off_only(self):
         from app import config
         self.assertIs(self.load(CVWRITE_HOME="on").home, True)
         self.assertIs(self.load(CVWRITE_HOME="off").home, False)
         self.assertIs(self.load().home, False)
+        self.assertIs(self.load(CVWRITE_HOME="").home, False)
         with self.assertRaises(config.ConfigError) as e:
             self.load(CVWRITE_HOME="yes")
         self.assertIn("CVWRITE_HOME", str(e.exception))
