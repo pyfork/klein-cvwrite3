@@ -1,0 +1,81 @@
+{
+ "_note": "senior-lead-Opus5.5-agent, 2026-11-08. Locked with redesign S-009's checks. The words the accepted collage homepage v2 shows in its header and hero, read out of v2 by headless Chrome (first locked as part of the top half's draft fixture, branch draft-redesign-top-half at 3411036; slice 10 locks the band's and the keywords' words with its own plan). Companies and job titles are the three invented sample roles.",
+ "headings": [
+  "Stop sending the same CV to every job."
+ ],
+ "hero": {
+  "h1": "Stop sending the same CV to every job.",
+  "lede": "Paste a job ad. Get a 2-page CV made for that job, from your own experience.",
+  "pills": [
+   [
+    "Get your 2 free CVs",
+    "/signin"
+   ],
+   [
+    "See how it works",
+    "#how"
+   ]
+  ],
+  "ticks": [
+   "Exactly 2 pages, A4",
+   "Has the ad's top 3 keywords",
+   "Built from your real experience"
+  ],
+  "picture_label": "Three job ads for graphic designers, each with a CV clipped to it. In the first state the three CVs are identical grey photocopies. In the second, each CV is cut to fit its ad and starts with that ad's top three keywords.",
+  "picture_words": [
+   "Maribel Fashion",
+   "Senior Graphic Designer",
+   "Multi-channel.",
+   "Typography.",
+   "Figma.",
+   "Pelita Pay",
+   "Graphic Designer, Digital and Motion",
+   "Social media.",
+   "Digital ads.",
+   "Motion.",
+   "ABC Property Rentals",
+   "Creative Graphic Designer, Junior",
+   "Brand guidelines.",
+   "InDesign.",
+   "Web design.",
+   "Multi-channel · Typography · Figma",
+   "Social media · Digital ads · Motion",
+   "Brand guidelines · InDesign · Web design"
+  ],
+  "caption_on": "Same job title. Different job. Three CVs.",
+  "caption_off": "One CV, copied for three different jobs.",
+  "photocopy_name": "CV_final_v3.pdf"
+ },
+ "header": {
+  "links": [
+   [
+    "Examples",
+    "#demo"
+   ],
+   [
+    "How it works",
+    "#how"
+   ],
+   [
+    "Applications",
+    "#apps"
+   ],
+   [
+    "Pricing",
+    "#price"
+   ],
+   [
+    "Privacy",
+    "#privacy"
+   ],
+   [
+    "FAQ",
+    "#faq"
+   ]
+  ],
+  "start": [
+   "Get started",
+   "/signin"
+  ]
+ }
+}

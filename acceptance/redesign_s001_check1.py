@@ -38,8 +38,11 @@ class SheetAndFonts(CVCase):
         for f in sorted(C.TEMPLATES.glob("*.html")):
             text = f.read_text(encoding="utf-8")
             self.assertNotIn("calm.css", text, f.name)
-            if f.name != "base.html" and not f.name.startswith("_"):
-                self.assertRegex(text, r"\{%\s*extends\s+[\"']base.html[\"']\s*%\}", f.name + " does not extend base.html")
+            extends = re.search(r"\{%\s*extends\s+[\"']base.html[\"']\s*%\}", text)
+            if f.name == "index.html" and not extends:   # the home has its own header (S-009 AC-104 to AC-106; re-plan 2026-11-08, slice 9)
+                self.assertIn('href="/static/betterjobs.css?v={{ app_version }}"', text, "the home links the sheet itself")
+            elif f.name != "base.html" and not f.name.startswith("_"):
+                self.assertTrue(extends, f.name + " does not extend base.html")
         pages = C.app_pages(self)
         self.assertGreaterEqual(len(pages), 18, sorted(pages))
         for name, (html, who) in pages.items():
