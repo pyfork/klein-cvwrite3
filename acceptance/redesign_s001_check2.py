@@ -89,6 +89,17 @@ def declared(css, selector_re):
     return out
 
 
+def home_rule(sel):
+    """A rule of the signed-out home: every selector in it starts with `.home` (re-plan 2026-11-07, slice 8). S-008's
+    AC-174 and AC-177 narrow AC-21 and AC-49 on the home, and slice 8's CHECK 2 measures the home itself."""
+    return all(re.match(r"\.home(?![\w-])", part.strip()) for part in sel.split(","))
+
+
+def outside_home(css):
+    """The sheet's text without the home's rules."""
+    return "\n".join(f"{sel}{{{body}}}" if body is not None else sel for _, sel, body in C.rules(css) if not home_rule(sel))
+
+
 class Look(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -150,9 +161,9 @@ class Look(unittest.TestCase):
     def test_ac21_flat_paper_and_one_shadow(self):
         self.assertTrue(self.css, "no stylesheet")
         for word in ("gradient(", "backdrop-filter", "blur("):
-            self.assertNotIn(word, self.bare)
+            self.assertNotIn(word, outside_home(self.css))
         for chain, sel, p, v in declared(self.css, r".*"):
-            if p == "box-shadow":
+            if p == "box-shadow" and not home_rule(sel):
                 self.assertTrue(v == "none" or "var(--shadow)" in v or "var(--halo)" in v, f"{sel}: {v}")
 
     def test_ac27_the_brand_mark_is_drawn_in_css(self):
@@ -183,7 +194,7 @@ class Look(unittest.TestCase):
         self.assertNotRegex(self.bare, r"@keyframes\s+[\w-]*pulse")
         allowed = {"transform", "opacity", "color", "background-color", "border-color", "outline-color", "fill", "stroke"}
         for chain, sel, p, v in declared(self.css, r".*"):
-            if p in ("transition", "transition-duration", "transition-property"):
+            if p in ("transition", "transition-duration", "transition-property") and not home_rule(sel):
                 for t in re.findall(r"(\d*\.?\d+)(ms|s)\b", v):
                     ms = float(t[0]) * (1000 if t[1] == "s" else 1)
                     self.assertLessEqual(ms, 300, f"{sel}: {v}")
@@ -211,9 +222,10 @@ class Look(unittest.TestCase):
         self.assertGreaterEqual(self.css.count("data:image/svg+xml"), 4)
 
     def test_budget_the_stylesheet_stays_light_for_a_phone(self):
-        """Plan budget, not an AC: at most 45,000 bytes (today's calm.css is 21,023)."""
+        """Plan budget, not an AC: at most 90,000 bytes (today's calm.css was 21,023). Re-planned 2026-11-07 from 45,000:
+        the home's rules live in this one sheet (owner, slice 8's plan)."""
         self.assertTrue(self.css, "no stylesheet")
-        self.assertLessEqual(C.SHEET.stat().st_size, 45000)
+        self.assertLessEqual(C.SHEET.stat().st_size, 90000)
 
     def test_ac70_nothing_is_sized_to_the_window_height(self):
         self.assertTrue(self.css, "no stylesheet")
