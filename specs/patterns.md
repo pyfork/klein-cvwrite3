@@ -155,5 +155,5 @@ RULE:    A demonstration (the hero's switch, the compare slider, the keyword sti
          - Reduced motion: it never plays by itself, there are no rings, and every change happens at once; the control still works.
          - Scripts off: the control is not shown and the picture shows its answer (the CVs cut to fit, the slider on "After", the stickers in place).
 WHY:     Addendum 14: a demonstration plays once, then waits; no loops, one moving thing per screen. Addendum 15: every page works with scripts off.
-USED BY: the home (S-008 AC-113, AC-129, AC-136); the result page's compare slider (slice 9)
+USED BY: the home (S-008 AC-113, AC-129, AC-136); the result page's compare slider (slice 13)
 EXCEPTIONS: none

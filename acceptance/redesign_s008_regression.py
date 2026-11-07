@@ -1,7 +1,7 @@
 """Locked check, redesign S-008. REGRESSION A (passes before): with the setting off, `/` answers exactly as today (AC-184).
 
-A flag-off case (plans/redesign-plan.md, Check cap): it keeps the off path whole while slices 8 to 10 build the home
-behind the flag. Slice 11, which removes the flag, retires it by a re-plan of this check with the reason.
+A flag-off case (plans/redesign-plan.md, Check cap): it keeps the off path whole while slices 9 to 11 build the home
+behind the flag. Slice 12, which removes the flag, retires it by a re-plan of this check with the reason.
 The app is built with the suite's own settings, which name no `home` setting, so this runs the same before and after.
 senior-lead-Opus5.5-agent, 2026-11-07
 """
