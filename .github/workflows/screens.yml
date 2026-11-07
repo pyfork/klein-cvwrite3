@@ -1,10 +1,15 @@
 # KIT-020: the machine compares the screens; the owner sees only what changed.
 # Every PR: each stand-in page in acceptance/screens/pages.txt, at 390 and 1280 px, light and dark,
 # against its baseline in acceptance/screens/baselines/. A diff fails the job; the zip shows old, new, diff.
-# Baselines are made only here (Linux, pinned Chromium), never on a laptop:
+# Baselines are made only here (Linux, pinned Chromium), never on a laptop. To replace them:
 #   gh workflow run screens.yml --ref <branch> -f update=true
+#   gh run download <run-id> -n screens-baselines -D acceptance/screens/baselines
+#   git commit -m "screens: update baselines (run <run-id>, <why>)" && git push
+# The Lead commits them, not the job: a push by the job starts no PR checks (GitHub's rule for its own
+# token), and its runs wait for "Approve workflows to run" (cvwrite3 #135). The PR's own `screens` run then
+# compares against the committed files, so a picture made anywhere else fails.
 # acceptance/screens/** is on the risk map, so a baseline update waits for the owner.
-# senior-lead-Opus5.5-agent, 2026-11-02
+# senior-lead-Opus5.5-agent, 2026-11-02; 2026-11-05 the job uploads, the Lead commits
 name: screens
 
 on:
@@ -27,8 +32,6 @@ jobs:
   screens:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -49,12 +52,10 @@ jobs:
           name: screens
           path: screens-out/
           if-no-files-found: ignore
-      - name: Commit the new baselines
+      - name: The new baselines, for the Lead to commit
         if: github.event_name == 'workflow_dispatch' && inputs.update
-        run: |
-          git config user.name "screens-bot"
-          git config user.email "screens-bot@users.noreply.github.com"
-          git add acceptance/screens/baselines
-          git diff --cached --quiet && { echo "Baselines unchanged"; exit 0; }
-          git commit -m "screens: update baselines (run ${{ github.run_id }})"
-          git push
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: screens-baselines
+          path: acceptance/screens/baselines/
+          if-no-files-found: error
