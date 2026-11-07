@@ -98,6 +98,16 @@ jobs:
           path: trusted
           persist-credentials: false
 
+      # kit-keeper-Opus5.5-agent, 2026-11-07 (KIT-021): a PR whose every
+      # file is brief.md or under docs-public/ (guard-data/ excepted) changes
+      # no code, so the tools, the checker and every run below are skipped
+      # and results.txt says so. main's script decides; any doubt says CODE
+      - name: Text-only PR?
+        id: text
+        run: |
+          only="$(bash trusted/.github/scripts/text-only.sh trusted pr)"
+          echo "$only"; echo "only=$only" >> "$GITHUB_OUTPUT"
+
       # KIT-007: the image's own interpreter when it already is the record's
       # version (the distribution's build, as on the server); otherwise the
       # official setup action, pinned by commit
@@ -140,6 +150,7 @@ jobs:
       # checks them like any other program. A CHECK_ENV program that isn't
       # there fails closed: a check that needs it could only fail
       - name: Install the record's tools
+        if: steps.text.outputs.only != 'TEXT'
         env:
           TOOLS: ${{ needs.runtime.outputs.tools }}
           CHECK_ENV: ${{ needs.runtime.outputs.check_env }}
@@ -168,6 +179,7 @@ jobs:
       # then fail closed if checker can still write a folder on PATH, one
       # above it, a file in it, or main's checks (sticky folders excepted)
       - name: Set up the checker user
+        if: steps.text.outputs.only != 'TEXT'
         env:
           CHECK_ENV: ${{ needs.runtime.outputs.check_env }}
         run: |
@@ -236,6 +248,7 @@ jobs:
           mkdir -m 700 "$RUNNER_TEMP/results"
 
       - name: Run locked checks
+        if: steps.text.outputs.only != 'TEXT'
         run: |
           R="$RUNNER_TEMP/results"
           # One run of PR code as checker; output goes through this job's
@@ -332,6 +345,14 @@ jobs:
         env:
           TEST_COMMAND: ${{ vars.GUARD_TEST_COMMAND }}
           CHECK_ENV: ${{ needs.runtime.outputs.check_env }}
+
+      - name: Text-only result
+        if: steps.text.outputs.only == 'TEXT'
+        run: |
+          { cat "$RUNNER_TEMP/runtime-line.txt"; echo
+            echo "TEXT-ONLY PR: every changed file is brief.md or under docs-public/ (guard-data/ excepted)."
+            echo "No code changed, so the locked checks and the full test suite were not run (KIT-021)."; } > results.txt
+          cat results.txt
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
@@ -536,6 +557,9 @@ jobs:
             test runner scripts or skips tests, judge that change yourself. If that file is missing,
             says no checks ran, or says the test command is not configured,
             your verdict is BLOCKED.
+            The one exception: a file whose line starts "TEXT-ONLY PR" means
+            main's script found only brief.md or docs-public/ text changed, so
+            nothing ran on purpose. That is not BLOCKED; review the text.
 
             You have no permission to execute scripts or change files in this
             run, by design. Do not try; every attempt is refused and wastes
@@ -607,6 +631,9 @@ jobs:
             test runner scripts or skips tests, judge that change yourself. If that file is missing,
             says no checks ran, or says the test command is not configured,
             your verdict is BLOCKED.
+            The one exception: a file whose line starts "TEXT-ONLY PR" means
+            main's script found only brief.md or docs-public/ text changed, so
+            nothing ran on purpose. That is not BLOCKED; review the text.
 
             You have no permission to execute scripts or change files in this
             run, by design. Do not try; every attempt is refused and wastes

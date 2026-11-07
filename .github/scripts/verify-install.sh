@@ -29,6 +29,7 @@ files)
            .github/workflows/daily-sweep.yml .github/workflows/main-tripwire.yml \
            .github/scripts/test-lock.sh .github/scripts/daily-sweep.sh \
            .github/scripts/runtime-check.sh .github/scripts/review-rounds.sh \
+           .github/scripts/text-only.sh \
            docs-public/guard-data/expected-protection.json; do
     if api "contents/$f?ref=main" > /dev/null; then ok "on main: $f"; else bad "missing on main: $f"; fi
   done ;;
