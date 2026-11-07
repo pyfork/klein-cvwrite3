@@ -19,6 +19,7 @@ class Settings:
     data_dir: str = str(Path(__file__).resolve().parent.parent / "data")  # PDFs live under data/pdfs/
     claude: str = "real"    # "fake" (dev and tests only) answers without calling Claude
     qr_path: str = str(Path(__file__).resolve().parent.parent / "config" / "qr" / "duitnow.png")  # outside git
+    home: bool = False      # CVWRITE_HOME=on (dev and tests only): a visitor with no session cookie sees the new home at "/" (removed in redesign slice 12)
     # The sign-in code's mail (prod only; dev and tests keep codes in an outbox).
     smtp_host: str = ""
     smtp_port: int = 587
@@ -51,6 +52,9 @@ def load(environ=os.environ):
     claude = environ.get("CVWRITE_CLAUDE", "real").strip()
     if claude not in ("real", "fake") or (claude == "fake" and env == "prod"):
         raise ConfigError("CVWRITE_CLAUDE must be real in prod (fake is for dev only)")
+    home = environ.get("CVWRITE_HOME", "").strip() or "off"   # blank is off
+    if home not in ("on", "off") or (home == "on" and env == "prod"):
+        raise ConfigError("CVWRITE_HOME must be off in prod (on is for dev only) and on or off in dev")
     return Settings(
         env=env,
         database_url=need("CVWRITE_DATABASE_URL"),
@@ -60,5 +64,6 @@ def load(environ=os.environ):
         data_dir=environ.get("CVWRITE_DATA_DIR", "").strip() or Settings.data_dir,
         claude=claude,
         qr_path=environ.get("CVWRITE_QR_PATH", "").strip() or Settings.qr_path,
+        home=home == "on",
         **mail,
     )
