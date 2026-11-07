@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, HTMLResponse, PlainTextResponse, Red
 
 from render import contact as contact_mod
 
-from . import account, caps, credits, cvtext, ic, orders, pause, pipeline, profile, rendering, upload
+from . import account, auth, caps, credits, cvtext, ic, orders, pause, pipeline, profile, rendering, upload
 
 STEP_NAMES = {"call_a": "Reading the ad", "call_b": "Writing your CV", "retry": "Fixing the draft",
               "render": "Making the PDF", "check": "Checking: 2 pages, A4, keywords",
@@ -120,6 +120,8 @@ def register(app, h):
 
     @app.get("/")
     def home(request: Request):
+        if h.settings.home and auth.cookie_name(h.settings) not in request.cookies:   # the new home, behind CVWRITE_HOME (dev only)
+            return h.render(request, "index.html", signed_out=True)
         with h.conn() as c:
             u = h.user(request, c)
         return RedirectResponse("/generate" if u["ready"] else "/profile", 303)   # step 1 first, until the profile is ready
