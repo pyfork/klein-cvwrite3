@@ -780,4 +780,11 @@ Ponytail-Sonnet5.5-agent
 - The `protect main` ruleset asks for 0 approvals with code-owner review on, and the repository allows auto-merge.
 - Product features are unchanged. This replaces "a PR the owner merges" in the Chunks heading.
 
+## Addendum 21 (2026-11-07): new CV fonts
+- **Owner decision 2026-11-07:** new CVs use two fonts: **Manrope** for headings (name, headline, section titles, job titles, key numbers) and **Arimo** for body text and labels. This replaces "style 1 (Archivo)" in User flow 4, Call B.
+- Arimo has the same letter widths as Arial and looks almost the same. Arial itself cannot be stored in a public repository. Both fonts are free (Manrope OFL, Arimo Apache 2.0) and self-hosted in `fonts/` as static cuts, one per weight, so a render never needs the internet.
+- CVs made before the change are not touched. The render fingerprint changes once, on the deploy that ships this.
+- The check is unchanged: exactly 2 pages, A4, top 3 keywords present. Arimo may set wider than the current body font, so the build tests the 2-page check on the three sample roles before it ships.
+- The site's own fonts do not change.
+
 senior-lead-Opus5.5-agent
