@@ -26,7 +26,9 @@ PAGES = OUT / "pages"
 QR = "data:image/svg+xml;base64," + base64.b64encode(placeholder_qr().encode()).decode()
 # What differs between two runs, fixed so a second run writes the same bytes.
 FIXED = [(r"\d\d [A-Z][a-z]{2}, \d\d:\d\d", "01 Jan, 09:00"), (r"Paused since \d\d:\d\d", "Paused since 09:00"),
-         (r"CV3-[A-Z0-9]{4}", "CV3-AAAA")]
+         (r"CV3-[A-Z0-9]{4}", "CV3-AAAA"),
+         # The footer's app version: a bump alone must not change 92 pictures (KIT-020: fixed version string).
+         (r"<span>v\d+\.\d+\.\d+</span>", "<span>v0.0.0</span>")]
 # Today and a year on ("2 Nov 2026", "2 Nov 2027") move daily; the one fixed date app_pages sets stays.
 DAY = re.compile(r"\b(?!28 Sep 2027\b)\d{1,2} [A-Z][a-z]{2} (20\d\d)\b")
 LIST_HEAD = ("# KIT-020: one stand-in page per line: <name> <file>. Written by make_pages.py; a name is a page template's\n"
