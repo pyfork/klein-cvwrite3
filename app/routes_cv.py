@@ -120,7 +120,7 @@ def register(app, h):
 
     @app.get("/")
     def home(request: Request):
-        if h.settings.home and not request.cookies.get(auth.cookie_name(h.settings)):   # the new home, behind CVWRITE_HOME (dev only)
+        if h.settings.home and auth.cookie_name(h.settings) not in request.cookies:   # the new home, behind CVWRITE_HOME (dev only)
             return h.render(request, "index.html", signed_out=True)
         with h.conn() as c:
             u = h.user(request, c)

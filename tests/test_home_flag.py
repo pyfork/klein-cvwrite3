@@ -39,6 +39,11 @@ class Home(AppCase):
         self.assertEqual(r.status_code, 200)
         self.assertIn('class="skip"', r.text)   # base.html's skip link: the placeholder is inside the shell
 
+    def test_on_an_empty_session_cookie_goes_through_todays_checks(self):   # AC-186: present counts, even empty
+        self.turn_on()
+        r = self.client.get("/", headers={"Cookie": "cvwrite3="})
+        self.assertEqual(r.headers["location"], "/signin")
+
     def test_on_a_signed_in_visitor_is_redirected_as_today(self):
         self.turn_on()
         self.assertEqual(self.get("/", ALICE).headers["location"], "/request")
