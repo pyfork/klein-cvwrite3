@@ -1,5 +1,5 @@
 {
- "_note": "senior-lead-Opus5.5-agent, 2026-11-08. Locked with redesign S-009's checks. The words the accepted collage homepage v2 shows in its header and hero, read out of v2 by headless Chrome (first locked as part of the top half's draft fixture, branch draft-redesign-top-half at 3411036; slice 10 locks the band's and the keywords' words with its own plan). Companies and job titles are the three invented sample roles.",
+ "_note": "senior-lead-Opus5.5-agent, 2026-11-08. Locked with redesign S-009's checks. The words the accepted collage homepage v2 shows in its header and hero, and its hero picture's proportion and layers (each layer's left, top and width as a percentage of the picture, and its tilt in degrees, untransformed, scripts off), read out of v2 by headless Chrome (first locked as part of the top half's draft fixture, branch draft-redesign-top-half at 3411036; slice 10 locks the band's and the keywords' words with its own plan). Companies and job titles are the three invented sample roles.",
  "headings": [
   "Stop sending the same CV to every job."
  ],
@@ -76,6 +76,78 @@
   "start": [
    "Get started",
    "/signin"
+  ]
+ },
+ "picture_ratio": [
+  560,
+  520
+ ],
+ "picture_layers": {
+  "ground": [
+   -7,
+   -6,
+   114,
+   0
+  ],
+  "scrap-star": [
+   88,
+   2,
+   9,
+   0
+  ],
+  "scrap-dot": [
+   -3,
+   70,
+   7,
+   0
+  ],
+  "ad-lilac": [
+   1,
+   9,
+   36,
+   -7
+  ],
+  "ad-teal": [
+   32,
+   1,
+   36,
+   3
+  ],
+  "ad-marigold": [
+   63,
+   13,
+   36,
+   -3
+  ],
+  "cv-lilac": [
+   13,
+   47,
+   26,
+   4
+  ],
+  "cv-teal": [
+   43,
+   42,
+   26,
+   -3
+  ],
+  "cv-marigold": [
+   73,
+   50,
+   26,
+   3
+  ],
+  "scissors": [
+   68,
+   84,
+   30,
+   -8
+  ],
+  "scrap-tri": [
+   44,
+   88,
+   7,
+   0
   ]
  }
 }

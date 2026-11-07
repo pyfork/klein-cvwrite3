@@ -1,7 +1,8 @@
 """Locked check, redesign S-009. CHECK 2: the frame's, the header's and the hero's look, in Chrome with scripts off, light and dark.
 
 AC-101 (the column and the hero's white slab), AC-102 (colours are tokens), AC-105 and AC-106 (the header by width,
-sticky, blurred, one line, the skip link's target below it), AC-108 (the hero's columns), AC-109 (the heading),
+sticky, blurred, one line, the skip link's target below it), AC-108 (the hero's columns), AC-109 (the heading), AC-111
+(the picture 560 by 520 in proportion, its layers at v2's places, widths and tilts),
 AC-163 (text sizes), AC-164 (touch targets), AC-165 (hover), AC-166 (focus rings), AC-170 (dark), AC-174 (gradients
 only on paper, blur only on the header), AC-175 (the sticky header) and AC-176 (fonts).
 The stylesheets are the ones the home links, whatever their names (the decision on slice 9).
@@ -36,6 +37,22 @@ out.h1 = h1 ? {...box(h1), ink: ink(h1), size: px(cs(h1).fontSize), weight: cs(h
 const same = h1 && leafWith(h1, 'the same CV')[0], every = h1 && leafWith(h1, 'every')[0];
 out.same = same ? {lines: same.getClientRects().length, color: cs(same).color} : null;
 out.every = every ? cs(every).color : null;
+// AC-111: the picture's proportion, and each layer (the outermost positioned box round each image, keyed by its file)
+// at its place, width and tilt as a share of the picture, measured untransformed
+const st = hero && hero.querySelector('[role="img"]');
+out.stage = st ? {w: st.getBoundingClientRect().width, h: st.getBoundingClientRect().height} : null;
+out.layers = {};
+if (st) { const sr = st.getBoundingClientRect();
+  const tilt = e => { const m = cs(e).transform; if (!m || m === 'none') return 0; const v = m.match(/-?[\d.e]+/g).map(Number); return Math.round(Math.atan2(v[1], v[0]) * 180 / Math.PI * 10) / 10; };
+  for (const i of st.querySelectorAll('img')) {
+    const name = (i.getAttribute('src') || '').split('/').pop().split('?')[0].replace(/\.webp$/, '');
+    if (name === 'copy') continue;   // the photocopy face shares its CV's layer
+    let l = null; for (let n = i; n && n !== st; n = n.parentElement) if (cs(n).position === 'absolute') l = n;
+    if (!l) { out.layers[name] = null; continue; }
+    const a = tilt(l), keep = [l.style.transition, l.style.transform]; l.style.transition = 'none'; l.style.transform = 'none';
+    const r = l.getBoundingClientRect(); l.style.transform = keep[1]; l.style.transition = keep[0];
+    const pc = (v, d) => Math.round(v / d * 1000) / 10;
+    out.layers[name] = [pc(r.left - sr.left, sr.width), pc(r.top - sr.top, sr.height), pc(r.width, sr.width), a]; } }
 // AC-163: every shown text outside the paper
 out.small = [];
 for (const e of doc.querySelectorAll('body *')) { if (!ownText(e) || !shown(e) || paper(e)) continue;
@@ -173,6 +190,21 @@ class TheLook(unittest.TestCase):
                 self.assertEqual(m["every"], rgb("#FF5A47"))
         for w in DARK:
             self.assertEqual(self.Dk[w]["same"]["color"], rgb("#A6A3AC"))
+
+    def test_ac111_the_picture_proportion_places_and_tilts(self):
+        w0, h0 = FIX["picture_ratio"]
+        want = FIX["picture_layers"]
+        for w, m in self.L.items():
+            with self.subTest(w=w):
+                self.assertIsNotNone(m["stage"], "the picture")
+                self.assertAlmostEqual(m["stage"]["w"] / m["stage"]["h"], w0 / h0, delta=0.005 * w0 / h0, msg="560 by 520 in proportion")
+                self.assertEqual(sorted(m["layers"]), sorted(want), "v2's layers, each with its own image")
+                for name, (left, top, width, tilt) in want.items():
+                    got = m["layers"][name]
+                    self.assertIsNotNone(got, f"{name} sits in a positioned layer")
+                    for what, g, x in (("left", got[0], left), ("top", got[1], top), ("width", got[2], width)):
+                        self.assertAlmostEqual(g, x, delta=0.5, msg=f"{name} {what}, % of the picture")
+                    self.assertAlmostEqual(got[3], tilt, delta=0.2, msg=f"{name} tilt, degrees")
 
     # ---------------------------------------------------------------------------------------------- across the frame, the header and the hero
     def test_ac163_text_sizes(self):
