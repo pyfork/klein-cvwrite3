@@ -788,3 +788,11 @@ Ponytail-Sonnet5.5-agent
 - The site's own fonts do not change.
 
 senior-lead-Opus5.5-agent
+
+## Addendum 22 (2026-11-07): the home ships in four slices, behind a flag
+- **Owner decision 2026-11-07 (gwl):** the signed-out home is built as four slices of `specs/features/redesign/brief.md` in place of one: the top half (8), the bottom half (9), the demonstrations, which are the home's scripts (10), and the home going public (11). The redesign is now seventeen slices.
+- Slices 8 to 10 build the page behind a setting, `CVWRITE_HOME`, that production refuses. While it is off, `/` sends a signed-out visitor to sign-in, as today. Slice 11 removes the setting, and from then `/` shows the home to a signed-out visitor, as Addendum 15 says.
+- Why: the accepted design measures 1,278 lines plus about 30 KB of sample data; one slice would be about 1,500 changed lines and 83 rules, over the build's 700-line stop.
+- Nothing a user sees changes until slice 11. Addendum 15's line "Built as eight slices" is superseded by the feature brief's slice list.
+
+senior-lead-Opus5.5-agent

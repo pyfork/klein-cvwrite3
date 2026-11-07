@@ -3,7 +3,7 @@
 
 - **Brief:** specs/features/redesign/brief.md (with its Shape)
 - **Shared standards:** none yet. Dark mode and the route-per-theme test come in slice 3, the scripts allow-list in slice 4 (the brief's slice list; slice 2 is the light fixes, added 2026-10-29). This project predates the walking skeleton, so there is no `acceptance/stack-checks.sh` to lock.
-- **Flags:** none
+- **Flags:** `CVWRITE_HOME` (added in slice 8): the half-built home at `/`, refused in production; removed by slice 11 (Owed).
 
 ## Owed
 - Rename `calm.css` in the Screens line of `docs-public/project-rules.md`: the owner's own PR, since only the owner changes that file; it can ride with the "one small script" edit that must land before the first slice that adds a script (from slice 1; closed by that PR). **Three slices old at slice 4: merging the slice 4 plan PR with this line unchanged is the owner's waiver until slice 6's plan PR opens (slice 6 is the first slice that adds a script); the edit must have landed by then.** Draft text for the owner's PR: `calm.css` becomes `betterjobs.css`, and "one small script (`app/static/upload.js`)" becomes "a few small scripts, each on the allow-list in `tests/test_scripts_allowlist.py`". **Closed 2026-11-04 by #130** (the owner asked the Lead to open it; the owner approved and merged it), after guard PR #131 put `docs-public/project-rules.md` on the risk map so an owner-only edit is lane OWNED; the line now names `betterjobs.css` and the allow-list.
@@ -24,6 +24,9 @@
 - **Slice 6's plan (2026-11-03) closes the slice 6 items above:** (1) boundary cases at each limit are CHECK 1's `TheLimitsAtTheirEdges` (2,400 and 2,401 px; 100,000 and 100,001 bytes per file; 600,000 and 600,001 bytes for the folder), run through the same `problems()` the real folder is judged by; (2) the reason the rerun-gives-the-same-bytes rule has no locked case is in S-006's Out of scope and slice 6's Locked checks below. **Also closed here:** the tech review of #127, row 1 (owed): CHECK 1 now serves every real art file through the app's own `/static` mount (`self.client.get`) on slice 5's bare type table.
 - Slice 5's build PR #127 left one "Not done yet" item, its tech review row 1, closed in the line above; row 2 was won't fix (CI reran the checks). Slice 5's known limits are S-005's Out of scope.
 - Slice 6's build PR #128 left nothing under "Not done yet" and had no tech review (routine). Its known limit is S-006's Out of scope (the rerun rule has no locked case).
+- Slice 7's build PR #135 left two "Not done yet" items, both closed: the `screens` baselines (the version in the stand-in pages' footer, fixed at its cause by #137) and the tech review (4 rows: row 1 fixed through re-plan #136, rows 2 to 4 won't fix with their reasons, on #135). Slice 7's known limits are S-007's Out of scope.
+- **Slice numbers after the home's split (2026-11-07, owner gwl; Addendum 22):** the home is slices 8 to 11 (top half, bottom half, demonstrations, the home goes public), so every slice after it moves up three (17 in all). Where a line here, in this plan or in an earlier slice brief names "slice 9" for Profile, Generate and the result (the slice that rewrites `run.html`), read slice 12; slices 10 to 14 read 13 to 17. The AC-4 reader waiver binds slice 12 by its content.
+- **The flag `CVWRITE_HOME`** (from slice 8): removed by slice 11, whose plan retires slice 8's flag-off cases (REGRESSION A, AC-184) as a re-plan of slice 8's check with the reason, renews that check's lock, and retires AC-184 in S-008. Production refuses the flag on (AC-185) until then.
 
 ## Slice 1
 - **Slice brief:** specs/features/redesign/S-001.md
