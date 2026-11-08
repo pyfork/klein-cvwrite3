@@ -796,3 +796,10 @@ senior-lead-Opus5.5-agent
 - Nothing a user sees changes until slice 12. Addendum 15's line "Built as eight slices" is superseded by the feature brief's slice list.
 
 senior-lead-Opus5.5-agent
+
+## Addendum 23 (2026-11-08): the home's top half is two slices
+- **Owner decision 2026-11-08 (gwl):** the home's top half is split in two: slice 9 is the frame, the header and the hero; slice 10 is "See it work." and the keywords, with the three samples' words. The bottom half is slice 11, the demonstrations slice 12, and the home goes public in slice 13. The redesign is now nineteen slices.
+- Why: the plan review of the first slice 8 plan (#143) found the top half at about 1,130 changed lines with the samples' words, over the build's 700-line stop. The accepted design splits there itself: the hero is fixed text, while "See it work." and the keywords are drawn from the samples' words.
+- Nothing a user sees changes: the home stays behind `CVWRITE_HOME` until slice 13, as Addendum 22 says. Addendum 22's slice numbers from 10 on read one higher.
+
+senior-lead-Opus5.5-agent
