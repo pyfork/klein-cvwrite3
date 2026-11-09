@@ -7,6 +7,8 @@ with a session cookie, live or not, goes through today's checks.
 Fails before the work: Settings has no `home` field, so production loads `CVWRITE_HOME=on` and the app cannot be built
 with the setting on. Needs no browser: the page's look is slice 9's.
 senior-lead-Opus5.5-agent, 2026-11-07 (re-split by the plan review of #143: the flag is its own slice)
+Re-planned 2026-11-08 (slice 9's plan, tech review of #145): an empty session cookie goes through today's checks; the
+pending sign-in cookie alone, which is not a session cookie, gets the home.
 """
 import dataclasses
 import unittest
@@ -96,6 +98,22 @@ class TheRoute(HomeCase):
         self.agree("nadia@example.com")
         r = self.get("/", "nadia@example.com")
         self.assertEqual((r.status_code, r.headers.get("location")), (303, "/profile"))
+
+    def test_ac186_an_empty_session_cookie_goes_through_todays_checks(self):
+        # re-plan 2026-11-08 (slice 9's plan): tech review of #145, row 1. The cookie is there by name, so it is a session
+        # cookie, live or not; its value is not read here.
+        r = self.client.get("/", headers={"Cookie": "cvwrite3="})
+        self.assertEqual((r.status_code, r.headers.get("location")), (303, "/signin"))
+
+    def test_ac186_the_pending_sign_in_cookie_alone_gets_the_home(self):
+        # re-plan 2026-11-08 (slice 9's plan): tech review of #145, the pending-cookie row. A visitor who asked for a code
+        # carries `cvwrite3_pending` and no session cookie, so AC-186 gives them the home; slice 13 decides it again.
+        r = self.client.get("/", headers={"Cookie": "cvwrite3_pending=1.e30.0"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.headers.get("cache-control"), "private, no-store")
+        self.assertNotIn("set-cookie", {k.lower() for k in r.headers.keys()})
+        with self.conn() as c:
+            self.assertEqual(c.execute("select count(*) n from sessions").fetchone()["n"], 0)
 
 
 if __name__ == "__main__":
