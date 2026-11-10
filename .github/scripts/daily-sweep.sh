@@ -8,7 +8,7 @@ repo="$GH_REPO"
 since="${SINCE:-}"; [ -n "$since" ] || since="$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-24H +%Y-%m-%dT%H:%M:%SZ)"
 app="${REVIEWER_APP_ID:?Set the REVIEWER_APP_ID repository variable}"
 guard_paths='^(\.github/|docs-public/|plans/|CODEOWNERS)'
-# kit-keeper-Opus5.5-agent, 2026-10-13 (KIT-002 OQ-4): a bypass merge that
+# kit-keeper-Opus5.5-agent, 2026-10-13: a bypass merge that
 # changed only these paths is a plan approval (feature, slice-plan, re-plan
 # or closing retro PR), listed on its own line with its files
 plan_paths='^(plans/|specs/|acceptance/|docs-public/retro-log\.md$|README-brief-amended\.md$|docs-public/guard-data/locks/)'
@@ -54,7 +54,20 @@ if ! envcheck="$(bash .github/scripts/verify-install.sh environment 2>&1)"; then
   echo >> "$out"; printf '%s\n' "$envcheck" | grep '^PROBLEM' | sed 's/^PROBLEM  /- /' >> "$out"
 fi
 
-# guard-builder-Opus5.5-agent, 2026-10-25 (KIT-007): locked-checks runs only
+# guard-builder-Opus5.5-agent, 2026-11-10: on public repositories GitHub
+# blocks pull_request_target unless an Actions policy allows it; a blocked
+# run never starts, so the required checks it posts never arrive
+nostart="$(gh api "repos/$repo/actions/runs?event=pull_request_target&created=>=$since&per_page=100" \
+  --jq '[.workflow_runs[] | select(.conclusion == "startup_failure")] | group_by(.name) | .[] | "- `\(.[0].name)`: \(length) run(s), last \(.[0].created_at) (\(.[0].html_url))"' 2>&1)" || {
+  found=1; section "⚠️ Couldn't check whether guard checks started"
+  echo "Listing \`pull_request_target\` runs failed:" >> "$out"; echo >> "$out"; printf '%s\n' "$nostart" | head -3 | sed 's/^/- /' >> "$out"; nostart=""; }
+if [ -n "$nostart" ]; then
+  found=1; section "⚠️ Guard checks did not start"
+  echo "These \`pull_request_target\` workflows failed to start, so their required checks never reached the PR. Open one run: if its error names the \`pull_request_target\` policy, add or fix the repository's Actions policy (Settings, Actions, Policies: Active, \`.github/workflows/*.yml\`, Restrict events with \`pull_request_target\` allowed). Any other error: a workflow file is broken." >> "$out"
+  echo >> "$out"; printf '%s\n' "$nostart" >> "$out"
+fi
+
+# guard-builder-Opus5.5-agent, 2026-10-25: locked-checks runs only
 # on the runtime the record on main names; a broken record stops it
 if ! rtcheck="$(bash .github/scripts/verify-install.sh runtime 2>&1)"; then
   found=1; section "⚠️ The runtime record is missing or broken"
@@ -62,7 +75,7 @@ if ! rtcheck="$(bash .github/scripts/verify-install.sh runtime 2>&1)"; then
   echo >> "$out"; printf '%s\n' "$rtcheck" | grep '^PROBLEM' | sed 's/^PROBLEM  /- /' >> "$out"
 fi
 
-# kit-keeper-Opus5.5-agent, 2026-10-27 (KIT-008): a broken risk map line
+# kit-keeper-Opus5.5-agent, 2026-10-27: a broken risk map line
 # makes every one-PR slice fail
 if ! mapcheck="$(bash .github/scripts/verify-install.sh risk-map 2>&1)"; then
   found=1; section "⚠️ The risk map on main is broken"
@@ -79,7 +92,7 @@ if [ -n "$leaked" ]; then
   echo >> "$out"; printf '%s\n' "$leaked" | sed 's/^/- `/; s/$/`/' >> "$out"
 fi
 
-# guard-builder-Opus5.5-agent, 2026-10-26 (KIT-007, engineering rules 15):
+# guard-builder-Opus5.5-agent, 2026-10-26:
 # an advisory published after a lock merged; the PR's audit can't see it
 scan=0; vulns="$(python3 -I .github/scripts/scan-locks.py)" || scan=$?
 if [ "$scan" -eq 1 ]; then
@@ -98,7 +111,7 @@ for pr in $(gh api "repos/$repo/pulls?state=closed&sort=updated&direction=desc&p
     --jq ".[] | select(.merged_at != null and .merged_at >= \"$since\") | .number"); do
   sha="$(gh api "repos/$repo/pulls/$pr" --jq .head.sha)"
   title="$(gh api "repos/$repo/pulls/$pr" --jq .title)"
-  # kit-keeper-Opus5.5-agent, 2026-10-15 (Proof 10, #61): a PASS counts only
+  # kit-keeper-Opus5.5-agent, 2026-10-15: a PASS counts only
   # if it finished before the merge; a PASS posted after it is a bypass.
   merged="$(gh api "repos/$repo/pulls/$pr" --jq .merged_at)"
   missing=""
@@ -113,12 +126,12 @@ for pr in $(gh api "repos/$repo/pulls?state=closed&sort=updated&direction=desc&p
     continue
   fi
   [ -z "$missing" ] || nopass="$nopass- #$pr $title (no PASS from:$missing)"$'\n'
-  # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): a PASS the owner's
+  # kit-reviewer-Opus5.5-agent, 2026-11-01: a PASS the owner's
   # approval gave, listed so each one is seen
   n="$(gh api "repos/$repo/commits/$sha/check-runs?check_name=slice-review" \
     --jq "[.check_runs[] | select(.app.id == $app and .conclusion == \"success\" and (.output.title // \"\" | test(\"owner approved\")))] | length")"
   [ "$n" = 0 ] || owned="$owned- #$pr $title"$'\n'
-  # kit-keeper-Opus5.5-agent, 2026-10-27 (KIT-008): a PR that passed and
+  # kit-keeper-Opus5.5-agent, 2026-10-27: a PR that passed and
   # changed both plans and code is a one-PR slice. Listed on its own, its
   # plan files left out of "Guard files changed", so a project where no
   # slice is ever risky stands out
@@ -139,10 +152,10 @@ if [ -n "$direct" ]; then found=1; section "⚠️ Changes that reached main wit
 if [ -n "$nopass" ]; then found=1; section "Merged without a PASS"; echo "These were merged although the reviewer or the test lock did not pass. Usually an owner bypass (guard, setup, proof or re-plan PRs). Check each one was meant." >> "$out"; echo >> "$out"; printf '%s' "$nopass" >> "$out"; fi
 if [ -n "$guardchg" ]; then found=1; section "Guard files changed"; printf '%s' "$guardchg" >> "$out"; fi
 if [ -n "$oneprs" ]; then found=1; section "One-PR slices merged (routine: plan and code in one PR, checked by the test lock)"; echo "Each passed the reviewer and the test lock. If no slice is ever risky, check the risk map still covers the data, sign-in and shared code." >> "$out"; echo >> "$out"; printf '%s' "$oneprs" >> "$out"; fi
-if [ -n "$owned" ]; then found=1; section "Merged on your approval (KIT-019)"; echo "Plan, guard, brief and needs-owner PRs your Approve turned green. Check each is one you meant." >> "$out"; echo >> "$out"; printf '%s' "$owned" >> "$out"; fi
-if [ -n "$approvals" ]; then found=1; section "Plans bypass-merged (only plan files changed)"; echo "Since KIT-019 a plan is approved with an ordinary Approve; a bypass is break-glass. Check each is one you meant." >> "$out"; echo >> "$out"; printf '%s' "$approvals" >> "$out"; fi
+if [ -n "$owned" ]; then found=1; section "Merged on your approval"; echo "Plan, guard, brief and needs-owner PRs your Approve turned green. Check each is one you meant." >> "$out"; echo >> "$out"; printf '%s' "$owned" >> "$out"; fi
+if [ -n "$approvals" ]; then found=1; section "Plans bypass-merged (only plan files changed)"; echo "A plan is approved with an ordinary Approve; a bypass is break-glass. Check each is one you meant." >> "$out"; echo >> "$out"; printf '%s' "$approvals" >> "$out"; fi
 
-# kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): on Mondays (or
+# kit-reviewer-Opus5.5-agent, 2026-11-01: on Mondays (or
 # WEEKLY=1), how often the owner was needed in the last 7 days, against the
 # target (a share of PRs: the pace varies), and one PR that merged itself
 # for the Lead's weekly read
@@ -161,11 +174,11 @@ if [ -n "$owner" ] && { [ "$(date -u +%u)" = 1 ] || [ "${WEEKLY:-}" = 1 ]; }; th
     else selfs="$selfs $pr"; fi
   done
   need="$(printf '%s' "$touched" | wc -w | tr -d ' ')"
-  found=1; section "This week: how often you were needed (KIT-019)"
+  found=1; section "This week: how often you were needed"
   echo "- $merged PRs merged; $((merged - need)) merged themselves; $need needed you${touched:+ ($touched )}." >> "$out"
   share=0; [ "$merged" -eq 0 ] || share=$((need * 100 / merged))
   over=""; [ "$share" -lt 25 ] || over=" **Over the target.**"
-  echo "- You were needed on $share% of PRs. Target: under 25%, each one data, sign-in, legal text, deploy, guards, the brief or a plan.$over Two weeks over it: revisit the risk map and the second approver (KIT-019, section 8)." >> "$out"
+  echo "- You were needed on $share% of PRs. Target: under 25%, each one data, sign-in, legal text, deploy, guards, the brief or a plan.$over Two weeks over it: revisit the risk map and the second approver." >> "$out"
   # shellcheck disable=SC2086
   [ -z "$selfs" ] || echo "- Sample for the Lead's weekly read: #$(printf '%s\n' $selfs | shuf -n 1 2>/dev/null || printf '%s\n' $selfs | head -1)" >> "$out"
 fi
@@ -174,7 +187,7 @@ fi
 breach="$(gh api "repos/$repo/issues?labels=guard-breach&state=open&per_page=50" --jq '.[] | "- #\(.number) \(.title)"')"
 if [ -n "$breach" ]; then found=1; section "Open guard-breach alerts"; printf '%s\n' "$breach" >> "$out"; fi
 
-# Open PRs older than three days (KIT-002 flow rule 5: keep the pile small)
+# Open PRs older than three days
 cutoff="$(date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v-3d +%Y-%m-%dT%H:%M:%SZ)"
 stale="$(gh api "repos/$repo/pulls?state=open&sort=created&direction=asc&per_page=100" \
   --jq ".[] | select(.created_at < \"$cutoff\") | \"- #\\(.number) \\(.title) (open since \\(.created_at[:10]))\"")"

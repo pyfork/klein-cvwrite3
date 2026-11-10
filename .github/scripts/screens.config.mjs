@@ -1,4 +1,4 @@
-// KIT-020: where the screens and their baselines live. senior-lead-Opus5.5-agent, 2026-11-02
+// where the screens and their baselines live. senior-lead-Opus5.5-agent, 2026-11-02
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({

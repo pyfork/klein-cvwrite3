@@ -1,4 +1,4 @@
-# kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019)
+# kit-reviewer-Opus5.5-agent, 2026-11-01
 # The trigger for owner-approval.yml, and nothing else. A review event runs
 # the PR's own copy of a workflow and can't use the reviewer environment,
 # so this job holds no secret and does no work: owner-approval.yml runs on
@@ -13,7 +13,7 @@ permissions: {}
 
 jobs:
   # Only the owner's reviews matter. The reviewer app posts a review on every
-  # run, and each fired owner-approval for nothing (KIT-019 proof). A skipped
+  # run, and each fired owner-approval for nothing. A skipped
   # job ends the run "skipped", which owner-approval ignores. This filter only
   # saves runs: owner-approval checks the approval itself
   signal:

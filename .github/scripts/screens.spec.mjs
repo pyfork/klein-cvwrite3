@@ -1,4 +1,4 @@
-// KIT-020: one test per stand-in page, width and theme; plus one that every page template has a stand-in
+// one test per stand-in page, width and theme; plus one that every page template has a stand-in
 // (a stand-in named <template> or <template>_<state>).
 // senior-lead-Opus5.5-agent, 2026-11-02
 import { test, expect } from '@playwright/test';

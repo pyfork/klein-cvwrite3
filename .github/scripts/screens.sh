@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# KIT-020: compare each stand-in page with its baseline (check), or replace the baselines (update).
+# compare each stand-in page with its baseline (check), or replace the baselines (update).
 # Optional: SCREENS_START starts the app; SCREENS_BASE_URL is waited for and prefixes relative targets.
 # senior-lead-Opus5.5-agent, 2026-11-02
 set -euo pipefail

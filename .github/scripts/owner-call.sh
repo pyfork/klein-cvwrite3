@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): the owner's approval
+# kit-reviewer-Opus5.5-agent, 2026-11-01: the owner's approval
 # stands in for a red check that is the owner's call, so the owner approves
 # instead of bypass-merging, and every other required check still holds.
 # Usage: owner-call.sh <reviews.json> <owner-login> <sha> <lane> [labels.txt]

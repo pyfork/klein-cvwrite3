@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): which lane a PR is in.
+# kit-reviewer-Opus5.5-agent, 2026-11-01: which lane a PR is in.
 # Usage: pr-lane.sh <main-dir> <pr-dir>   (pr-dir: a clone with origin/main)
 # Prints one word:
 #   PLAN   every changed file is a plan path: red until the owner approves
 #   OWNED  every changed file is in main's risk map or a plan path (guards,
 #          briefs, the map): the owner owns every line, so their approval
-#          decides; the reviewer's "Not a slice" no longer needs a bypass
+#          decides; the reviewer's "Not a slice" needs no bypass
 #   CHORE  only new or added-to test files and CHANGELOG.md, nothing in
 #          main's risk map: no model review, it merges on a green suite
 #   OTHER  everything else: the normal review

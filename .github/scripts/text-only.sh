@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# kit-keeper-Opus5.5-agent, 2026-11-07 (KIT-021): is this PR text only?
+# kit-keeper-Opus5.5-agent, 2026-11-07: is this PR text only?
 # Usage: text-only.sh <main-dir> <pr-dir>   (two full checkouts)
 # Prints TEXT when every file that differs between main and the PR is
 # brief.md or under docs-public/, guard-data/ excepted (risk map, locks,

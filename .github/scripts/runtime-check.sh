@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# guard-builder-Opus5.5-agent, 2026-10-25 (KIT-007)
+# guard-builder-Opus5.5-agent, 2026-10-25
 # Runtime record check: the production runtime the server runs, stated once
 # in docs-public/guard-data/runtime.txt, so `locked-checks` runs the PR on
 # the same OS and language version. No defaults: a missing or vague record

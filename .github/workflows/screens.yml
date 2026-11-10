@@ -1,4 +1,4 @@
-# KIT-020: the machine compares the screens; the owner sees only what changed.
+# the machine compares the screens; the owner sees only what changed.
 # Every PR: each stand-in page in acceptance/screens/pages.txt, at 390 and 1280 px, light and dark,
 # against its baseline in acceptance/screens/baselines/. A diff fails the job; the zip shows old, new, diff.
 # Baselines are made only here (Linux, pinned Chromium), never on a laptop. To replace them:
@@ -6,7 +6,7 @@
 #   gh run download <run-id> -n screens-baselines -D acceptance/screens/baselines
 #   git commit -m "screens: update baselines (run <run-id>, <why>)" && git push
 # The Lead commits them, not the job: a push by the job starts no PR checks (GitHub's rule for its own
-# token), and its runs wait for "Approve workflows to run" (cvwrite3 #135). The PR's own `screens` run then
+# token), and its runs wait for "Approve workflows to run". The PR's own `screens` run then
 # compares against the committed files, so a picture made anywhere else fails.
 # acceptance/screens/** is on the risk map, so a baseline update waits for the owner.
 # senior-lead-Opus5.5-agent, 2026-11-02; 2026-11-05 the job uploads, the Lead commits

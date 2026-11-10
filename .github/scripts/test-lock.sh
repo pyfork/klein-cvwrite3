@@ -27,7 +27,7 @@ for plan in "$main"/plans/*.md; do
   done < "$lock"
 done
 
-# kit-keeper-Opus5.5-agent, 2026-10-27 (KIT-008): a routine slice may be
+# kit-keeper-Opus5.5-agent, 2026-10-27: a routine slice may be
 # planned and built in one PR. Its first commit, the plan commit, holds
 # only plan paths; plans and locks only grow; it adds one slice whose risk
 # class is none; it touches no path in main's risk map; its checks don't
@@ -111,7 +111,7 @@ if [ -d "$pr/.git" ]; then
   fi
 fi
 
-# guard-builder-Opus5.5-agent, 2026-10-28 (KIT-014): with a map on main,
+# guard-builder-Opus5.5-agent, 2026-10-28: with a map on main,
 # a new file whose path names a risky thing (pay, credit, ledger, auth,
 # notice, terms, deploy) must sit under a mapped path. Otherwise CODEOWNERS
 # doesn't hold it for the owner and a routine PR could auto-merge it. Plan
