@@ -1,5 +1,7 @@
 # Changelog
 
+- 2026-11-10 · redesign slice 9 (app 0.15.7): with the setting `CVWRITE_HOME` on (dev only), a visitor with no session cookie at `/` sees the home's sticky header and its hero (the heading, the two buttons, the three ticks and the cut-paper picture) in place of the placeholder; the page ends after the hero. Nothing changes for any real visitor.
+
 - 2026-11-07 · redesign slice 8 (app 0.15.6): the setting `CVWRITE_HOME` exists, off by default and refused in production; on in dev, a visitor with no session cookie at `/` sees a placeholder page. Nothing changes for any real visitor.
 - 2026-11-04 · redesign slice 7 (app 0.15.5): the three web fonts are served as woff2 files cut to the Latin letters, 145,572 bytes in place of 524,216; every page looks as before. The cut is remade by `fonts/build_web.py` (dev-only), and a test keeps every letter the app's text uses.
 - 2026-11-03 · redesign slice 6 (no app change): the home's cut-paper art, 20 WebP images in `app/static/art/`, and the seeded generator that makes them in `gen/` (dev-only). No page shows them yet.
