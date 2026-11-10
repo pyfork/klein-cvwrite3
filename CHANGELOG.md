@@ -1,5 +1,6 @@
 # Changelog
 
+- 2026-11-10 · redesign slice 10 (app 0.15.8): with the setting `CVWRITE_HOME` on (dev only), the home shows "See it work." (the three sample ads, what was found in each, and each CV before and after) and the keywords (where each ad's top 3 keywords sit in each CV) under the hero, worked out from the samples' words in `app/content/home_samples.json`. Nothing changes for any real visitor.
 - 2026-11-10 · redesign slice 9 (app 0.15.7): with the setting `CVWRITE_HOME` on (dev only), a visitor with no session cookie at `/` sees the home's sticky header and its hero (the heading, the two buttons, the three ticks and the cut-paper picture) in place of the placeholder; the page ends after the hero. Nothing changes for any real visitor.
 
 - 2026-11-07 · redesign slice 8 (app 0.15.6): the setting `CVWRITE_HOME` exists, off by default and refused in production; on in dev, a visitor with no session cookie at `/` sees a placeholder page. Nothing changes for any real visitor.
