@@ -1,6 +1,80 @@
-{% extends "base.html" %}
-{% block title %}Better Jobs{% endblock %}
-{% block content %}
-<h1 class="title">The new Better Jobs home is being built</h1>
-<p class="lede">Nothing to see here yet.</p>
-{% endblock %}
+<!doctype html>
+{# The signed-out home (redesign S-009: the frame, the header and the hero), behind CVWRITE_HOME. Its own header, so it does not extend base.html. #}
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Better Jobs</title>
+<link rel="stylesheet" href="/static/betterjobs.css?v={{ app_version }}">
+</head>
+<body class="home">
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/" aria-label="Better Jobs home">Better Jobs</a>
+    <nav class="links" aria-label="Sections">
+      <a href="#demo">Examples</a>
+      <a href="#how">How it works</a>
+      <a href="#apps">Applications</a>
+      <a href="#price">Pricing</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="pill sm" href="/signin">Get started</a>
+  </div>
+</header>
+<main id="main" tabindex="-1">
+<section class="wrap slab hero" aria-labelledby="h-hero">
+  <div class="copy">
+    <h1 id="h-hero">Stop sending <span class="same">the same CV</span> to <span class="every">every</span> job.</h1>
+    <p class="lede">Paste a job ad. Get a 2-page CV made for that job, from your own experience.</p>
+    <div class="cta">
+      <a class="pill coral" href="/signin">Get your 2 free CVs
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg></a>
+      <a class="pill ghost" href="#how">See how it works</a>
+    </div>
+    <ul class="proof">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Exactly 2 pages, A4</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Has the ad's top 3 keywords</li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>Built from your real experience</li>
+    </ul>
+  </div>
+  <div class="stage-wrap">
+    {# Scripts off, which is all this slice builds: the CVs show cut to fit, with the "on" caption; slice 12 adds the photocopies and the switch. #}
+    <div class="stage" role="img" aria-label="Three job ads for graphic designers, each with a CV clipped to it. In the first state the three CVs are identical grey photocopies. In the second, each CV is cut to fit its ad and starts with that ad's top three keywords.">
+      <div class="layer ground"><img src="/static/art/ground.webp" width="1240" height="1080" alt=""></div>
+      <div class="layer scrap" style="left:88%;top:2%;width:9%"><img src="/static/art/scrap-star.webp" width="220" height="220" alt=""></div>
+      <div class="layer scrap" style="left:-3%;top:70%;width:7%"><img src="/static/art/scrap-dot.webp" width="220" height="220" alt=""></div>
+      <div class="layer ad" data-paper style="left:1%;top:9%;transform:rotate(-7deg)">
+        <img src="/static/art/ad-lilac.webp" width="560" height="700" alt="">
+        <div class="t"><span class="co">Maribel Fashion</span><span class="ti">Senior Graphic Designer</span><span class="ks"><span>Multi-channel.</span><span>Typography.</span><span>Figma.</span></span></div>
+      </div>
+      <div class="layer ad teal" data-paper style="left:32%;top:1%;transform:rotate(3deg)">
+        <img src="/static/art/ad-teal.webp" width="560" height="700" alt="">
+        <div class="t"><span class="co">Pelita Pay</span><span class="ti">Graphic Designer, Digital and Motion</span><span class="ks"><span>Social media.</span><span>Digital ads.</span><span>Motion.</span></span></div>
+      </div>
+      <div class="layer ad" data-paper style="left:63%;top:13%;transform:rotate(-3deg)">
+        <img src="/static/art/ad-marigold.webp" width="560" height="700" alt="">
+        <div class="t"><span class="co">ABC Property Rentals</span><span class="ti">Creative Graphic Designer, Junior</span><span class="ks"><span>Brand guidelines.</span><span>InDesign.</span><span>Web design.</span></span></div>
+      </div>
+      <div class="layer cv" data-paper style="left:13%;top:47%;transform:rotate(4deg)">
+        <img src="/static/art/cv-lilac.webp" width="520" height="700" alt="">
+        <div class="t"><span class="ro">Senior Graphic Designer</span><span class="kws">Multi-channel · Typography · Figma</span><span class="bars"></span></div>
+      </div>
+      <div class="layer cv" data-paper style="left:43%;top:42%;transform:rotate(-3deg)">
+        <img src="/static/art/cv-teal.webp" width="520" height="700" alt="">
+        <div class="t"><span class="ro">Graphic Designer</span><span class="kws">Social media · Digital ads · Motion</span><span class="bars"></span></div>
+      </div>
+      <div class="layer cv" data-paper style="left:73%;top:50%;transform:rotate(3deg)">
+        <img src="/static/art/cv-marigold.webp" width="520" height="700" alt="">
+        <div class="t"><span class="ro">Junior Graphic Designer</span><span class="kws">Brand guidelines · InDesign · Web design</span><span class="bars"></span></div>
+      </div>
+      <div class="layer scissors" style="left:68%;top:84%;transform:rotate(-8deg)"><img src="/static/art/scissors.webp" width="760" height="420" alt=""></div>
+      <div class="layer scrap" style="left:44%;top:88%;width:7%"><img src="/static/art/scrap-tri.webp" width="220" height="220" alt=""></div>
+    </div>
+    <p class="cap">Same job title. Different job. Three CVs.</p>
+  </div>
+</section>
+</main>
+</body>
+</html>
