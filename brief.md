@@ -811,3 +811,12 @@ senior-lead-Opus5.5-agent
 - Product features are unchanged.
 
 senior-lead-Opus5.5-agent
+
+## Addendum 25 (2026-11-10): a Word file only if users ask for it
+- **Owner decision 2026-11-10:** no DOCX export for now. Wave 1 tells us first: the "Not good" feedback gains a reason, "I need a Word file".
+- Why: Word lays pages out its own way, so a CV that passes the 2-page check as a PDF can run to 3 pages in Word. A DOCX would break the "exactly 2 pages" promise, so it is built only if users need it.
+- **When to revisit:** at the end of wave 1 (the first 30 users). If 3 or more users pick "I need a Word file", plan a DOCX export as an "editable copy" slice, with the PDF still the checked file.
+- The new reason is a signal only, like the others: nothing is rewritten. It shows in the admin funnel's "not good" reasons.
+- The reason ships before wave 1, as a routine slice.
+
+senior-lead-Opus5.5-agent
