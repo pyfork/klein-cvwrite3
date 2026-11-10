@@ -1,4 +1,4 @@
-# kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019)
+# kit-reviewer-Opus5.5-agent, 2026-11-01
 # senior-lead-Opus5.5-agent, 2026-11-03: both checks are posted before the comment, and the comment is a REST call
 # that never fails the job (it stopped test-lock from being posted on a plan PR).
 # The owner approves instead of bypass-merging. When a review lands on a PR,
@@ -101,7 +101,7 @@ jobs:
           # The red jobs and the reviewer's FAIL comment stay on the page; say plainly that it can merge now.
           # Last, and never fatal: the checks above are what merge needs. REST issue comments take the token's
           # issues: write; `gh pr comment` (GraphQL addComment) needs pull-requests: write and failed the job
-          # before test-lock was posted (cvwrite3 PR 125, 2026-11-03).
+          # before test-lock was posted.
           if [ -n "$greened" ]; then
             gh api "repos/$GH_REPO/issues/$PR/comments" -f body="Owner approved \`${SHA:0:7}\` (lane $lane): $greened now green. Ready to merge if every other required check is green; the red \`review-run / ...\` jobs are not required." > /dev/null \
               || echo "::warning::could not post the owner-approval comment; the checks above are posted"

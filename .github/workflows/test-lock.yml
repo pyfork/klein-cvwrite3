@@ -19,10 +19,10 @@ concurrency:
 permissions: {}
 
 jobs:
-  # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): not named test-lock.
+  # kit-reviewer-Opus5.5-agent, 2026-11-01: not named test-lock.
   # GitHub counted this job's own run as the required `test-lock` check too,
   # so after the owner's approval turned the app's check green, the job's
-  # earlier red run still blocked the merge (tribble #165)
+  # earlier red run still blocked the merge
   compare-locks:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -64,7 +64,7 @@ jobs:
           permission-checks: write
           permission-pull-requests: read
 
-      # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): a plan PR, or one of
+      # kit-reviewer-Opus5.5-agent, 2026-11-01: a plan PR, or one of
       # owner-owned files only, is red until the owner approves its head
       # commit; the approval, not a bypass, turns it green (owner-call.sh)
       - name: Publish the test-lock check

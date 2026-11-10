@@ -1,4 +1,4 @@
-# guard-builder-Opus5.5-agent, 2026-10-28 (KIT-014)
+# guard-builder-Opus5.5-agent, 2026-10-28
 # The owner owns the risk map's paths. A PR touching one waits for the
 # owner's approval (the protect-main ruleset: 0 approvals, code-owner review
 # on). A PR touching none merges itself once every required check is green.

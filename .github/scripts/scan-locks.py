@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# guard-builder-Opus5.5-agent, 2026-10-26 (KIT-007; engineering rules
+# guard-builder-Opus5.5-agent, 2026-10-26 (engineering rules
 # section 15, supply-chain item 5): the daily re-scan of main's locks.
 # A lock that passed its audit on the day it merged can be hit by an
 # advisory published later; nothing else looks again. The daily sweep runs

@@ -34,7 +34,7 @@ files)
     if api "contents/$f?ref=main" > /dev/null; then ok "on main: $f"; else bad "missing on main: $f"; fi
   done ;;
 
-# guard-builder-Opus5.5-agent, 2026-10-28 (KIT-014): CODEOWNERS follows the
+# guard-builder-Opus5.5-agent, 2026-10-28: CODEOWNERS follows the
 # risk map line for line. No map: the one line "* @owner"
 codeowners)
   owner="$(repo_var GUARD_OWNER_LOGIN)"
@@ -62,14 +62,14 @@ rules)
     printf '%s' "$rules" | jq -e --arg t "$t" 'any(.[]; .type == $t)' > /dev/null && ok "rule on main: $t" || bad "rule missing on main: $t"
   done
   printf '%s' "$rules" | jq -e 'any(.[]; .type == "pull_request" and .parameters.require_code_owner_review and .parameters.required_approving_review_count == 0)' > /dev/null \
-    && ok "rule on main: pull request, 0 approvals, code-owner review" || bad "rule on main: pull request with 0 approvals and code-owner review is missing (KIT-014: the owner reviews only the risk map's paths)"
-  # KIT-019: the owner's approval turns checks green, so a push after it must
+    && ok "rule on main: pull request, 0 approvals, code-owner review" || bad "rule on main: pull request with 0 approvals and code-owner review is missing (the owner reviews only the risk map's paths)"
+  # the owner's approval turns checks green, so a push after it must
   # dismiss it (owner-call.sh also counts only an approval of the head commit).
   # Last-push approval stays off: GitHub applies it even at 0 approvals, and the
-  # agent login pushes every PR, so it held every routine PR (cvwrite3 #128)
+  # agent login pushes every PR, so it held every routine PR
   printf '%s' "$rules" | jq -e 'any(.[]; .type == "pull_request" and .parameters.dismiss_stale_reviews_on_push and (.parameters.require_last_push_approval | not))' > /dev/null \
-    && ok "rule on main: stale approvals dismissed, last-push approval off" || bad "rule on main: 'Dismiss stale pull request approvals when new commits are pushed' must be on and 'Require approval of the most recent reviewable push' off (KIT-019; on, it holds every routine PR)"
-  # KIT-014: routine PRs merge themselves, so repo auto-merge must be on
+    && ok "rule on main: stale approvals dismissed, last-push approval off" || bad "rule on main: 'Dismiss stale pull request approvals when new commits are pushed' must be on and 'Require approval of the most recent reviewable push' off (on, it holds every routine PR)"
+  # routine PRs merge themselves, so repo auto-merge must be on
   [ "$(gh api "repos/$repo" 2>/dev/null | jq -r '.allow_auto_merge')" = "true" ] && ok "repository: auto-merge allowed" || bad "repository: 'Allow auto-merge' is off (Settings, General, Pull Requests)"
   printf '%s' "$rules" | jq -e 'any(.[]; .type == "required_status_checks" and .parameters.strict_required_status_checks_policy)' > /dev/null \
     && ok "rule on main: branches up to date" || bad "rule on main: 'require branches to be up to date' is off"
@@ -114,7 +114,7 @@ secrets)
     && bad "REVIEWER_APP_CLIENT_ID is saved as a secret: workflows read it as a variable, so it comes through empty" \
     || ok "REVIEWER_APP_CLIENT_ID is not a secret" ;;
 
-# guard-builder-Opus5.5-agent, 2026-10-25 (KIT-007): the runtime record on
+# guard-builder-Opus5.5-agent, 2026-10-25: the runtime record on
 # main, checked as locked-checks reads it
 runtime)
   rec="$(mktemp)"
@@ -127,7 +127,7 @@ runtime)
   fi
   rm -f "$rec" ;;
 
-# kit-keeper-Opus5.5-agent, 2026-10-27 (KIT-008): the risk map on main, read
+# kit-keeper-Opus5.5-agent, 2026-10-27: the risk map on main, read
 # as test-lock reads it. No map is valid: every slice is then risky
 risk-map)
   map="$(mktemp)"

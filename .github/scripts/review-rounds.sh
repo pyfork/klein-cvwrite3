@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# guard-builder-Opus5.5-agent, 2026-10-28 (KIT-014)
+# guard-builder-Opus5.5-agent, 2026-10-28
 # The review loop: the reviewer gates, the judge rules on two fix rounds,
 # then the owner. slice-review.yml calls it; it calls no model itself.
 #
@@ -30,7 +30,7 @@ state)
   # Each line is "<review submitted_at> <marker comment>"; the time is
   # GitHub's, outside the seal, and only says since when the judge reads
   # the PR's comments: since the FAIL that opened the current findings
-  # (PROOF-23)
+  #
   recs="[]"; tampered=false
   while IFS= read -r line; do
     [ -n "$line" ] || continue
@@ -58,13 +58,13 @@ filter)
   verdict="$(jq -r '.verdict // "FAIL"' "$a")"
   out='{"blocking":[],"notes":[],"flaky":[]}'
   # A repeat is the same rule file in the re-run: the two runs name one
-  # section differently ("10. TESTS", "Time in tests"; PROOF-21)
+  # section differently ("10. TESTS", "Time in tests")
   keysb="[]"; [ "$b" != - ] && keysb="$(jq -c '[.findings // [] | .[] | select(.rule_file != "") | .rule_file]' "$b")"
   while IFS= read -r f; do
     file="$(jq -r '.rule_file // ""' <<< "$f")"; sec="$(jq -r '.rule_section // ""' <<< "$f")"; key="$file#$sec"
     ok=false
     case "$file" in ''|/*|*..*|pr-head/*) ;; *)
-      # PROOF-21: the kit's rules don't all use markdown headings
+      # the kit's rules don't all use markdown headings
       # ("THE RULE"), so the section is any line of the file naming it
       [ -f "$root/$file" ] && [ -n "$sec" ] && grep -qiF -- "$sec" "$root/$file" && ok=true ;;
     esac
@@ -73,12 +73,11 @@ filter)
     else out="$(jq -c --argjson f "$f" --arg k "$key" '.blocking += [$f + {key: $k}] | .blocking |= unique_by(.key)' <<< "$out")"; fi
   done < <(jq -c '.findings // [] | .[]' "$a")
   # Fails closed: a FAIL that lists no finding at all still blocks, and so
-  # does a FAIL whose cited rules all failed the check (PROOF-21: a real
-  # FAIL became a PASS that way), and so does a FAIL made only of uncited
-  # notes (PROOF-23: an injection FAIL cited no rule and passed). Flaky
-  # findings drop only when the re-run did not FAIL too: two FAILs whose
-  # cites don't match are not a PASS (PROOF-23: the re-run cited nothing,
-  # so every finding of the first run looked unrepeated)
+  # does a FAIL whose cited rules all failed the check (else a real FAIL
+  # would become a PASS), and so does a FAIL made only of uncited notes.
+  # Flaky findings drop only when the re-run did not FAIL too: two FAILs
+  # whose cites don't match are not a PASS (a re-run that cites nothing
+  # would make every finding of the first run look unrepeated)
   verdictb=-; [ "$b" != - ] && verdictb="$(jq -r '.verdict // "FAIL"' "$b")"
   if [ "$verdict" = FAIL ] && [ "$(jq '.findings // [] | length' "$a")" -eq 0 ]; then
     out="$(jq -c '.blocking += [{key: "reviewer#no findings", rule_file: "", rule_section: "", text: "The reviewer said FAIL but listed no finding"}]' <<< "$out")"
@@ -99,7 +98,7 @@ filter)
 decide)
   st="$2"; fl="$3"; jd="$4"; sha="$5"; res="${6:-}"
   judge='{"rulings":[]}'; [ "$jd" != - ] && judge="$(cat "$jd")"
-  # KIT-014 (PROOF-21): the test command is where scripted project rules
+  # the test command is where scripted project rules
   # run, so its FAIL fails the check by itself, with no model in between
   suite=false; [ -n "$res" ] && [ -f "$res" ] && grep -q '^FAIL: ' "$res" && suite=true
   jq -n --argjson s "$(cat "$st")" --argjson f "$(cat "$fl")" --argjson j "$judge" --arg sha "$sha" --argjson suite "$suite" --arg lane "${LANE:-OTHER}" '
@@ -111,7 +110,7 @@ decide)
         {pass:false, owner:false, why:"The test command failed (a test or a scripted project rule is red; see the locked-checks results). Fix it on the branch: not a judge round.", unsolved:$s.open, record:null}
       elif $f.verdict == "BLOCKED" then
         {pass:false, owner:false, why:"The reviewer was BLOCKED (missing inputs). Not a fix round.", unsolved:$s.open, record:null}
-      # KIT-019 (proof P5): a PR that is not a slice is for the Lead to close
+      # a PR that is not a slice is for the Lead to close
       # or plan, so it never goes to the owner, whatever the round
       elif any($found[]; (.rule_file | endswith("slice-pr-reviewer.md")) and (.rule_section | test("not a slice"; "i"))) then
         # PLAN and OWNED: every file is owned by the owner, so their Approve decides (owner-call.sh)
@@ -126,7 +125,7 @@ decide)
         ($s.judged + 1) as $round
         | [ $s.open[] | . as $o | select(([$j.rulings[] | select(.key == $o.key and .solved == true)] | length) == 0) ] as $unsolved
         # A "reviewer#" finding (a FAIL citing no rule) is for the reviewer to
-        # call this round, whatever the judge said of the last one (PROOF-23)
+        # call this round, whatever the judge said of the last one
         | [ $found[] | select(.key as $k | ($k | startswith("reviewer#")) or (keys($s.open) | index($k)) == null) ] as $new
         | ([ $unsolved[] | select(.key as $k | (keys($new) | index($k)) == null) ] + $new) as $left
         | if ($left | length) == 0 then

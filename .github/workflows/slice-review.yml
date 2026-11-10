@@ -25,7 +25,7 @@ concurrency:
 permissions: {}
 
 jobs:
-  # guard-builder-Opus5.5-agent, 2026-10-25 (KIT-007): reads the production
+  # guard-builder-Opus5.5-agent, 2026-10-25: reads the production
   # runtime from main's runtime record, so locked-checks runs on the server's
   # OS and language version. Fails closed: no record, or a moving label like
   # ubuntu-latest, and nothing runs. There is no fallback.
@@ -98,7 +98,7 @@ jobs:
           path: trusted
           persist-credentials: false
 
-      # kit-keeper-Opus5.5-agent, 2026-11-07 (KIT-021): a PR whose every
+      # kit-keeper-Opus5.5-agent, 2026-11-07: a PR whose every
       # file is brief.md or under docs-public/ (guard-data/ excepted) changes
       # no code, so the tools, the checker and every run below are skipped
       # and results.txt says so. main's script decides; any doubt says CODE
@@ -108,7 +108,7 @@ jobs:
           only="$(bash trusted/.github/scripts/text-only.sh trusted pr)"
           echo "$only"; echo "only=$only" >> "$GITHUB_OUTPUT"
 
-      # KIT-007: the image's own interpreter when it already is the record's
+      # the image's own interpreter when it already is the record's
       # version (the distribution's build, as on the server); otherwise the
       # official setup action, pinned by commit
       - name: Does the image already have the record's runtime?
@@ -144,7 +144,7 @@ jobs:
           bash trusted/.github/scripts/runtime-check.sh machine trusted/docs-public/guard-data/runtime.txt > "$RUNNER_TEMP/runtime-line.txt" || true
           cat "$RUNNER_TEMP/runtime-line.txt"
 
-      # kit-keeper-Opus5.5-agent, 2026-10-28 (KIT-015): the system programs
+      # kit-keeper-Opus5.5-agent, 2026-10-28: the system programs
       # main's record names (TOOLS, apt names), installed as root before
       # checker exists, so they land root-owned and the next step closes and
       # checks them like any other program. A CHECK_ENV program that isn't
@@ -171,10 +171,10 @@ jobs:
 
       # checker owns its copy of the PR and can read main's checks, nothing
       # more. Results live in a runner-only folder outside the workspace.
-      # kit-keeper-Opus5.5-agent, 2026-10-26 (senior Q7, PROOF-14): the image
+      # kit-keeper-Opus5.5-agent, 2026-10-26: the image
       # leaves the tool cache, /usr/local/bin and other folders on PATH
       # writable by every user, so PR code in one check could swap a program
-      # every later check runs (#97). A folder checker owns lets it rename
+      # every later check runs. A folder checker owns lets it rename
       # what's inside, so main's checks live outside its home. Close them,
       # then fail closed if checker can still write a folder on PATH, one
       # above it, a file in it, or main's checks (sticky folders excepted)
@@ -222,7 +222,7 @@ jobs:
             echo "FAIL CHECKER: checker can write these, so PR code could replace a program or check a later run uses: $open" >> "$RUNNER_TEMP/runtime-line.txt"
             cat "$RUNNER_TEMP/runtime-line.txt"
           fi
-          # kit-keeper-Opus5.5-agent, 2026-10-27 (KIT-008): the checks this PR
+          # kit-keeper-Opus5.5-agent, 2026-10-27: the checks this PR
           # newly locks, and main's code with the PR's acceptance/ over it,
           # root-owned until each run copies it, so no earlier run can change it
           grep -hoE '^[[:space:]]*LOCKED: [^[:space:]]+' trusted/plans/*.md 2>/dev/null | awk '{print $2}' | sort -u > "$RUNNER_TEMP/main-checks.txt" || true
@@ -254,7 +254,7 @@ jobs:
           # One run of PR code as checker; output goes through this job's
           # pipe, then every checker process is killed before the result line
           # Each run gets a new, empty home: nothing one run leaves there (a
-          # Python usercustomize, a shell rc) reaches the next (senior Q7)
+          # Python usercustomize, a shell rc) reaches the next
           n=0
           # CHECK_ENV pairs from main's record, checked by runtime-check.sh
           set -f; read -ra check_env <<< "$CHECK_ENV"; set +f
@@ -269,7 +269,7 @@ jobs:
           }
           # kit-keeper-Opus5.5-agent, 2026-10-28: keep each output's head and
           # tail. A check that installs packages first put only install lines
-          # in a head-only cut and lost the failure at the end (cvwrite3 #60)
+          # in a head-only cut and lost the failure at the end
           # clip-begin
           clip() { # <file>: first 1000 and last 3000 bytes, indented
             local size; size=$(wc -c < "$1")
@@ -279,7 +279,7 @@ jobs:
           }
           # clip-end
           { cat "$RUNNER_TEMP/runtime-line.txt"; echo; } > "$R/results.txt"
-          # KIT-007: on the wrong runtime, or where PR code could swap a
+          # on the wrong runtime, or where PR code could swap a
           # program on PATH, a PASS proves nothing; run nothing
           if grep -qE '^FAIL (RUNTIME|CHECKER|TOOLS)' "$R/results.txt"; then
             echo "Locked checks and the full suite not run: see the FAIL line above." >> "$R/results.txt"
@@ -295,7 +295,7 @@ jobs:
             if as_checker "bash /srv/kit-trusted/$c"; then r=PASS; else r=FAIL; fi
             { echo "$r $c"; clip "$R/out.txt"; echo; echo; } >> "$R/results.txt"
           done
-          # kit-keeper-Opus5.5-agent, 2026-10-27 (KIT-008): the build gate in
+          # kit-keeper-Opus5.5-agent, 2026-10-27: the build gate in
           # code. Each check the PR newly locks runs once on main's code: one
           # that passes there proves no new work. A LOCKED line ending in
           # REGRESSION is planned to pass before, and must
@@ -339,7 +339,7 @@ jobs:
           cp "$R/results.txt" results.txt
           cat results.txt
           # kit-keeper-Opus5.5-agent, 2026-10-13: red when any check or the
-          # suite fails, so the tick matches the result (Proof 9, #44). Output is
+          # suite fails, so the tick matches the result. Output is
           # indented, so only result lines start with FAIL
           if grep -qE '^FAIL' results.txt; then echo "A locked check or the full suite failed"; exit 1; fi
         env:
@@ -351,7 +351,7 @@ jobs:
         run: |
           { cat "$RUNNER_TEMP/runtime-line.txt"; echo
             echo "TEXT-ONLY PR: every changed file is brief.md or under docs-public/ (guard-data/ excepted)."
-            echo "No code changed, so the locked checks and the full test suite were not run (KIT-021)."; } > results.txt
+            echo "No code changed, so the locked checks and the full test suite were not run."; } > results.txt
           cat results.txt
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -365,7 +365,7 @@ jobs:
     if: always()
     runs-on: ubuntu-24.04
     # kit-keeper-Opus5.5-agent, 2026-10-12: 30, not 15, for xhigh effort.
-    # 2026-10-28 (owner, after PROOF-21's 1-in-4): reviewer Sonnet 5.5 at medium,
+    # 2026-10-28: reviewer Sonnet 5.5 at medium,
     # judge Opus 5.5 at low; 30 kept until runs on medium are timed
     timeout-minutes: 30
     environment: reviewer
@@ -441,7 +441,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): a chore (test cases
+      # kit-reviewer-Opus5.5-agent, 2026-11-01: a chore (test cases
       # that only gain lines, CHANGELOG.md, nothing in the risk map) gets no
       # model review: a green suite passes it. A script decides the lane
       - name: Which lane
@@ -463,7 +463,7 @@ jobs:
           path: review-checks
         continue-on-error: true
 
-      # guard-builder-Opus5.5-agent, 2026-10-28 (KIT-014): the review loop.
+      # guard-builder-Opus5.5-agent, 2026-10-28: the review loop.
       # State is the app's own sealed PR reviews (review-rounds.sh), per PR,
       # so a force push resets nothing
       - name: Read the review state
@@ -488,14 +488,14 @@ jobs:
             jq '.open' judge-input/state.json > judge-input/findings.json
             if git -C pr-head cat-file -e "$last^{commit}" 2>/dev/null || git -C pr-head fetch -q origin "$last" 2>/dev/null; then
               # Only the PR's own files: after a rebase, main's changes
-              # would otherwise show up as the fix (PROOF-21)
+              # would otherwise show up as the fix
               git -C pr-head diff --name-only origin/main...HEAD > judge-input/files.txt
               git -C pr-head diff "$last" HEAD -- $(cat judge-input/files.txt) > judge-input/diff.txt
             else
               { echo "(The FAIL's commit $last is gone after a force push: this is the whole PR's diff.)"; git -C pr-head diff origin/main...HEAD; } > judge-input/diff.txt
             fi
             git -C pr-head log -1 --format=%s > judge-input/note.txt
-            # Evidence outside the diff (PROOF-23): this run's locked-check
+            # Evidence outside the diff: this run's locked-check
             # results, the description as it is now, and the owner's and
             # agent's comments since the FAIL, with the images they attach
             since="$(jq -r .since judge-input/state.json)"
@@ -736,7 +736,7 @@ jobs:
           LANE: ${{ steps.lane.outputs.lane }}
         run: |
           if [ "$LANE" = CHORE ]; then
-            if grep -q '^PASS: ' review-checks/results.txt 2>/dev/null; then v=PASS; why="Chore lane: test cases that only gain lines and CHANGELOG.md, nothing in the risk map, and the test command passed. No model review (KIT-019)."
+            if grep -q '^PASS: ' review-checks/results.txt 2>/dev/null; then v=PASS; why="Chore lane: test cases that only gain lines and CHANGELOG.md, nothing in the risk map, and the test command passed. No model review."
             else v=FAIL; why="Chore lane: the test command did not pass (see the locked-checks results). Fix it on the branch."; fi
             echo "result=$(jq -nc --arg v "$v" --arg w "$why" '{verdict:$v, report:$w, findings:[]}')" >> "$GITHUB_OUTPUT"
             echo "decision=$(jq -nc --arg v "$v" --arg w "$why" '{pass:($v == "PASS"), owner:false, why:$w, unsolved:[], record:null}')" >> "$GITHUB_OUTPUT"
@@ -753,7 +753,7 @@ jobs:
 
   # Publishes the verdict as the reviewer app. Passes only when the review
   # loop says so; any error or missing verdict is a FAIL (AC-6, AC-7).
-  # guard-builder-Opus5.5-agent, 2026-10-28 (KIT-014): each run's state is
+  # guard-builder-Opus5.5-agent, 2026-10-28: each run's state is
   # sealed into the app's PR review; a finding unsolved after judge round 2
   # labels the PR needs-owner and tags the owner, one line per finding
   post-verdict:
@@ -781,7 +781,7 @@ jobs:
           permission-pull-requests: write
           permission-issues: write
 
-      # kit-reviewer-Opus5.5-agent, 2026-11-01 (KIT-019): on a plan PR, one of
+      # kit-reviewer-Opus5.5-agent, 2026-11-01: on a plan PR, one of
       # owner-owned files only (OWNED), or one the loop sent to the owner
       # (needs-owner), the owner's approval of the
       # head commit stands in for the verdict (owner-call.sh). A push after
@@ -814,7 +814,7 @@ jobs:
             gh api "repos/$GH_REPO/pulls/$PR/reviews" --paginate | jq -s 'add // []' > reviews.json
             gh api "repos/$GH_REPO/issues/$PR/labels" --jq '.[].name' > labels.txt
             if bash .github/scripts/owner-call.sh reviews.json "$OWNER" "$SHA" "${LANE:-OTHER}" labels.txt; then
-              pass=true; owner=false; why="The owner approved commit ${SHA:0:7}: their approval stands in for the verdict below (KIT-019). $why"
+              pass=true; owner=false; why="The owner approved commit ${SHA:0:7}: their approval stands in for the verdict below. $why"
             fi
           fi
           shown=FAIL; conclusion=failure; [ "$pass" = true ] && { shown=PASS; conclusion=success; }
