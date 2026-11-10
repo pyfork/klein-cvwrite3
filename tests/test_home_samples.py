@@ -49,10 +49,21 @@ class Counts(unittest.TestCase):
         ys = [float(x["y"].rstrip("%")) for x in d["samples"][0]["after_page"]["out"]]
         self.assertEqual(len(ys), 3)
         self.assertTrue(all(b - a >= 10.95 for a, b in zip(ys, ys[1:])), ys)
+        self.assertTrue(all(y <= 94 for y in ys), ys)   # none pushed off the page's foot
+
+    def test_a_cv_with_no_top_keyword_fails_at_load(self):
+        with self.assertRaises(ValueError):
+            load(sample(kw="none", comp=[], title="x"))
 
     def test_highlight_escapes_then_marks(self):
         hi = load(sample())["samples"][0]["hi"]
         self.assertEqual(str(hi("<b>Alpha</b> & beta")), "&lt;b&gt;<mark>Alpha</mark>&lt;/b&gt; &amp; <mark>beta</mark>")
+
+    def test_highlight_never_matches_inside_entities_or_marks(self):
+        s = sample()
+        s["top"] = [["alpha", "alpha", "backed"], ["mark", "mark", "backed"], ["a&b", "a&b", "backed"]]
+        hi = load(s)["samples"][0]["hi"]
+        self.assertEqual(str(hi("a&b mark <amp>")), "<mark>a&amp;b</mark> <mark>mark</mark> &lt;amp&gt;")
 
     def test_the_real_samples_load(self):
         d = home.load()
