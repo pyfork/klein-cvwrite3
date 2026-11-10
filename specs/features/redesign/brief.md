@@ -1,5 +1,6 @@
 <!-- senior-lead-Sonnet5.5-agent, 2026-10-28. Feature brief from the template; the Shape drafted on the same branch. Slice list and Shape updated 2026-10-28 in the slice-plan PR for S-001 (foundation cut into four; nav has three tabs).
-     senior-lead-Opus5.5-agent, 2026-11-07: the home split into slices 8 to 12 in the slice-plan PR for S-008 (the flag its own slice after that PR's plan review). -->
+     senior-lead-Opus5.5-agent, 2026-11-07: the home split into slices 8 to 12 in the slice-plan PR for S-008 (the flag its own slice after that PR's plan review).
+     senior-lead-Opus5.5-agent, 2026-11-08: the top half split into slices 9 and 10 in the slice-plan PR for S-009 (owner, after #143's finding S7). -->
 # Brief: redesign
 
 ## Who it's for
@@ -50,16 +51,17 @@ Brief Addendums 14 and 15 (tokens, type, shape, motion, copy, and what is settle
 6. **The art and its generator:** the generator moved into the repo (dev-only) with its pinned requirements, and the WebP art the home uses. Torn-edge bands that need an image mask wait for this slice.
 7. **The fonts, smaller** (SHARED): the three web fonts as woff2 files cut to the Latin letters, with a phone budget (added 2026-11-04).
 8. **The home's flag** (ACCESS, with SHARED code): the setting `CVWRITE_HOME`, refused in production; with it on, a visitor with no session cookie at `/` gets the home as far as it is built (a placeholder at first).
-9. **The home's top half** (behind the flag): the frame, the header, the hero, "See it work." and the keywords, as they show with scripts off.
-10. **The home's bottom half** (behind the flag): the strengths, the three steps, "You are in control.", the applications, the pricing, the privacy, the FAQ, the closing band and the footer, as they show with scripts off.
-11. **The home's demonstrations** (behind the flag): the home's scripts (the switch, the tabs, the slider, the re-render demo, the calculator, the two-button control) and the entrance motion, each playing once (pattern Play once).
-12. **The home goes public** (ACCESS): the flag goes; a signed-out visitor at `/` sees the home.
-13. **Profile, Generate and the result:** the ad read, drag-to-compare before and after, the interview prep panel.
-14. **Edit and re-render:** "You are in control".
-15. **Your applications,** with the "before the interview" panel.
-16. **Credits and pay.**
-17. **Account, notice, consent, terms, deleted, error and report pages.**
-18. **Admin,** plainer.
+9. **The home's frame, header and hero** (behind the flag): as they show with scripts off.
+10. **"See it work." and the keywords** (behind the flag): the three samples' words, as they show with scripts off (added 2026-11-08, split from slice 9).
+11. **The home's bottom half** (behind the flag): the strengths, the three steps, "You are in control.", the applications, the pricing, the privacy, the FAQ, the closing band and the footer, as they show with scripts off.
+12. **The home's demonstrations** (behind the flag): the home's scripts (the switch, the tabs, the slider, the re-render demo, the calculator, the two-button control) and the entrance motion, each playing once (pattern Play once).
+13. **The home goes public** (ACCESS): the flag goes; a signed-out visitor at `/` sees the home.
+14. **Profile, Generate and the result:** the ad read, drag-to-compare before and after, the interview prep panel.
+15. **Edit and re-render:** "You are in control".
+16. **Your applications,** with the "before the interview" panel.
+17. **Credits and pay.**
+18. **Account, notice, consent, terms, deleted, error and report pages.**
+19. **Admin,** plainer.
 
 Why this order: every page shares the foundation, so it is the riskiest and goes first. It still gives users something: every existing page gets the new shell at once. SHARED changes get their own slice.
 
@@ -70,6 +72,8 @@ Changed in the plan for slice 5 (2026-11-03): the art slice was first built as a
 Changed in the plan for slice 7 (2026-11-04): the fonts' weight, owed since slice 1, is its own SHARED slice before the home (owner, 2026-11-04), so the home, the first page strangers open on a phone, sets its phone budget on the new sizes; the home and every later slice move up one, fourteen in all. A move of `APP_VERSION` to its own file was planned in its place first and dropped the same day: a version bump changes the `screens` job's stand-in pages, which are on the risk map, wherever the version lives (the plan's Owed).
 
 Changed in the plan for slice 8 (2026-11-07): the home is five slices, 8 to 12, behind a flag that stays off until slice 12 (owner, 2026-11-07; the flag became its own slice the same day, after the plan review of #143 found it bundled with the top half: a risky slice holds nothing else); every later slice moves up four, eighteen in all. Why: v2 measures 1,278 lines (570 of CSS, 411 of script) plus about 30 KB of sample data, read from the design spike on 2026-11-07; the home as one slice was estimated at about 1,500 changed lines of product code, over the 700-line limit, and its 83 rules cannot be proved by 1 to 3 checks. Each part is estimated at 350 to 600 lines (each plan flags its own, with its reason); these are estimates, not results. The flag keeps the half-built home from any visitor: while it is off, `/` sends a signed-out visitor to sign-in, as today. The access rules (AC-95 to AC-99) move to slice 12, which removes the flag. Where an earlier line in this brief or its plan names "slice 9" to "slice 14" for a page slice, read the number four higher.
+
+Changed in the plan for slice 9 (2026-11-08): the top half is two slices, 9 (the frame, the header and the hero) and 10 ("See it work." and the keywords), so every later slice moves up one, nineteen in all (owner, 2026-11-08). Why: the plan review of the first slice 8 plan (#143, finding S7) found the top half at about 1,130 changed lines with the three samples' words, over the 700-line stop, with a split reason that did not survive the flag's split. v2 splits there itself: the hero is fixed markup, and "See it work." and the keywords are drawn from the samples' words (`data.js`, 347 lines and about 30 KB in v2). Slice 9's positive control changed 134 lines; slice 10's plan estimates its own with the words counted. Where an earlier line in this brief or its plan names "slice 10" to "slice 18", read the number one higher.
 
 ## Open questions
 None. Addendum 15 settles the open items of Addendum 14.
@@ -88,7 +92,7 @@ No entity is added, so there is nothing to add to `specs/architecture.md` (the f
 | Published notices | Not edited. |
 
 ### API sketch
-- `GET /`: a signed-out visitor gets the home (200). A signed-in visitor gets 303 to `/generate`, or to `/profile` until the profile is ready, as now. Anyone may call it. It writes nothing. From slice 12. In slices 8 to 11 a setting gates it (`CVWRITE_HOME`, refused in production), and with it off `/` answers as today.
+- `GET /`: a signed-out visitor gets the home (200). A signed-in visitor gets 303 to `/generate`, or to `/profile` until the profile is ready, as now. Anyone may call it. It writes nothing. From slice 13. In slices 8 to 12 a setting gates it (`CVWRITE_HOME`, refused in production), and with it off `/` answers as today.
 - No other route is added or changed. Every other page still sends a signed-out visitor to sign-in.
 - New static files, public and cached, with no personal data: the stylesheet and art (WebP) in `app/static/`, a few scripts, new fonts in `fonts/`.
 - Not part of the app: the art script under `gen/` (dev-only) and a test that lists the allowed scripts.
@@ -130,16 +134,16 @@ None. The home's motion plays once per page view in the browser and keeps no sta
 | 5 The WebP type | SHARED | Registering `image/webp` in `create_app` changes no other type the pages use. | Every page's stylesheet or script could be sent with a wrong type, and pages would lose their look or the profile page its upload script. The undo is a revert, run on a non-live copy. |
 | 7 The fonts, smaller | SHARED | A woff2 cut to Latin-1, Latin Extended-A and the app's punctuation keeps every letter the app's own text uses, and registering `font/woff2` in `create_app` changes no other type; the CV render reads none of these files. | A page shows a letter in a fallback font, or every page loses its fonts if the type is wrong. The suite test (AC-181) names a dropped letter on every later PR. The undo is a revert, run on a non-live copy. |
 | 8 The home's flag | ACCESS, with SHARED code | With the setting off, `/` answers exactly as today, and production refuses it on; with it on, a request with no session cookie gets a page holding no personal data, and any session cookie keeps today's checks. | `/` stops sending a signed-out visitor to sign-in, or the app fails to start on a bad value. The undo is a revert (one setting, one branch, one template, no schema), run on a non-live copy. |
-| 9 to 11 The home's parts | SHARED | The home's rules in the one stylesheet style only the home, so every other page looks as before (the `screens` job compares each stand-in page); with the flag off, `/` answers exactly as today. | Another page's look changes, or `/` stops sending a signed-out visitor to sign-in. The undo is a revert (a template, stylesheet rules, scripts and one setting, no schema), run on a non-live copy. |
-| 12 The home goes public | ACCESS | `/` can show a public page without weakening any other redirect or exposing account data, and the soft sign-in check does not start a session. | A signed-out visitor sees the wrong page, or a signed-in one sees the home. The undo is a revert to the flag, or to the redirect. No `specs/threat-model.md` exists yet; the slice plan says so on its Threat model line. |
+| 9 to 12 The home's parts | SHARED | The home's rules in the one stylesheet style only the home, so every other page looks as before (the `screens` job compares each stand-in page); with the flag off, `/` answers exactly as today. | Another page's look changes, or `/` stops sending a signed-out visitor to sign-in. The undo is a revert (a template, stylesheet rules, scripts and one setting, no schema), run on a non-live copy. |
+| 13 The home goes public | ACCESS | `/` can show a public page without weakening any other redirect or exposing account data, and the soft sign-in check does not start a session. | A signed-out visitor sees the wrong page, or a signed-in one sees the home. The undo is a revert to the flag, or to the redirect. No `specs/threat-model.md` exists yet; the slice plan says so on its Threat model line. |
 
-Slice 17 holds the consent form, which gates every sign-in. It is not a class (who gets in does not change), but its tests run in full.
+Slice 18 holds the consent form, which gates every sign-in. It is not a class (who gets in does not change), but its tests run in full.
 
 ### Shared standards still missing
 - Dark mode: one token set for both themes (slice 3; slice 1 defines the light tokens so that dark only overrides them).
 - The scripts allow-list test (slice 4).
 - A test that renders every route once per theme (slice 3).
-- The no-script and reduced-motion convention: each motion has an end state that shows without scripts (set in slice 4; the home's end states are built in slices 9 and 10, its motion in slice 11).
+- The no-script and reduced-motion convention: each motion has an end state that shows without scripts (set in slice 4; the home's end states are built in slices 9 to 11, its motion in slice 12).
 - Evidence for the six responsive checks: run on a local browser per slice, with screenshots attached to the PR. CI has no screenshot step.
 
 senior-lead-Sonnet5.5-agent
