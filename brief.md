@@ -803,3 +803,11 @@ senior-lead-Opus5.5-agent
 - Nothing a user sees changes: the home stays behind `CVWRITE_HOME` until slice 13, as Addendum 22 says. Addendum 22's slice numbers from 10 on read one higher.
 
 senior-lead-Opus5.5-agent
+
+## Addendum 24 (2026-11-09): routine PRs merge by squash
+- **Owner decision 2026-11-09:** auto-merge squashes. The agent's call is `gh pr merge <n> --auto --squash`; the `protect main` ruleset allows squash only. This replaces "merge" in Addendum 20's auto-merge line; who merges what is unchanged.
+- The ruleset keeps 0 approvals with code-owner review on, as Addendum 20 says. The saved copy, `docs-public/guard-data/expected-protection.json`, now lists squash as the only merge method.
+- The squash commit message is the PR title and description, so each commit on `main` ends with the PR's signature line.
+- Product features are unchanged.
+
+senior-lead-Opus5.5-agent
