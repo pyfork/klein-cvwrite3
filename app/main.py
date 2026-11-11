@@ -14,12 +14,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import access, auth, config, costs, credits, cvtext, db, health, i18n, mailer, notices, orders, pause, profile, routes_account, routes_apps, routes_cv, routes_ops, routes_pay, signin
+from . import access, auth, config, costs, credits, cvtext, db, health, home, i18n, mailer, notices, orders, pause, profile, routes_account, routes_apps, routes_cv, routes_ops, routes_pay, signin
 from .markdown import section, to_html
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-APP_VERSION = "0.15.7"
+APP_VERSION = "0.15.8"
 log = logging.getLogger("cvwrite3")
 
 # Pages that never ask for consent first: the notice itself, and the signed-out ones.
@@ -47,6 +47,7 @@ def create_app(settings=None, mail=None):
         log.setLevel(logging.INFO)
         log.propagate = False
     templates = Jinja2Templates(directory=str(HERE / "templates"))
+    templates.env.globals["home"] = home.load()   # the home's samples and their counts (S-010), read once at start
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     # Python 3.10's built-in types lack .woff2 and .webp; without these the fonts and the art go out as octet-stream.
     mimetypes.add_type("font/woff2", ".woff2")

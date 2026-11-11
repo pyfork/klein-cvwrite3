@@ -1,0 +1,379 @@
+{
+ "_note": "The home's three invented samples (redesign S-010), from the accepted collage homepage v2's data.js: people, companies and numbers are made up. Marketing content written for the page (content rules section 2). app/home.py works out every count from these words.",
+ "samples": [
+  {
+   "id": "maribel",
+   "colour": "lilac",
+   "short": "Maribel",
+   "person": "Nadia",
+   "personLine": "11 years in design, 5 as a senior",
+   "ad": {
+    "title": "Senior Graphic Designer",
+    "company": "Maribel Fashion Group Sdn Bhd",
+    "meta": "Brand Creative · Head Office, Petaling Jaya",
+    "lines": 15
+   },
+   "problems": [
+    ["Needs a lead to keep brand output consistent across channels.", "Sign off day-to-day projects so the standard and the look stay consistent across all touchpoints."],
+    ["Ideas get weaker between concept and the final file.", "Own the creative thinking from concept through to execution, so ideas stay strong all the way to the final file."],
+    ["A team of designers needs leading and coaching.", "Lead, motivate and coach a team of designers, and brief freelancers when needed."]
+   ],
+   "top": [
+    ["multi-channel", "multi[- ]channel", "backed"],
+    ["typography", "typography", "backed"],
+    ["Figma", "figma", "backed"]
+   ],
+   "master": {
+    "name": "Nadia Hanim Rosli",
+    "intro": "11 years in design, 5 of them as a senior.",
+    "jobs": [
+     {
+      "head": "Senior Graphic Designer · Lestari Apparel Sdn Bhd (fashion retailer, 62 stores), Kuala Lumpur · 2021 to present",
+      "b": [
+       "Lead a team of 4 designers (2 mid, 2 junior) and 1 freelance illustrator; I brief the work, review drafts and sign off finals.",
+       "Own the brand style guide. Rewrite it every season (two seasons a year) with type, colour, photography and layout rules.",
+       "Concept and design the Raya and year-end campaigns across email, Instagram, in-store posters, window graphics and shopping bags.",
+       "Rebuilt the email (CRM) layouts from 12 one-off designs into one modular template set; build time per send went from 2 days to half a day.",
+       "Built the web banner and landing-page components in Figma with 3 web developers; handoff queries from developers dropped by about half.",
+       "Art-direct 6 photo shoots a year with the in-house photographer and 2 stylists; choose the references and approve the edit.",
+       "Redesigned the shopping bag and tissue paper; printing cost fell 11% after I cut the print from 4 colours to 2.",
+       "Brief the artwork team on every print job: bleed, die lines, colour profiles. No reprints due to artwork errors in the last 18 months.",
+       "Cut and publish 3 short reels a week for Instagram and TikTok in Premiere Pro.",
+       "Present concepts to the marketing director and store operations every month.",
+       "Tools: Photoshop, Illustrator, InDesign, Figma, Premiere Pro, Lightroom. I do not use After Effects."
+      ]
+     },
+     {
+      "head": "Graphic Designer · Studio Kopi Creative Sdn Bhd (design agency), Petaling Jaya · 2017 to 2021",
+      "b": [
+       "Designed packaging, menus and campaign graphics for retail and F&B clients (12 active clients at peak).",
+       "Pitched concepts to clients and took 9 of 14 pitches to final artwork.",
+       "Set type and layout for two clients’ printed annual product catalogues (80 and 120 pages).",
+       "Coached one junior designer, who was later promoted."
+      ]
+     },
+     {
+      "head": "Junior Designer · Cetak Pantas Sdn Bhd (commercial printer), Shah Alam · 2015 to 2017",
+      "b": ["Prepared files for offset and digital print: imposition, colour separation, proofs.", "Designed flyers, labels and brochures for small business customers."]
+     }
+    ],
+    "tail": [
+     "Education: Bachelor of Design (Hons) Graphic Design · Universiti Kreatif Selangor · 2015. Adobe Certified Professional, Visual Design · 2019.",
+     "Featured project: Raya 2025 campaign, “Pulang” (concept, art direction, design across 6 channels). Reach across the six channels: 1.2 million. Email click rate: 3.4% against the usual 2.1%. Stores using the in-store set: 62."
+    ]
+   },
+   "cv": {
+    "title": "Senior Graphic Designer",
+    "kw": "Multi-channel campaigns · Typography · Figma · Brand style guides · Art direction",
+    "summary": "Senior graphic designer with 11 years in design, 5 of them leading four designers at a 62-store fashion retailer. Signs off multi-channel campaigns so the look stays consistent, with strong typography and Figma design systems.",
+    "featured": {
+     "head": "Raya 2025 “Pulang”",
+     "line": "Concept, art direction and design across six channels, from first reference to final files.",
+     "stats": [
+      ["1.2 million", "reach across the six channels"],
+      ["3.4%", "email click rate, against the usual 2.1%"],
+      ["62", "stores using the in-store set"]
+     ]
+    },
+    "comp": [
+     ["Multi-channel design", "campaign concepts, CRM email, social, in-store graphics, packaging"],
+     ["Typography and layout", "editorial layout, hierarchy, catalogues of 80 and 120 pages"],
+     ["Design systems", "Figma components, modular email templates, seasonal style guides"],
+     ["Art direction", "photo shoots, references, edit approval, moodboards"],
+     ["Team leadership", "briefing, review and sign-off for four designers and a freelancer"],
+     ["Production and video", "print-ready artwork, bleed and die lines, Premiere Pro reels"]
+    ],
+    "ach": [
+     ["Consistent look", "own and rewrite the brand style guide every season, and sign off all finals across 62 stores and online."],
+     ["Modular CRM", "replaced 12 one-off email layouts with one modular set; build time per send fell from 2 days to half a day."],
+     ["Concept to final file", "took the Raya 2025 campaign from reference to artwork in six channels, with no reprints due to artwork errors in the last 18 months."],
+     ["Figma design system", "built web banner and landing-page components with three developers; developer handoff queries fell by about half."],
+     ["Packaging", "redesigned the shopping bag and tissue paper; printing cost fell 11% by cutting from four colours to two."],
+     ["Team", "lead four designers and a freelance illustrator; one designer I coached at my previous agency was later promoted."]
+    ],
+    "exp": [
+     {
+      "role": "Senior Graphic Designer · Lestari Apparel Sdn Bhd",
+      "dates": "2021 – present",
+      "note": "Fashion retailer with 62 stores; Kuala Lumpur head office.",
+      "b": [
+       ["Consistency", "brief the work, review drafts and sign off finals for a team of four designers and one freelance illustrator."],
+       ["Style guide", "rewrite the brand style guide twice a year with type, colour, photography and layout rules."],
+       ["Campaigns", "concept and design the Raya and year-end campaigns across email, Instagram, in-store posters, window graphics and shopping bags."],
+       ["Design systems", "rebuilt 12 one-off email layouts into one modular template set, cutting build time from 2 days to half a day."],
+       ["Figma", "built web banner and landing-page components with three web developers."],
+       ["Art direction", "art-direct six photo shoots a year with the in-house photographer and two stylists."],
+       ["Production", "brief the artwork team on bleed, die lines and colour profiles for every print job."],
+       ["Packaging", "redesigned the shopping bag and tissue paper, cutting print cost by 11%."],
+       ["Video", "cut and publish three short reels a week for Instagram and TikTok in Premiere Pro."],
+       ["Stakeholders", "present concepts to the marketing director and store operations every month."]
+      ]
+     },
+     {
+      "role": "Graphic Designer · Studio Kopi Creative Sdn Bhd",
+      "dates": "2017 – 2021",
+      "note": "Design agency; retail and F&B clients, up to 12 at once.",
+      "b": [
+       ["Concepts", "pitched concepts to clients and took 9 of 14 pitches to final artwork."],
+       ["Typography and layout", "set type and layout for two printed product catalogues of 80 and 120 pages."],
+       ["Packaging", "designed packaging, menus and campaign graphics."],
+       ["Coaching", "coached one junior designer, who was later promoted."]
+      ]
+     },
+     {
+      "role": "Junior Designer · Cetak Pantas Sdn Bhd",
+      "dates": "2015 – 2017",
+      "note": "Commercial printer, Shah Alam.",
+      "b": [
+       ["Print production", "prepared files for offset and digital print, including imposition, colour separation and proofs."],
+       ["Design", "designed flyers, labels and brochures for small business customers."]
+      ]
+     }
+    ],
+    "edu": ["Bachelor of Design (Hons) Graphic Design · Universiti Kreatif Selangor, Malaysia · 2015", "Adobe Certified Professional, Visual Design · Adobe · 2019"]
+   }
+  },
+  {
+   "id": "pelita",
+   "colour": "teal",
+   "short": "Pelita Pay",
+   "person": "Aiman",
+   "personLine": "about 3 years in design",
+   "ad": {
+    "title": "Graphic Designer (Digital and Motion)",
+    "company": "Pelita Pay Sdn Bhd",
+    "meta": "Marketing team · Kuala Lumpur · Hybrid, 3 days in the office",
+    "lines": 13
+   },
+   "problems": [
+    ["A lean team needs a steady flow of finished assets across channels.", "Design static and animated assets for campaigns, social media, digital ads, websites and email."],
+    ["Many projects at once, with no room for delays.", "Manage several design projects at once and deliver on time."],
+    ["Motion and video work needs a designer, not only stills.", "Support video and motion projects with titles, transitions and lower thirds."]
+   ],
+   "top": [
+    ["social media", "social media", "backed"],
+    ["digital ads", "digital ads", "backed"],
+    ["motion", "\\bmotion\\b", "backed"]
+   ],
+   "master": {
+    "name": "Aiman Danish bin Kamarul",
+    "intro": "About 3 years in design since Feb 2023, after a 6-month internship.",
+    "jobs": [
+     {
+      "head": "Graphic Designer · Pasar Kita Sdn Bhd (online marketplace), Kuala Lumpur · Aug 2024 to present",
+      "b": [
+       "Design about 25 assets a week for the marketing team: Instagram and TikTok posts, Meta and Google display ads, EDM banners, and homepage banners.",
+       "Made a template pack in Illustrator and Figma for sale campaigns (12 templates); campaign banner turnaround went from 1 day to 3 hours.",
+       "Animate titles, lower thirds and transitions for the weekly product video in Premiere Pro (keyframes and the Essential Graphics panel).",
+       "Resize each campaign to 9 formats (web, app, social, email) from one master file.",
+       "Run the shared asset library (about 1,800 files) with a naming rule and folders by campaign; teammates find files in minutes.",
+       "Work daily with 2 copywriters, 1 videographer and the social media team.",
+       "Ran a test of 3 ad styles for the 11.11 sale; the winning style had a 22% higher click rate than the old ad.",
+       "Tools: Photoshop, Illustrator, Premiere Pro, Figma, Canva. I have not used After Effects."
+      ]
+     },
+     {
+      "head": "Multimedia Designer · Studio Lompat Sdn Bhd (digital agency), Petaling Jaya · Feb 2023 to Jul 2024",
+      "b": [
+       "Designed social posts, banners and simple explainer graphics for 8 client accounts.",
+       "Edited 15 to 60 second videos for clients in Premiere Pro and CapCut.",
+       "Built a 5-slide infographic series for a health insurer client."
+      ]
+     },
+     {
+      "head": "Intern, Design · Studio Lompat Sdn Bhd · Jul to Dec 2022",
+      "b": ["Resized and exported client artwork; made first drafts of social posts."]
+     }
+    ],
+    "tail": [
+     "Education: Diploma in Multimedia Design · Politeknik Kota Damai · 2022. Google Digital Garage: Fundamentals of Digital Marketing · 2023.",
+     "Featured project: 11.11 sale campaign (static and animated assets in 9 formats). Assets produced in 9 formats: 54. Click rate of the winning style: 22% higher than the old ad. Time from brief to launch: 4 days."
+    ]
+   },
+   "cv": {
+    "title": "Graphic Designer",
+    "kw": "Social media · Digital ads · Motion · Templates · Multiple projects",
+    "summary": "Graphic designer with 3 years of digital design, producing about 25 social media and digital ads assets a week. Adds motion with titles, lower thirds and transitions in Premiere Pro, and keeps campaigns on time with templates.",
+    "featured": {
+     "head": "11.11 sale campaign",
+     "line": "Static and animated assets for one sale, in nine formats from one master file.",
+     "stats": [
+      ["54", "assets in 9 formats"],
+      ["22%", "higher click rate for the winning ad style than the old ad"],
+      ["4 days", "from brief to launch"]
+     ]
+    },
+    "comp": [
+     ["Social media", "Instagram and TikTok posts, weekly product video assets"],
+     ["Digital ads", "Meta and Google display ads, EDM banners, homepage banners"],
+     ["Motion", "titles, lower thirds and transitions with keyframes in Premiere Pro"],
+     ["Templates and asset library", "template packs in Illustrator and Figma, a library of about 1,800 files"],
+     ["Adobe tools", "Photoshop, Illustrator, Premiere Pro, plus Figma and Canva"],
+     ["Teamwork", "daily work with copywriters, a videographer and the social media team"]
+    ],
+    "ach": [
+     ["Steady output", "design about 25 static and animated assets a week for the marketing team."],
+     ["Speed", "a 12-template sale pack cut campaign banner turnaround from 1 day to 3 hours."],
+     ["Many formats", "resize each campaign to 9 web, app, social and email formats from one master file."],
+     ["Ad testing", "tested 3 ad styles for 11.11; the winner had a 22% higher click rate than the old ad."],
+     ["Motion", "animate titles, lower thirds and transitions for the weekly product video."],
+     ["Organised library", "run a shared library of about 1,800 files that teammates search in minutes."]
+    ],
+    "exp": [
+     {
+      "role": "Graphic Designer · Pasar Kita Sdn Bhd",
+      "dates": "Aug 2024 – present",
+      "note": "Online marketplace; marketing team, Kuala Lumpur.",
+      "b": [
+       ["Social media and ads", "design about 25 assets a week: Instagram and TikTok posts, Meta and Google display ads, EDM and homepage banners."],
+       ["Templates", "built a 12-template pack in Illustrator and Figma for sale campaigns, cutting banner turnaround from 1 day to 3 hours."],
+       ["Motion", "animate titles, lower thirds and transitions for the weekly product video in Premiere Pro."],
+       ["Formats", "resize each campaign to 9 formats from one master file."],
+       ["Testing", "ran a test of 3 ad styles for 11.11; the winner had a 22% higher click rate."],
+       ["Asset library", "run the shared library of about 1,800 files with a naming rule and campaign folders."],
+       ["Team", "work daily with two copywriters, one videographer and the social media team."]
+      ]
+     },
+     {
+      "role": "Multimedia Designer · Studio Lompat Sdn Bhd",
+      "dates": "Feb 2023 – Jul 2024",
+      "note": "Digital agency, Petaling Jaya; 8 client accounts.",
+      "b": [
+       ["Social and banners", "designed social posts, banners and simple explainer graphics."],
+       ["Video", "edited 15 to 60 second videos in Premiere Pro and CapCut."],
+       ["Infographics", "built a 5-slide infographic series for a health insurer client."]
+      ]
+     },
+     {
+      "role": "Intern, Design · Studio Lompat Sdn Bhd",
+      "dates": "Jul 2022 – Dec 2022",
+      "note": "",
+      "b": [
+       ["Production", "resized and exported client artwork and made first drafts of social posts."]
+      ]
+     }
+    ],
+    "edu": ["Diploma in Multimedia Design · Politeknik Kota Damai, Malaysia · 2022", "Fundamentals of Digital Marketing · Google Digital Garage · 2023"]
+   }
+  },
+  {
+   "id": "menara",
+   "colour": "marigold",
+   "short": "ABC Property Rentals",
+   "person": "Jia Hui",
+   "personLine": "a recent graduate, 8 months of work",
+   "ad": {
+    "title": "Creative Graphic Designer (Junior)",
+    "company": "ABC Property Rentals Sdn Bhd",
+    "meta": "Marketing · Kuala Lumpur · Full-time, on-site",
+    "lines": 10
+   },
+   "problems": [
+    ["Marketing needs a hand producing brand-true material for many offices.", "You’ll design and produce visual material for marketing, branding and corporate communications"],
+    ["A global brand has to fit the Malaysian market without drifting off-brand.", "Adapt the group’s brand guidelines to the local market."],
+    ["Drafts must turn into production files quickly after feedback.", "Create layouts and refine drafts based on feedback."]
+   ],
+   "top": [
+    ["brand guidelines", "brand guidelines", "backed"],
+    ["InDesign", "indesign", "backed"],
+    ["web design", "web design", "bridged"]
+   ],
+   "master": {
+    "name": "Tan Jia Hui",
+    "intro": "Recent graduate. 8 months of work experience in total.",
+    "jobs": [
+     {
+      "head": "Design Intern · Cetak Mantap Sdn Bhd (printing and signage shop), Cheras, Kuala Lumpur · Jan to Aug 2025",
+      "b": [
+       "Laid out brochures, flyers, banners and name cards in InDesign and Illustrator for about 40 walk-in customers.",
+       "Prepared print-ready PDFs with bleed and crop marks; checked proofs against the customer’s brand colours.",
+       "Redrew 6 customer logos as vectors in Illustrator when they only had low-resolution files.",
+       "Applied one customer’s brand guide (a clinic chain) to a set of 14 items.",
+       "Took feedback from the shop owner and customers; most jobs needed one round of changes."
+      ]
+     },
+     {
+      "head": "Freelance and society work · 2023 to 2025",
+      "b": [
+       "Designed posters, programme booklets and Instagram graphics for the university design society’s 5 events.",
+       "Made a logo and name card set for a friend’s home bakery (unpaid).",
+       "Built a landing-page mockup in Figma for a final-year project (4 screens, desktop and mobile). I have not built or launched a live website."
+      ]
+     },
+     {
+      "head": "Part-time sales assistant · Kedai Buku Harapan, Kuala Lumpur · 2022 to 2023",
+      "b": ["Served customers at weekends and handled the shop’s social media posts, using Canva."]
+     }
+    ],
+    "tail": [
+     "Education: Diploma in Graphic Design · Kolej Seni Reka Metro, Kuala Lumpur · 2025. Final-year project: rebrand of a heritage kopitiam (logo, menu, signage), graded Distinction.",
+     "Tools: Photoshop, Illustrator, InDesign, Figma, Canva. No real estate experience.",
+     "Featured project: Kopitiam rebrand (final-year project). Items designed in the identity set: 11. Grade: Distinction. Time: 14 weeks."
+    ]
+   },
+   "cv": {
+    "title": "Junior Graphic Designer",
+    "kw": "Brand guidelines · InDesign · Layout · Logo design · Feedback",
+    "summary": "Graphic design graduate with 8 months of work experience, applying brand guidelines to print items in InDesign. Redraws logos, prepares print-ready files and builds Figma mockups, a base for web design.",
+    "featured": {
+     "head": "Kopitiam rebrand",
+     "line": "Final-year project: a full identity for a heritage kopitiam, from logo to signage.",
+     "stats": [
+      ["11", "items in the identity set"],
+      ["14 weeks", "from research to final files"],
+      ["Distinction", "final-year grade"]
+     ]
+    },
+    "comp": [
+     ["Brand guidelines", "applying a clinic chain’s guide to a set of 14 items"],
+     ["Layout and typography", "brochures, flyers, banners, name cards, programme booklets"],
+     ["Logo design", "vector redraws and a bakery logo and name card set"],
+     ["Adobe tools", "InDesign, Illustrator, Photoshop"],
+     ["Web design (basic)", "Figma landing-page mockups for desktop and mobile"],
+     ["Production", "print-ready PDFs with bleed and crop marks, proof checks"]
+    ],
+    "ach": [
+     ["Brand guidelines", "applied one customer’s brand guide to a set of 14 items during my internship."],
+     ["Print-ready files", "prepared PDFs with bleed and crop marks, and checked proofs against brand colours."],
+     ["Logo redraws", "rebuilt 6 low-resolution customer logos as vectors in Illustrator."],
+     ["Feedback", "most jobs needed only one round of changes."],
+     ["Society events", "designed posters, booklets and Instagram graphics for 5 events."],
+     ["Final-year project", "rebrand of a heritage kopitiam, graded Distinction."]
+    ],
+    "exp": [
+     {
+      "role": "Design Intern · Cetak Mantap Sdn Bhd",
+      "dates": "Jan 2025 – Aug 2025",
+      "note": "Printing and signage shop, Cheras, Kuala Lumpur.",
+      "b": [
+       ["Brand guidelines", "applied a clinic chain’s brand guide to a set of 14 items."],
+       ["Layout", "laid out brochures, flyers, banners and name cards in InDesign and Illustrator for about 40 walk-in customers."],
+       ["Production", "prepared print-ready PDFs with bleed and crop marks, and checked proofs against brand colours."],
+       ["Logos", "redrew 6 customer logos as vectors when they had only low-resolution files."],
+       ["Feedback", "took feedback from the shop owner and customers; most jobs needed one round of changes."]
+      ]
+     },
+     {
+      "role": "Freelance and design society work",
+      "dates": "2023 – 2025",
+      "note": "",
+      "b": [
+       ["Society", "designed posters, programme booklets and Instagram graphics for the university design society’s 5 events."],
+       ["Logo design", "made a logo and name card set for a home bakery (unpaid)."],
+       ["Web design", "built a Figma landing-page mockup of 4 screens, desktop and mobile (transferable to web design)."]
+      ]
+     },
+     {
+      "role": "Part-time Sales Assistant · Kedai Buku Harapan",
+      "dates": "2022 – 2023",
+      "note": "",
+      "b": [
+       ["Social media", "handled the shop’s social media posts in Canva, alongside weekend customer service."]
+      ]
+     }
+    ],
+    "edu": ["Diploma in Graphic Design · Kolej Seni Reka Metro, Malaysia · 2025"]
+   }
+  }
+ ]
+}

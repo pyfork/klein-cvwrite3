@@ -75,6 +75,84 @@
     <p class="cap">Same job title. Different job. Three CVs.</p>
   </div>
 </section>
+{# "See it work." and the keywords (S-010), drawn from app/content/home_samples.json by app/home.py. Scripts off, which is all
+   this slice builds: the three panels one after another, each slider on its "after" sheet with no grip; slice 12 adds the tabs. #}
+<section class="band" id="demo" aria-labelledby="h-demo">
+  <div class="wrap">
+    <div class="demo-head">
+      <div class="section-head">
+        <h2 id="h-demo">See it work.</h2>
+        <p class="lede">Pick a job. See the CV before and after.</p>
+      </div>
+      <img class="demo-art" src="/static/art/scissors.webp" width="760" height="420" alt="">
+    </div>
+    {% for s in home.samples %}
+    <div class="panel {{ s.colour }}" id="demo-{{ s.id }}">
+      <h3 class="ptab"><i class="sw"></i><span><b>{{ s.ad.title }}</b><small>{{ s.short }} · {{ s.person }}, {{ s.personLine }}</small></span></h3>
+      <div class="demo">
+        <div>
+          <article class="clip {{ s.colour }}" data-paper>
+            <div class="aco">{{ s.ad.company }}</div><h3>{{ s.ad.title }}</h3><div class="meta">{{ s.ad.meta }}</div><div class="rule"></div>
+            <ul class="quotes">{% for p, q in s.problems %}<li><span class="q">{{ q }}<sup>{{ loop.index }}</sup></span></li>{% endfor %}</ul>
+            <p class="more-lines">+ {{ s.more_lines }} more lines in the ad</p>
+          </article>
+          <div class="reading">
+            <span class="eyebrow">What we found in the ad</span>
+            <ol>{% for p, q in s.problems %}<li><div><b>{{ p }}</b><span>“{{ q }}”</span></div></li>{% endfor %}</ol>
+            <div class="kw3"><span class="eyebrow">Top 3 keywords</span><div class="chips">{% for k, label in s.chips %}<span class="kchip">{{ k }} <small>{{ label }}</small></span>{% endfor %}</div></div>
+          </div>
+        </div>
+        <div class="sheetbox">
+          <div class="kmeter"><span>Top 3 keywords: <b class="mb">{{ s.before_n }} of 3</b> before, <b class="ma">{{ s.after_n }} of 3</b> after, from word {{ s.from_word }}</span></div>
+          <div class="compare">
+            {% set m = s.master %}
+            <div class="sheet pcopy" data-paper aria-label="The CV before">
+              <div class="band-top"></div><div class="xmeta">CV_final_v3.pdf · the same file for every job</div>
+              <div class="nm nm2">{{ m.name }}</div><p class="intro">{{ s.hi(m.intro) }}</p>
+              {% for j in m.jobs %}<div class="job"><div class="h">{{ s.hi(j.head) }}</div><ul>{% for b in j.b %}<li>{{ s.hi(b) }}</li>{% endfor %}</ul></div>{% endfor %}
+            </div>
+            {% set c = s.cv %}
+            <div class="sheet after" data-paper aria-label="The CV after">
+              <div class="band-top"></div>
+              <div class="nm">{{ m.name }}</div><div class="cro">{{ s.hi(c.title) }}</div><div class="kwl">{{ s.hi(c.kw) }}</div>
+              <span class="contact">YOUR CONTACT DETAILS GO HERE</span>
+              <h5>Professional summary</h5><p>{{ s.hi(c.summary) }}</p>
+              <h5>Featured project · {{ c.featured.head }}</h5><p>{{ s.hi(c.featured.line) }}</p>
+              <div class="stats">{% for v, l in c.featured.stats %}<div><b>{{ v }}</b><span>{{ l }}</span></div>{% endfor %}</div>
+              <h5>Core competencies</h5><ul>{% for k, v in c.comp %}<li><b>{{ s.hi(k) }}:</b> {{ s.hi(v) }}</li>{% endfor %}</ul>
+              <h5>Key achievements</h5><ul>{% for k, v in c.ach %}<li><b>{{ s.hi(k) }}:</b> {{ s.hi(v) }}</li>{% endfor %}</ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    <p class="note">These people, companies and numbers are made up. The highlighted words are the ad's top 3 keywords.</p>
+  </div>
+</section>
+{% macro page(p) %}<div class="mp-page" data-paper style="--z:{{ p.z }}"><div class="mp-zone"><span class="zl">First {{ home.zone }} words</span>{% for x in p.zone %}<span class="sticker" style="--r:{{ x.r }}" title="{{ x.title }}">{{ x.k }}</span>{% endfor %}</div>{% for x in p.out %}<span class="sticker" style="--r:{{ x.r }};--y:{{ x.y }}" title="{{ x.title }}">{{ x.k }}</span>{% endfor %}</div>{% endmacro %}
+<section class="wrap slab words" id="words" aria-labelledby="h-words">
+  <div class="section-head">
+    <h2 id="h-words">The job ad’s keywords, in your first lines.</h2>
+    <p class="lede">Employers look for the words in their job ad. Here is where those words sit in each CV.</p>
+  </div>
+  <div class="kwsum"><span class="b">Before: {{ home.before }} of {{ home.total }} keywords.</span><span class="a">After: {{ home.after }} of {{ home.total }}, {{ "all" if home.after_in_zone == home.total else home.after_in_zone }} in the first {{ home.zone }} words.</span></div>
+  <div class="kwgrid">
+    {% for s in home.samples %}
+    <div class="kwp {{ s.colour }}">
+      <div class="kwp-head"><i class="sw"></i><span>{{ s.person }} <small>· {{ s.ad.title }}</small></span></div>
+      <div class="pages">
+        <div class="mp before"><span class="mp-lab">Before</span>{{ page(s.before_page) }}
+          <p class="mp-note">{% if s.missing %}<b>Missing:</b> {{ s.missing | join(", ") }}{% else %}All 3 there.{% endif %}</p></div>
+        <div class="mp after"><span class="mp-lab">After</span>{{ page(s.after_page) }}
+          <p class="mp-note"><b>{{ s.in_zone }} of 3</b> in the first {{ home.zone }} words.</p></div>
+      </div>
+      <a class="kwp-link" href="#demo-{{ s.id }}">See {{ s.person }}’s CV</a>
+    </div>
+    {% endfor %}
+  </div>
+  <p class="src">Each sticker is one of the ad’s top 3 keywords, placed where it first appears in the CV. Counted from the CVs on this page.</p>
+</section>
 </main>
 </body>
 </html>
