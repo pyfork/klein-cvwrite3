@@ -68,6 +68,7 @@
 /brief.md @pyfork
 /docs-public/project-rules.md @pyfork
 /specs/features/*/brief.md @pyfork
+/README-brief-amended.md @pyfork
 /app/pipeline.py @pyfork
 /app/worker.py @pyfork
 /app/claude.py @pyfork

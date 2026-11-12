@@ -60,6 +60,8 @@ SHARED  tests/test_scripts_allowlist.py
 SHARED  brief.md
 SHARED  docs-public/project-rules.md
 SHARED  specs/features/*/brief.md
+# The target-design ledger (owner answers; kit KIT-017)
+SHARED  README-brief-amended.md
 # Signature features: CV generation and the render pipeline
 SHARED  app/pipeline.py
 SHARED  app/worker.py
